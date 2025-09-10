@@ -332,6 +332,49 @@ body[data-density="compact"] .sbtn{min-width:38px; padding:4px 6px}
 body[data-density="compact"] .sbtn .ico{font-size:16px}
 body[data-density="compact"] .sbtn .label{font-size:9px; margin-top:2px}
 
+/* Ultra Compact - Smart horizontal layout */
+body[data-density="ultra-compact"] .row{
+  display:grid; grid-template-columns:1fr auto auto; gap:8px;
+  padding:4px 8px; font-size:13px; line-height:1.3; align-items:center;
+}
+body[data-density="ultra-compact"] .name-section{
+  display:flex; align-items:center; gap:6px; min-width:0; overflow:hidden;
+}
+body[data-density="ultra-compact"] .name{font-size:14px; font-weight:700; flex-shrink:0}
+body[data-density="ultra-compact"] .touchCount{font-size:10px; opacity:.6; flex-shrink:0}
+body[data-density="ultra-compact"] .notes-preview{
+  font-size:11px; opacity:.7; margin-left:8px; 
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; min-width:0;
+}
+body[data-density="ultra-compact"] .actions-section{
+  display:flex; align-items:center; gap:3px; white-space:nowrap;
+}
+body[data-density="ultra-compact"] .tags-section{
+  display:flex; gap:3px; font-size:10px;
+}
+body[data-density="ultra-compact"] .tag-chip{padding:1px 4px; font-size:9px}
+
+/* Ultra compact button styling */
+body[data-density="ultra-compact"] .qbtn{
+  min-width:24px; padding:2px 4px; font-size:12px; border-radius:4px;
+}
+body[data-density="ultra-compact"] .qbtn .badge{
+  right:-4px; bottom:-4px; font-size:8px; padding:1px 3px;
+}
+body[data-density="ultra-compact"] .sbtn{
+  min-width:20px; padding:2px 3px; font-size:9px; border-radius:4px; opacity:.8;
+}
+body[data-density="ultra-compact"] .sbtn .ico{font-size:12px}
+body[data-density="ultra-compact"] .sbtn .label{display:none} /* Hide labels in ultra compact */
+body[data-density="ultra-compact"] .sbtn.active{opacity:1; outline:1px solid var(--green)}
+body[data-density="ultra-compact"] .sbtn.s-hot.active{outline:1px solid #fb923c}
+body[data-density="ultra-compact"] .iconbtn{
+  min-width:20px; padding:2px 3px; font-size:12px; border-radius:4px;
+}
+body[data-density="ultra-compact"] .status-icons{gap:3px}
+body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size:8px}
+body[data-density="ultra-compact"] .hot-flames{font-size:12px; left:8px; bottom:2px}
+
 /* Responsive */
 @media (max-width:1150px){
   .app{grid-template-columns:1fr;grid-template-areas:"main" "side";padding:10px}
@@ -371,6 +414,7 @@ body[data-density="compact"] .sbtn .label{font-size:9px; margin-top:2px}
             <select id="densitySelect">
               <option value="comfortable">Comfortable</option>
               <option value="compact">Compact</option>
+              <option value="ultra-compact">Ultra Compact</option>
             </select>
           </label>
           <!-- Move left/right stays in JS; new hide/show button below -->
@@ -651,70 +695,149 @@ body[data-density="compact"] .sbtn .label{font-size:9px; margin-top:2px}
 
     var lastStatusEvt = last((c.history||[]).filter(function(h){return h.action==='status' && STATUS.indexOf(h.to)!==-1;}).sort(function(a,b){return new Date(a.ts)-new Date(b.ts);}));
 
-    /* Middle (name, badges, notes) */
-    var mid=document.createElement('div');
-    var head=document.createElement('div'); head.className='name-line';
+    /* Build layout - different structure for ultra-compact */
+    var isUltraCompact = document.body.getAttribute('data-density') === 'ultra-compact';
+    
+    if(isUltraCompact) {
+      // Ultra-compact: name-section | actions-section | tags-section
+      var nameSection=document.createElement('div'); nameSection.className='name-section';
+      
+      // Status icons + name + count + notes preview all in one line
+      var icons=document.createElement('div'); icons.className='status-icons';
+      var bd=businessDaysSince(c.lastTouch||nowISO());
+      var badge=agingBadge(bd, thr); icons.appendChild(badge);
+      if(contactedToday(c)){ var touched=document.createElement('span'); touched.className='touched-badge'; touched.title='Touched today'; icons.appendChild(touched); }
+      if(lastStatusEvt){ var em=STATUS_ICON[lastStatusEvt.to]; if(em){ var s3=document.createElement('span'); s3.className='status-icon'; s3.textContent=em; setTip(s3, lastStatusEvt.to); icons.appendChild(s3); } }
+      
+      var name=document.createElement('div'); name.className='name'; name.textContent=c.name;
+      var tcount=document.createElement('span'); tcount.className='touchCount'; tcount.textContent='('+( (c.history||[]).length )+')';
+      
+      var firstLine=(c.notes||'').split('\n')[0] ? (c.notes||'').split('\n')[0].trim() : '';
+      var preview=null; 
+      if(firstLine){ 
+        preview=document.createElement('div'); 
+        preview.className='notes-preview'; 
+        preview.textContent='"'+firstLine.slice(0,80)+'..."'; 
+      }
+      
+      nameSection.appendChild(icons); nameSection.appendChild(name); nameSection.appendChild(tcount);
+      if(preview) nameSection.appendChild(preview);
+      
+      var mid = nameSection; // For ultra-compact, nameSection IS the mid
+      
+    } else {
+      // Standard layout (comfortable/compact)
+      var mid=document.createElement('div');
+      var head=document.createElement('div'); head.className='name-line';
 
-    var icons=document.createElement('div'); icons.className='status-icons';
-    var bd=businessDaysSince(c.lastTouch||nowISO());
-    var badge=agingBadge(bd, thr); badge.style.marginRight='4px'; icons.appendChild(badge);
-    if(contactedToday(c)){ var touched=document.createElement('span'); touched.className='touched-badge'; touched.title='Touched today'; icons.appendChild(touched); }
-    if(lastStatusEvt){ var em=STATUS_ICON[lastStatusEvt.to]; if(em){ var s3=document.createElement('span'); s3.className='status-icon'; s3.textContent=em; setTip(s3, lastStatusEvt.to); } }
+      var icons=document.createElement('div'); icons.className='status-icons';
+      var bd=businessDaysSince(c.lastTouch||nowISO());
+      var badge=agingBadge(bd, thr); badge.style.marginRight='4px'; icons.appendChild(badge);
+      if(contactedToday(c)){ var touched=document.createElement('span'); touched.className='touched-badge'; touched.title='Touched today'; icons.appendChild(touched); }
+      if(lastStatusEvt){ var em=STATUS_ICON[lastStatusEvt.to]; if(em){ var s3=document.createElement('span'); s3.className='status-icon'; s3.textContent=em; setTip(s3, lastStatusEvt.to); icons.appendChild(s3); } }
 
-    var name=document.createElement('div'); name.className='name'; name.textContent=c.name;
+      var name=document.createElement('div'); name.className='name'; name.textContent=c.name;
 
-    head.appendChild(icons); head.appendChild(name);
-    var tcount=document.createElement('span'); tcount.className='touchCount'; tcount.textContent='('+( (c.history||[]).length )+')'; head.appendChild(tcount);
-    if(opts.whenLabel){ var whenChip=document.createElement('span'); whenChip.className='tag-chip'; whenChip.textContent=opts.whenLabel; head.appendChild(whenChip); }
-    if(c.queueToday){ var chip1=document.createElement('span'); chip1.className='tag-chip'; chip1.textContent='Today'; head.appendChild(chip1); }
-    if(c.queueTomorrow){ var chip2=document.createElement('span'); chip2.className='tag-chip'; chip2.textContent='Tomorrow'; head.appendChild(chip2); }
-    mid.appendChild(head);
+      head.appendChild(icons); head.appendChild(name);
+      var tcount=document.createElement('span'); tcount.className='touchCount'; tcount.textContent='('+( (c.history||[]).length )+')'; head.appendChild(tcount);
+      if(opts.whenLabel){ var whenChip=document.createElement('span'); whenChip.className='tag-chip'; whenChip.textContent=opts.whenLabel; head.appendChild(whenChip); }
+      if(c.queueToday){ var chip1=document.createElement('span'); chip1.className='tag-chip'; chip1.textContent='Today'; head.appendChild(chip1); }
+      if(c.queueTomorrow){ var chip2=document.createElement('span'); chip2.className='tag-chip'; chip2.textContent='Tomorrow'; head.appendChild(chip2); }
+      mid.appendChild(head);
 
-    var firstLine=(c.notes||'').split('\n')[0] ? (c.notes||'').split('\n')[0].trim() : '';
-    var preview=null; if(firstLine){ preview=document.createElement('div'); preview.className='notes-preview'; preview.textContent=firstLine.slice(0,120); mid.appendChild(preview); }
+      var firstLine=(c.notes||'').split('\n')[0] ? (c.notes||'').split('\n')[0].trim() : '';
+      var preview=null; if(firstLine){ preview=document.createElement('div'); preview.className='notes-preview'; preview.textContent=firstLine.slice(0,120); mid.appendChild(preview); }
+    }
+    
+    // Notes textarea (shared by both layouts)
     var notesWrap=document.createElement('div'); notesWrap.className='notes hidden';
     var ta=document.createElement('textarea'); ta.placeholder='Notes…'; ta.value=c.notes||'';
     ta.addEventListener('input', function(){ updateNotes(c,ta.value); });
-    ta.addEventListener('keydown', function(e){ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); updateNotes(c, ta.value); var first=(ta.value||'').split('\n')[0] ? (ta.value||'').split('\n')[0].trim() : ''; if(first){ if(!preview){ preview=document.createElement('div'); preview.className='notes-preview'; mid.insertBefore(preview, notesWrap); } preview.textContent=first.slice(0,120); }else{ if(preview){ preview.parentNode.removeChild(preview); preview=null; } } notesWrap.classList.add('hidden'); ta.blur(); }});
+    ta.addEventListener('keydown', function(e){ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); updateNotes(c, ta.value); var first=(ta.value||'').split('\n')[0] ? (ta.value||'').split('\n')[0].trim() : ''; if(first){ var existingPreview = isUltraCompact ? nameSection.querySelector('.notes-preview') : mid.querySelector('.notes-preview'); if(!existingPreview && !isUltraCompact){ var newPreview=document.createElement('div'); newPreview.className='notes-preview'; newPreview.textContent=first.slice(0,120); mid.insertBefore(newPreview, notesWrap); } else if(existingPreview) { existingPreview.textContent = isUltraCompact ? '"'+first.slice(0,80)+'..."' : first.slice(0,120); } } else { var existingPreview = isUltraCompact ? nameSection.querySelector('.notes-preview') : mid.querySelector('.notes-preview'); if(existingPreview){ existingPreview.parentNode.removeChild(existingPreview); } } notesWrap.classList.add('hidden'); ta.blur(); }});
     notesWrap.appendChild(ta); mid.appendChild(notesWrap);
 
-    /* Right (action groups) */
-    var right=document.createElement('div'); right.className='actions-wrap';
+    if(isUltraCompact) {
+      // Ultra-compact: actions-section | tags-section
+      var actionsSection=document.createElement('div'); actionsSection.className='actions-section';
+      
+      // Combine all actions into one compact group
+      var callBtn=document.createElement('button'); callBtn.className='qbtn has-tip'; setTip(callBtn,'Call'); callBtn.textContent=EMOJI_CALL;
+      var callBadge=document.createElement('span'); callBadge.className='badge'; callBadge.textContent=String(c.callCount||0); callBadge.setAttribute('data-zero', (c.callCount||0)===0 ? '1':'0'); callBtn.appendChild(callBadge); callBtn.addEventListener('click', function(){ incrementCall(c); });
+      
+      var msgBtn=document.createElement('button'); msgBtn.className='qbtn has-tip'; setTip(msgBtn,'Message'); msgBtn.textContent=EMOJI_MSG;
+      var msgBadge=document.createElement('span'); msgBadge.className='badge'; msgBadge.textContent=String(c.msgCount||0); msgBadge.setAttribute('data-zero', (c.msgCount||0)===0 ? '1':'0'); msgBtn.appendChild(msgBadge); msgBtn.addEventListener('click', function(){ incrementMsg(c); });
+      
+      actionsSection.appendChild(callBtn); actionsSection.appendChild(msgBtn);
+      
+      // Status buttons (icon only)
+      STATUS.forEach(function(st){
+        var btn=document.createElement('button'); btn.className='sbtn has-tip '+colorClass(st); setTip(btn, st);
+        if(c.status===st) btn.classList.add('active');
+        var ico=document.createElement('span'); ico.className='ico status-icon'; ico.textContent=STATUS_ICON[st] || '•';
+        btn.appendChild(ico); // No label in ultra-compact
+        btn.addEventListener('click', function(){ setStatus(c,st); });
+        actionsSection.appendChild(btn);
+      });
+      
+      // Hot button
+      var hotBtn=document.createElement('button'); hotBtn.className='sbtn has-tip s-hot'; setTip(hotBtn, 'Hot lead');
+      if(c.hot) hotBtn.classList.add('active');
+      var hotIco=document.createElement('span'); hotIco.className='ico'; hotIco.textContent='🔥';
+      hotBtn.appendChild(hotIco);
+      hotBtn.addEventListener('click', function(){ preserveUIAndRender(function(){ c.hot = !c.hot; }); });
+      actionsSection.appendChild(hotBtn);
+      
+      // Action icons
+      var iconbar = buildIconBar(c, notesWrap, ta);
+      iconbar.childNodes.forEach(function(btn){ actionsSection.appendChild(btn); });
+      
+      // Tags section
+      var tagsSection=document.createElement('div'); tagsSection.className='tags-section';
+      if(opts.whenLabel){ var whenChip=document.createElement('span'); whenChip.className='tag-chip'; whenChip.textContent=opts.whenLabel; tagsSection.appendChild(whenChip); }
+      if(c.queueToday){ var chip1=document.createElement('span'); chip1.className='tag-chip'; chip1.textContent='Today'; tagsSection.appendChild(chip1); }
+      if(c.queueTomorrow){ var chip2=document.createElement('span'); chip2.className='tag-chip'; chip2.textContent='Tomorrow'; tagsSection.appendChild(chip2); }
+      
+      row.appendChild(mid); row.appendChild(actionsSection); row.appendChild(tagsSection);
+      
+    } else {
+      // Standard layout
+      var right=document.createElement('div'); right.className='actions-wrap';
 
-    // Quick counters (more spacing from statuses via group class)
-    var quick=document.createElement('div'); quick.className='group--quick';
-    var callBtn=document.createElement('button'); callBtn.className='qbtn has-tip'; callBtn.title='Log a Call'; setTip(callBtn,'Call'); callBtn.textContent=EMOJI_CALL;
-    var callBadge=document.createElement('span'); callBadge.className='badge'; callBadge.textContent=String(c.callCount||0); callBadge.setAttribute('data-zero', (c.callCount||0)===0 ? '1':'0'); callBtn.appendChild(callBadge); callBtn.addEventListener('click', function(){ incrementCall(c); });
-    var msgBtn=document.createElement('button'); msgBtn.className='qbtn has-tip'; msgBtn.title='Log a Message'; setTip(msgBtn,'Message'); msgBtn.textContent=EMOJI_MSG;
-    var msgBadge=document.createElement('span'); msgBadge.className='badge'; msgBadge.textContent=String(c.msgCount||0); msgBadge.setAttribute('data-zero', (c.msgCount||0)===0 ? '1':'0'); msgBtn.appendChild(msgBadge); msgBtn.addEventListener('click', function(){ incrementMsg(c); });
-    quick.appendChild(callBtn); quick.appendChild(msgBtn);
+      // Quick counters (more spacing from statuses via group class)
+      var quick=document.createElement('div'); quick.className='group--quick';
+      var callBtn=document.createElement('button'); callBtn.className='qbtn has-tip'; callBtn.title='Log a Call'; setTip(callBtn,'Call'); callBtn.textContent=EMOJI_CALL;
+      var callBadge=document.createElement('span'); callBadge.className='badge'; callBadge.textContent=String(c.callCount||0); callBadge.setAttribute('data-zero', (c.callCount||0)===0 ? '1':'0'); callBtn.appendChild(callBadge); callBtn.addEventListener('click', function(){ incrementCall(c); });
+      var msgBtn=document.createElement('button'); msgBtn.className='qbtn has-tip'; msgBtn.title='Log a Message'; setTip(msgBtn,'Message'); msgBtn.textContent=EMOJI_MSG;
+      var msgBadge=document.createElement('span'); msgBadge.className='badge'; msgBadge.textContent=String(c.msgCount||0); msgBadge.setAttribute('data-zero', (c.msgCount||0)===0 ? '1':'0'); msgBtn.appendChild(msgBadge); msgBtn.addEventListener('click', function(){ incrementMsg(c); });
+      quick.appendChild(callBtn); quick.appendChild(msgBtn);
 
-    // Status icons with active caption & hover tip
-    var bar=document.createElement('div'); bar.className='group--status';
-    STATUS.forEach(function(st){
-      var btn=document.createElement('button'); btn.className='sbtn has-tip '+colorClass(st); setTip(btn, st);
-      if(c.status===st) btn.classList.add('active');
-      var ico=document.createElement('span'); ico.className='ico status-icon'; ico.textContent=STATUS_ICON[st] || '•';
-      var cap=document.createElement('span'); cap.className='label'; cap.textContent=STATUS_ABBR[st] || st;
-      btn.appendChild(ico); btn.appendChild(cap);
-      btn.addEventListener('click', function(){ setStatus(c,st); });
-      bar.appendChild(btn);
-    });
+      // Status icons with active caption & hover tip
+      var bar=document.createElement('div'); bar.className='group--status';
+      STATUS.forEach(function(st){
+        var btn=document.createElement('button'); btn.className='sbtn has-tip '+colorClass(st); setTip(btn, st);
+        if(c.status===st) btn.classList.add('active');
+        var ico=document.createElement('span'); ico.className='ico status-icon'; ico.textContent=STATUS_ICON[st] || '•';
+        var cap=document.createElement('span'); cap.className='label'; cap.textContent=STATUS_ABBR[st] || st;
+        btn.appendChild(ico); btn.appendChild(cap);
+        btn.addEventListener('click', function(){ setStatus(c,st); });
+        bar.appendChild(btn);
+      });
 
-    // Hot Lead toggle button
-    var hotBtn=document.createElement('button'); hotBtn.className='sbtn has-tip s-hot'; setTip(hotBtn, 'Hot lead (pin to top)');
-    if(c.hot) hotBtn.classList.add('active');
-    var hotIco=document.createElement('span'); hotIco.className='ico'; hotIco.textContent='🔥';
-    var hotCap=document.createElement('span'); hotCap.className='label'; hotCap.textContent='Hot';
-    hotBtn.appendChild(hotIco); hotBtn.appendChild(hotCap);
-    hotBtn.addEventListener('click', function(){ preserveUIAndRender(function(){ c.hot = !c.hot; }); });
-    bar.appendChild(hotBtn);
+      // Hot Lead toggle button
+      var hotBtn=document.createElement('button'); hotBtn.className='sbtn has-tip s-hot'; setTip(hotBtn, 'Hot lead (pin to top)');
+      if(c.hot) hotBtn.classList.add('active');
+      var hotIco=document.createElement('span'); hotIco.className='ico'; hotIco.textContent='🔥';
+      var hotCap=document.createElement('span'); hotCap.className='label'; hotCap.textContent='Hot';
+      hotBtn.appendChild(hotIco); hotBtn.appendChild(hotCap);
+      hotBtn.addEventListener('click', function(){ preserveUIAndRender(function(){ c.hot = !c.hot; }); });
+      bar.appendChild(hotBtn);
 
-    // Notes/Schedule/Archive/Delete (icon bar)
-    var iconbar = buildIconBar(c, notesWrap, ta);
+      // Notes/Schedule/Archive/Delete (icon bar)
+      var iconbar = buildIconBar(c, notesWrap, ta);
 
-    right.appendChild(quick); right.appendChild(bar); right.appendChild(iconbar);
-    row.appendChild(mid); row.appendChild(right);
+      right.appendChild(quick); right.appendChild(bar); right.appendChild(iconbar);
+      row.appendChild(mid); row.appendChild(right);
+    }
     
     // Hot lead row flair
     if(c.hot) {
