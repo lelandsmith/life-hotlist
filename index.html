@@ -28,6 +28,9 @@
     --green:#22c38b; --green-600:#16a374; --green-50:#0f2a22;
   }
   .bar{background:#2b335e}
+  .s-hot{background:#2b1d12;border-color:#8a4e21}
+  .sbtn.s-hot.active{background:#3a2618}
+  .hot-row{border-left-color:#fb923c}
 }
 
 /* base */
@@ -128,13 +131,27 @@ button:focus-visible{outline:none; box-shadow:var(--ring)}
 .row{
   display:grid; grid-template-columns:1fr auto; gap:10px;
   padding:12px 12px; border-bottom:1px dashed var(--line);
-  align-items:center; border-radius:12px;
+  align-items:center; border-radius:12px; position:relative;
 }
 .row:hover{background:color-mix(in oklab, var(--card) 92%, #eef2ff)}
 .row:last-child{border-bottom:none}
 .row.untouched{background:color-mix(in oklab, var(--card) 95%, #eef2ff)}
 .row.selected{outline:2px solid var(--info); box-shadow:var(--ring-strong)}
 .purchased{box-shadow:inset 0 0 0 999px var(--green-50)}
+
+/* Hot lead styling */
+.hot-row{
+  border-left:3px solid #fb923c;
+  background: linear-gradient(180deg, rgba(251,146,60,.06), transparent);
+}
+.hot-flames{
+  position:absolute;
+  left:12px;
+  bottom:6px;
+  font-size:16px;
+  opacity:.9;
+  pointer-events:none;
+}
 
 /* Left column */
 .leftcol{display:flex;flex-direction:column;gap:2px;justify-content:center}
@@ -185,6 +202,12 @@ button:focus-visible{outline:none; box-shadow:var(--ring)}
 .s-sig{background:#fff7f8;border-color:#fecdd3}
 .s-medq{background:#f6f5ff;border-color:#ddd6fe}
 .s-pur{background:#f3fbf6;border-color:#cfe9dc}
+.s-hot{background:#fff7ed;border-color:#fed7aa}
+.sbtn.s-hot.active{
+  outline:2px solid #fb923c;
+  background:#fff1e6;
+  opacity:1;
+}
 
 /* Tooltip (under icons) */
 .has-tip{position:relative}
@@ -332,7 +355,7 @@ body[data-density="compact"] .sbtn .label{font-size:9px; margin-top:2px}
           <div class="ribbon">Weekly calls: <b id="ribbonWeeklyCalls">0</b></div>
           <div class="ribbon">Streak: <b id="ribbonStreak">0</b> day(s)</div>
         </div>
-        <span class="muted small">Keys: ↑/↓ or J/K • 1–5 status • <b>0</b> clear status • N notes • A call • L message • <b>Shift+A/L</b> remove call/msg • <b>F</b> Today • <b>d</b> Tomorrow • Click a row to focus</span>
+        <span class="muted small">Keys: ↑/↓ or J/K • 1–5 status • <b>0</b> clear status • N notes • A call • L message • <b>Shift+A/L</b> remove call/msg • <b>H</b> hot lead • <b>F</b> Today • <b>d</b> Tomorrow • Click a row to focus</span>
       </div>
       <div class="controls">
         <div class="stack">
@@ -534,7 +557,7 @@ body[data-density="compact"] .sbtn .label{font-size:9px; margin-top:2px}
 
   /* Stable state */
   function coerceState(x){ var out={clients:[], quotes:{raw:'', list:[]}, quotesSettings:{interval:15, random:true, norepeat:true, recent:[]} }; if(!x) return out; if(Array.isArray(x)){ out.clients=x; return normalize(out); } if(typeof x==='object'){ if(Array.isArray(x.clients)) out.clients=x.clients; if(x.quotes) out.quotes=x.quotes; if(x.quotesSettings) out.quotesSettings=x.quotesSettings; return normalize(out);} return out; }
-  function normalize(state){ state.clients=(state.clients||[]).map(function(c){ return { id:c.id||uid(), name:c.name||'(Unnamed)', notes:(typeof c.notes==='string'?c.notes:''), status:c.status||'', lastTouch:c.lastTouch||nowISO(), createdAt:c.createdAt||c.lastTouch||nowISO(), archived:!!c.archived, followUp:(typeof c.followUp==='string'?c.followUp:''), callCount:(isFinite(c.callCount)?c.callCount:0), msgCount:(isFinite(c.msgCount)?c.msgCount:0), queueToday:!!c.queueToday, queueTomorrow:!!c.queueTomorrow, history:Array.isArray(c.history)? c.history.filter(Boolean).map(function(h){ return {id:(h.id||uid()), ts:(h.ts||nowISO()), action:(h.action||'status'), to:(h.to!=null?h.to:''), kind:(h.kind!=null?h.kind:'')}; }) : [] }; }); state.quotes = state.quotes || {raw:'', list:[]}; if(!Array.isArray(state.quotes.list)) state.quotes.list=[]; state.quotesSettings = state.quotesSettings || {interval:15, random:true, norepeat:true, recent:[]}; if(!Array.isArray(state.quotesSettings.recent)) state.quotesSettings.recent=[]; return state; }
+  function normalize(state){ state.clients=(state.clients||[]).map(function(c){ return { id:c.id||uid(), name:c.name||'(Unnamed)', notes:(typeof c.notes==='string'?c.notes:''), status:c.status||'', lastTouch:c.lastTouch||nowISO(), createdAt:c.createdAt||c.lastTouch||nowISO(), archived:!!c.archived, followUp:(typeof c.followUp==='string'?c.followUp:''), callCount:(isFinite(c.callCount)?c.callCount:0), msgCount:(isFinite(c.msgCount)?c.msgCount:0), queueToday:!!c.queueToday, queueTomorrow:!!c.queueTomorrow, hot:!!c.hot, history:Array.isArray(c.history)? c.history.filter(Boolean).map(function(h){ return {id:(h.id||uid()), ts:(h.ts||nowISO()), action:(h.action||'status'), to:(h.to!=null?h.to:''), kind:(h.kind!=null?h.kind:'')}; }) : [] }; }); state.quotes = state.quotes || {raw:'', list:[]}; if(!Array.isArray(state.quotes.list)) state.quotes.list=[]; state.quotesSettings = state.quotesSettings || {interval:15, random:true, norepeat:true, recent:[]}; if(!Array.isArray(state.quotesSettings.recent)) state.quotesSettings.recent=[]; return state; }
   function load(){ try{ var cur=JSON.parse(localStorage.getItem(STABLE_KEY)||'null'); if(cur) return coerceState(cur);}catch(e){} var fresh={clients:[], quotes:{raw:'', list:[]}, quotesSettings:{interval:15, random:true, norepeat:true, recent:[]}}; localStorage.setItem(STABLE_KEY, JSON.stringify(fresh)); return fresh; }
   function save(data){ localStorage.setItem(STABLE_KEY, JSON.stringify(data)); }
   var state = load();
@@ -556,7 +579,7 @@ body[data-density="compact"] .sbtn .label{font-size:9px; margin-top:2px}
   }
 
   /* CRUD / actions */
-  function addClient(name){ preserveUIAndRender(function(){ state.clients.push({id:uid(), name:name, notes:'', status:'', lastTouch:nowISO(), createdAt:nowISO(), archived:false, followUp:'', callCount:0, msgCount:0, queueToday:false, queueTomorrow:false, history:[]}); }); }
+  function addClient(name){ preserveUIAndRender(function(){ state.clients.push({id:uid(), name:name, notes:'', status:'', lastTouch:nowISO(), createdAt:nowISO(), archived:false, followUp:'', callCount:0, msgCount:0, queueToday:false, queueTomorrow:false, hot:false, history:[]}); }); }
   function setStatus(c,newStatus){ preserveUIAndRender(function(){ var when=nowISO(); c.status=newStatus; c.lastTouch=when; c.history.push({id:uid(), ts:when, action:'status', to:newStatus}); if(c.queueToday) c.queueToday=false; }); }
   function clearStatus(c){ preserveUIAndRender(function(){ c.status=''; }); }
   function incrementCall(c){ preserveUIAndRender(function(){ c.callCount=(c.callCount||0)+1; c.lastTouch=nowISO(); c.history.push({id:uid(), ts:nowISO(), action:'status', to:'Called'}); if(c.queueToday) c.queueToday=false; }); }
@@ -678,11 +701,31 @@ body[data-density="compact"] .sbtn .label{font-size:9px; margin-top:2px}
       bar.appendChild(btn);
     });
 
+    // Hot Lead toggle button
+    var hotBtn=document.createElement('button'); hotBtn.className='sbtn has-tip s-hot'; setTip(hotBtn, 'Hot lead (pin to top)');
+    if(c.hot) hotBtn.classList.add('active');
+    var hotIco=document.createElement('span'); hotIco.className='ico'; hotIco.textContent='🔥';
+    var hotCap=document.createElement('span'); hotCap.className='label'; hotCap.textContent='Hot';
+    hotBtn.appendChild(hotIco); hotBtn.appendChild(hotCap);
+    hotBtn.addEventListener('click', function(){ preserveUIAndRender(function(){ c.hot = !c.hot; }); });
+    bar.appendChild(hotBtn);
+
     // Notes/Schedule/Archive/Delete (icon bar)
     var iconbar = buildIconBar(c, notesWrap, ta);
 
     right.appendChild(quick); right.appendChild(bar); right.appendChild(iconbar);
     row.appendChild(mid); row.appendChild(right);
+    
+    // Hot lead row flair
+    if(c.hot) {
+      row.classList.add('hot-row');
+      var flames = document.createElement('div');
+      flames.className = 'hot-flames';
+      flames.setAttribute('aria-hidden','true');
+      flames.textContent = '🔥🔥';
+      row.appendChild(flames);
+    }
+    
     return row;
   }
 
@@ -730,7 +773,19 @@ body[data-density="compact"] .sbtn .label{font-size:9px; margin-top:2px}
   function isFutureFollowUp(c){ if(!c.followUp) return false; var t=new Date(c.followUp); return !isNaN(+t) && t>new Date(); }
 
   /* Root render */
-  function sortClients(arr){ var key=(ui.sortBy||'lastTouch'); if(key==='name'){ return arr.slice().sort(function(a,b){ return a.name.localeCompare(b.name); }); } return arr.slice().sort(function(a,b){ return new Date(b[key]||0)-new Date(a[key]||0); }); }
+  function sortClients(arr){ 
+    var key=(ui.sortBy||'lastTouch'); 
+    return arr.slice().sort(function(a,b){ 
+      // Prioritize hot leads first
+      if(a.hot !== b.hot) return a.hot ? -1 : 1;
+      
+      // Then apply the current sort key
+      if(key==='name'){ 
+        return a.name.localeCompare(b.name); 
+      } 
+      return new Date(b[key]||0)-new Date(a[key]||0); 
+    }); 
+  }
   function renderList(container, clients, opts){ opts=opts||{}; if(!container) return; container.innerHTML=''; var q=(els.globalSearch && els.globalSearch.value ? els.globalSearch.value : '').toLowerCase().trim(); var filtered = clients.filter(function(c){ if(els.showArchived && els.showArchived.checked ? !c.archived : c.archived) return false; if(els.statusFilter && els.statusFilter.value && c.status!==els.statusFilter.value) return false; if(q && !(c.name.toLowerCase().includes(q) || (c.notes||'').toLowerCase().includes(q) || (c.status||'').toLowerCase().includes(q))) return false; return true; }); sortClients(filtered).forEach(function(c){ var row=buildRow(c, opts.rowOpts||{}); container.appendChild(row); }); restoreSelection(); }
   function render(){ var activeAll=state.clients.filter(function(c){return !c.archived;}); var scheduled = activeAll.filter(isFutureFollowUp); var mainActive = activeAll.filter(function(c){ return !isFutureFollowUp(c) && !c.queueToday; }); var archived=state.clients.filter(function(c){return c.archived;}); renderKPIs(); renderPipeline(); renderGoals(); renderTrendRibbons(); renderList(els.list, mainActive); if(els.scheduledBlock && els.scheduledList){ if(scheduled.length){ els.scheduledBlock.classList.remove('hidden'); els.scheduledList.innerHTML=''; sortClients(scheduled).forEach(function(c){ var whenLabel=(new Date(c.followUp)).toLocaleString([], {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}); var row=buildRow(c, {whenLabel: whenLabel}); els.scheduledList.appendChild(row); }); } else { els.scheduledBlock.classList.add('hidden'); els.scheduledList.innerHTML=''; } } if(els.showArchived && els.showArchived.checked){ els.archivedBlock.classList.remove('hidden'); renderList(els.archivedList, archived); } else { els.archivedBlock.classList.add('hidden'); els.archivedList && (els.archivedList.innerHTML=''); } els.todayDate && (els.todayDate.textContent=new Date().toLocaleDateString([], {weekday:'long',month:'long',day:'numeric',year:'numeric'})); renderActivity(); renderChart(); renderHeatmap(); renderNextToTouch(); renderFollowUps(); renderTodayHit(); renderTomorrowList(); renderQuote(false); }
 
@@ -832,9 +887,33 @@ body[data-density="compact"] .sbtn .label{font-size:9px; margin-top:2px}
       } 
     }
     if(key==='n' || key==='N'){ var rows2=allRows(); var row=rows2[selectionIndex]; if(!row) return; var ta=row.querySelector('textarea'); var wrap=row.querySelector('.notes'); if(wrap){ wrap.classList.toggle('hidden'); if(!wrap.classList.contains('hidden') && ta) ta.focus(); } e.preventDefault(); }
+    if(key==='h' || key==='H'){ var cHot=getSelectedClient(); if(cHot){ preserveUIAndRender(function(){ cHot.hot = !cHot.hot; }); e.preventDefault(); } }
 
-    if(key==='F' || key==='f'){ var c4=getSelectedClient() || state.clients.find(function(c){return !c.archived && !isFutureFollowUp(c) && !c.queueToday && !c.queueTomorrow;}); if(c4){ toggleQueueToday(c4); e.preventDefault(); } }
-    if(key==='d' || key==='D'){ var c5=getSelectedClient() || state.clients.find(function(c){return !c.archived && !isFutureFollowUp(c) && !c.queueToday && !c.queueTomorrow;}); if(c5){ toggleQueueTomorrow(c5); e.preventDefault(); } }
+    if(key==='F' || key==='f'){ 
+      var c4=getSelectedClient() || state.clients.find(function(c){return !c.archived && !isFutureFollowUp(c) && !c.queueToday && !c.queueTomorrow;}); 
+      if(c4){ 
+        // Preserve position instead of client ID for F key
+        var currentIndex = selectionIndex;
+        var prevDocY=window.scrollY, prevActY=els.activity?els.activity.scrollTop:0;
+        withUndo(function(){ c4.queueToday = !c4.queueToday; if(c4.queueToday && c4.queueTomorrow) c4.queueTomorrow=false; });
+        save(state); render();
+        // Restore position, not client
+        selectionIndex = currentIndex;
+        var rows = allRows();
+        if(selectionIndex >= rows.length) selectionIndex = Math.max(0, rows.length - 1);
+        restoreSelection();
+        window.scrollTo(0,prevDocY); if(els.activity) els.activity.scrollTop=prevActY;
+        e.preventDefault(); 
+      } 
+    }
+    if(key==='d' || key==='D'){ 
+      var c5=getSelectedClient() || state.clients.find(function(c){return !c.archived && !isFutureFollowUp(c) && !c.queueToday && !c.queueTomorrow;}); 
+      if(c5){ 
+        toggleQueueTomorrow(c5); 
+        // Client stays in main list but gets Tomorrow label, so selection stays the same
+        e.preventDefault(); 
+      } 
+    }
 
     // Undo (U) / placeholder Redo (R)
     if(key==='u' || key==='U'){ var prev=undoStack.pop(); if(prev){ state=coerceState(JSON.parse(prev)); save(state); render(); } }
