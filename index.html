@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Life Hotlist</title>
+<style>
+  :root{
+  /* Brand & neutrals */
+  --green:#0e7a5a; --green-600:#0a5e46; --green-50:#e9f5ee;
+  --bg:#f6f7fb; --card:#ffffff; --ink:#0f172a; --muted:#6b7280; --line:#e6e9f2;
+  --shadow:0 10px 24px rgba(15,23,42,.06), 0 2px 6px rgba(15,23,42,.04);
+  --orange:#f59e0b; --red:#dc2626; --blue:#4f79ff;
+  --success:#10b981; --info:#60a5fa; --warning:#fbbf24;
+  --radius:14px;
+
+  /* Elevation tokens */
+  --ring:0 0 0 2px rgba(99,102,241,.15);
+  --ring-strong:0 0 0 3px rgba(99,102,241,.25);
+}
+
+/* Dark mode (automatic) */
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0f1220; --card:#16192a; --ink:#e6e9f5; --muted:#98a2b3; --line:#232846;
+    --shadow:0 10px 24px rgba(0,0,0,.35), 0 2px 6px rgba(0,0,0,.25);
+    --green:#22c38b; --green-600:#16a374; --green-50:#0f2a22;
+  }
+  .bar{background:#2b335e}
+}
+
+/* base */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:linear-gradient(180deg, var(--bg), color-mix(in oklab, var(--bg) 85%, #fff));
+  color:var(--ink);
+  font:14px/1.45 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial;
+  letter-spacing:.15px;
+}
+
+/* Layout shell */
+.app{
+  display:grid; grid-template-columns:1fr minmax(330px, 400px); grid-template-areas:"main side";
+  gap:14px; padding:14px; max-width:1600px; margin:0 auto; min-height:100vh;
+}
+.app > section.card{grid-area:main}
+.app > aside.card{grid-area:side}
+.app.leftbar{grid-template-columns:400px 1fr;grid-template-areas:"side main"}
+.app.no-side{grid-template-columns:1fr; grid-template-areas:"main"}
+.app.no-side > aside{display:none !important}
+
+/* Card */
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  box-shadow:var(--shadow);
+  padding:14px;
+  border-radius:var(--radius);
+  min-width:0;
+}
+
+/* Header */
+header{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
+h1{
+  text-transform:uppercase;
+  letter-spacing:.6px;
+  font-size:18pt;
+  font-weight:800;
+  margin:0;
+}
+.muted{color:var(--muted)} .small{font-size:12px}
+.error-banner{
+  display:none;background:#fff3f3;color:#7f1d1d;border:1px solid #fecaca;
+  padding:8px 10px;margin:8px 0;border-radius:10px
+}
+
+/* Inputs & buttons */
+input,textarea,select,button{
+  border:1px solid var(--line);
+  border-radius:10px;
+  font-size:14px;
+  background:#fff;
+  color:var(--ink);
+  transition:.15s ease;
+}
+input[type=text],input[type=number]{padding:8px 10px}
+select{padding:7px 10px;background:linear-gradient(#fff, #f8fafc)}
+button{
+  cursor:pointer;padding:8px 12px;background:linear-gradient(#fff, #f8fafc);
+  box-shadow:0 1px 0 rgba(15,23,42,.04);
+}
+button:hover{transform:translateY(-1px);box-shadow:0 6px 14px rgba(15,23,42,.08)}
+button:focus-visible{outline:none; box-shadow:var(--ring)}
+.btn-primary{
+  background:linear-gradient(180deg, var(--green), color-mix(in oklab, var(--green) 85%, black));
+  border-color:var(--green-600); color:#fff;
+}
+.btn-min{padding:5px 10px;font-size:12px}
+.btn-min.gray{background:#f8fafc;border-color:#cbd5e1;color:#334155}
+
+/* Ribbons & KPIs */
+.ribbons{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.ribbon{
+  background:linear-gradient(180deg,#fffbe6,#fff4c2);
+  border:1px solid #fde68a;
+  font-size:11px;padding:4px 8px;border-radius:999px
+}
+.kpis{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0}
+.pill{
+  background:#f8fafc;border:1px solid var(--line);
+  padding:6px 10px;font-size:12px;border-radius:999px
+}
+.pill b{margin-right:6px}
+
+/* Controls */
+.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.controls .stack{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+/* Table head & rows */
+.table-head{
+  display:grid;grid-template-columns:1fr auto;gap:10px;padding:10px 12px;
+  border-bottom:1px solid var(--line);font-size:12px;color:#4b5563;
+  background:color-mix(in oklab, var(--card) 92%, #eef2ff); border-radius:12px
+}
+.row{
+  display:grid; grid-template-columns:1fr auto; gap:10px;
+  padding:12px 12px; border-bottom:1px dashed var(--line);
+  align-items:center; border-radius:12px;
+}
+.row:hover{background:color-mix(in oklab, var(--card) 92%, #eef2ff)}
+.row:last-child{border-bottom:none}
+.row.untouched{background:color-mix(in oklab, var(--card) 95%, #eef2ff)}
+.row.selected{outline:2px solid var(--info); box-shadow:var(--ring-strong)}
+.purchased{box-shadow:inset 0 0 0 999px var(--green-50)}
+
+/* Left column */
+.leftcol{display:flex;flex-direction:column;gap:2px;justify-content:center}
+.stamp{font-variant-numeric:tabular-nums;color:#6b7390;font-size:12px}
+.lastmeta{font-size:11px;color:#6b7390}
+
+.name-line{display:flex;gap:10px;align-items:center;min-width:0;flex-wrap:wrap}
+.name{font-weight:850;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:none}
+.touchCount{opacity:.55;font-size:11px;margin-left:4px;flex:0 0 auto}
+.status-icons{display:flex;gap:6px;align-items:center;flex:0 0 auto}
+.status-icon{font-size:22px;line-height:1}
+.notes-preview{font-size:12px;color:#6b7390;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; margin-left:11px;}
+
+/* Action groups */
+.actions-wrap{
+  display:flex;align-items:center;justify-content:flex-start;flex-wrap:nowrap;overflow:visible;
+  column-gap:24px; flex-shrink:0;
+}
+.group--quick{display:flex;gap:10px;align-items:center; margin-right:18px;}
+.group--status{display:flex;gap:12px;align-items:center; margin-right:18px;}
+.group--icons{display:flex;gap:10px;align-items:center}
+
+/* Quick counters */
+.qbtn{
+  position:relative;border:1px solid var(--line);padding:8px 12px;border-radius:12px;
+  background:#fff;font-size:16px;line-height:1;display:inline-flex;align-items:center;justify-content:center;min-width:46px
+}
+.qbtn .badge{
+  position:absolute;right:-6px;bottom:-8px;background:#fff;border:1px solid #cbd5e1;
+  border-radius:10px;font-size:10px;line-height:1;padding:2px 5px; box-shadow:0 2px 6px rgba(15,23,42,.08)
+}
+.badge[data-zero="1"]{display:none}
+
+/* Status buttons */
+.sbtn{
+  position:relative; border:1px solid var(--line); padding:8px 10px; border-radius:12px;
+  font-size:11px; background:#fff; white-space:nowrap; display:inline-flex; align-items:center; justify-content:center; opacity:.7;
+  flex-direction:column; min-width:50px; transition:.15s ease;
+}
+.sbtn:hover{opacity:1; transform:translateY(-1px)}
+.sbtn:focus-visible{outline:none; box-shadow:var(--ring)}
+.sbtn .ico{font-size:18px;line-height:1}
+.sbtn .label{display:none;font-size:10px;line-height:1;margin-top:3px;text-align:center}
+.sbtn.active{outline:2px solid var(--green);opacity:1; background:color-mix(in oklab, var(--green-50) 50%, #fff)}
+.sbtn.active .label{display:block}
+.s-quote{background:#fffdf6;border-color:#fde68a}
+.s-app{background:#f7fdf9;border-color:#ccebd9}
+.s-sig{background:#fff7f8;border-color:#fecdd3}
+.s-medq{background:#f6f5ff;border-color:#ddd6fe}
+.s-pur{background:#f3fbf6;border-color:#cfe9dc}
+
+/* Tooltip (under icons) */
+.has-tip{position:relative}
+.has-tip::after{
+  content:attr(data-tip);
+  position:absolute; left:50%; transform:translateX(-50%);
+  top:calc(100% + 6px); opacity:0; pointer-events:none;
+  background:#111827; color:#fff; font-size:10px; line-height:1;
+  padding:6px 8px; border-radius:6px; white-space:nowrap;
+  box-shadow:0 6px 18px rgba(15,23,42,.18);
+  transition:opacity .12s ease, transform .12s ease;
+}
+.has-tip:hover::after{opacity:.95; transform:translateX(-50%) translateY(2px)}
+
+/* Schedule dropdown */
+.sched-menu{
+  position:absolute; z-index:1000; min-width:200px;
+  background:var(--card); border:1px solid var(--line); box-shadow:var(--shadow);
+  padding:6px; display:flex; flex-direction:column; border-radius:12px;
+}
+.sched-menu button{
+  border:none; background:none; padding:10px 12px; text-align:left;
+  font-size:14px; cursor:pointer; color:var(--ink); border-radius:10px;
+}
+.sched-menu button:hover{background:#f1f5ff; transform:none; box-shadow:none;}
+
+/* Notes area */
+.notes{display:grid;margin-top:6px}
+.notes textarea{
+  min-height:64px;resize:vertical;padding:10px;border-radius:12px;background:#fff;
+  box-shadow:inset 0 1px 0 rgba(15,23,42,.04)
+}
+.hidden{display:none}
+
+/* Aging & touched badges */
+.age-badge{
+  display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;
+  font-size:11px;font-weight:800;color:#fff;flex:0 0 auto; box-shadow:0 2px 6px rgba(15,23,42,.16)
+}
+.age-badge.orange{background:var(--orange)}
+.age-badge.red{background:var(--red)}
+.age-badge.sm{width:16px;height:16px;font-size:10px}
+.touched-badge{width:18px;height:18px;border-radius:50%;background:var(--success);display:inline-flex}
+
+/* Sidebar & widgets */
+.sidebar{overflow-x:hidden;overflow-y:auto;max-height:calc(100vh - 28px)}
+.sidebar h2{margin:0 0 8px;font-size:14px;font-weight:700}
+.widget{margin-top:12px;padding-top:8px;border-top:1px dashed var(--line)}
+.widget[draggable="true"]{cursor:grab}
+.widget.dragging{opacity:.85}
+.widget.drag-over{outline:2px dashed var(--info); border-radius:12px}
+.widget-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.widget-title{font-size:14px;margin:0}
+.widget-actions{display:flex;gap:6px;align-items:center}
+.collapse-btn{font-size:14px;line-height:1;padding:4px 8px;width:28px;text-align:center;border-radius:10px}
+.collapse-btn::after{content:"–"}
+.widget-body.hidden{display:none}
+
+/* Activity */
+.activity{max-height:30vh;overflow:auto}
+.activity .item{
+  display:grid;grid-template-columns:56px 1fr;gap:8px;padding:8px 0;border-bottom:1px dashed var(--line);position:relative
+}
+.activity .item:last-child{border-bottom:none}
+.activity .undo{
+  position:absolute;right:0;top:50%;transform:translateY(-50%);
+  opacity:0;transition:opacity .12s;background:#e8f0ff;border:1px solid #cbd5e1;color:#0f172a;
+  padding:5px 8px;font-size:11px;cursor:pointer;border-radius:10px
+}
+.activity .item:hover .undo{opacity:1}
+
+/* Micro viz */
+.chart{height:100px;display:flex;gap:6px;align-items:flex-end;margin-top:8px}
+.bar{flex:1;background:#dbe6ff;border-radius:6px 6px 0 0}
+.barlab{font-size:10px;color:#6b7390;text-align:center;margin-top:4px}
+.heatmap{display:grid;grid-template-columns:repeat(13,10px);gap:4px}
+.cell{width:10px;height:10px;background:#eef2ff;border:1px solid #e5e7eb;border-radius:2px}
+.cell.l1{background:#dbeafe}.cell.l2{background:#bfdbfe}.cell.l3{background:#93c5fd}.cell.l4{background:#60a5fa}
+
+/* Lists in sidebar */
+.nextlist,.followups{display:grid;gap:8px}
+.nextitem,.followitem{
+  display:flex;justify-content:space-between;align-items:center;border:1px dashed var(--line);
+  padding:6px 8px;background:#fff;border-radius:12px
+}
+
+/* Quote */
+.quote{font-style:italic;color:#334155;font-size:15px;padding:8px;border-radius:12px;background:color-mix(in oklab, var(--card) 92%, #f0f4ff)}
+.quote small{display:block;color:#6b7280;margin-top:4px}
+
+/* Today queue */
+.queue-block{margin:10px 0 12px;padding:8px;border:1px dashed var(--line);background:#fff;border-radius:12px}
+.queue-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.queue-title{font-weight:800}
+
+/* Icon buttons row (📝 📅 📂 🗑) */
+.iconbtn{
+  position:relative;border:1px solid var(--line);background:#fff;
+  cursor:pointer;font-size:16px;line-height:1;padding:8px 10px;
+  display:inline-flex;align-items:center;justify-content:center;min-width:42px;border-radius:12px
+}
+.iconbtn:focus-visible{outline:none; box-shadow:var(--ring)}
+
+/* Chips */
+.tag-chip{
+  display:inline-block;border:1px solid #cbd5e1;background:#f8fafc;font-size:11px;
+  padding:2px 6px;margin-left:4px;white-space:nowrap;flex-shrink:0;border-radius:999px
+}
+
+/* Density switch */
+body[data-density="comfortable"] .row{padding:12px 12px}
+body[data-density="comfortable"] .name{font-size:16px}
+
+body[data-density="compact"] .row{padding:5px 8px}
+body[data-density="compact"] .name{font-size:14px}
+body[data-density="compact"] .notes-preview{font-size:11px}
+body[data-density="compact"] .group--quick{gap:6px; margin-right:6px}
+body[data-density="compact"] .group--status{gap:6px; margin-right:6px}
+body[data-density="compact"] .iconbtn{min-width:34px; padding:4px 6px; font-size:14px}
+body[data-density="compact"] .qbtn{min-width:36px; padding:4px 6px; font-size:14px}
+body[data-density="compact"] .sbtn{min-width:38px; padding:4px 6px}
+body[data-density="compact"] .sbtn .ico{font-size:16px}
+body[data-density="compact"] .sbtn .label{font-size:9px; margin-top:2px}
+
+/* Responsive */
+@media (max-width:1150px){
+  .app{grid-template-columns:1fr;grid-template-areas:"main" "side";padding:10px}
+  .table-head,.row{grid-template-columns:1fr}
+  .actions-wrap{justify-content:flex-start}
+  .sidebar{max-height:52vh}
+}
+
+</style>
+</head>
+<body>
+<div class="app" id="appRoot">
+  <!-- ===== MAIN LIST ===== -->
+  <section class="card">
+    <header>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <h1>Life Hotlist</h1>
+        <div id="errorBanner" class="error-banner"></div>
+        <div class="ribbons" id="trendRibbons">
+          <div class="ribbon">Purchased: <b id="ribbonPurchased">0</b></div>
+          <div class="ribbon">Weekly calls: <b id="ribbonWeeklyCalls">0</b></div>
+          <div class="ribbon">Streak: <b id="ribbonStreak">0</b> day(s)</div>
+        </div>
+        <span class="muted small">Keys: ↑/↓ or J/K • 1–5 status • <b>0</b> clear status • N notes • A call • L message • <b>Shift+A/L</b> remove call/msg • <b>F</b> Today • <b>d</b> Tomorrow • Click a row to focus</span>
+      </div>
+      <div class="controls">
+        <div class="stack">
+          <input id="globalSearch" type="text" placeholder="Search…  ⏎ to quick-add" style="min-width:240px" />
+          <label class="small">Sort
+            <select id="sortBy">
+              <option value="lastTouch">Last touched</option>
+              <option value="createdAt">Date added</option>
+              <option value="name">Name</option>
+            </select>
+          </label>
+          <label class="small">Density
+            <select id="densitySelect">
+              <option value="comfortable">Comfortable</option>
+              <option value="compact">Compact</option>
+            </select>
+          </label>
+          <!-- Move left/right stays in JS; new hide/show button below -->
+          <button id="toggleSidebarBtn" class="btn-min gray" title="Hide or Show the Sidebar Widgets">Hide Sidebar</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- KPIs above Today's container -->
+    <div class="kpis" id="kpis"></div>
+
+    <!-- Today wrapper -->
+    <div id="todayHitBlock" class="queue-block hidden">
+      <div class="queue-head">
+        <div class="queue-title">Today</div>
+        <div class="small muted">Queued for today. Items drop out automatically after contact.</div>
+      </div>
+      <div class="table-head" id="todayTableHead" style="display:none">
+        <div>Client • Notes</div><div>Actions</div>
+      </div>
+      <div id="todayHitList"></div>
+    </div>
+
+    <div class="table-head">
+      <div>Client • Notes</div>
+      <div>Actions</div>
+    </div>
+    <div id="list"></div>
+
+    <div id="scheduledBlock" class="section hidden">
+      <h2>Scheduled</h2>
+      <div class="table-head"><div>Client • Notes</div><div>Actions</div></div>
+      <div id="scheduledList"></div>
+    </div>
+
+    <div id="archivedBlock" class="hidden section">
+      <h2>Archived</h2>
+      <div id="archivedList"></div>
+    </div>
+  </section>
+
+  <!-- ===== SIDEBAR WIDGETS ===== -->
+  <aside class="card sidebar" id="sidebarWidgets">
+    <div class="widget" data-key="powerHour" draggable="true">
+      <div class="widget-head"><h2 class="widget-title">Power Hour</h2><div class="widget-actions"><button class="btn-min gray" id="hopReset">Reset</button></div></div>
+      <div class="widget-body"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div><span id="hopClock" class="small muted">01:00:00</span></div><div class="small muted">Calls this session: <b id="hopCalls">0</b></div></div><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><button class="btn-primary" id="hopStart">Start</button><button class="btn-min gray" id="hopPause">Pause</button></div></div>
+    </div>
+
+    <div class="widget" data-key="filters" draggable="true">
+      <div class="widget-head"><h2 class="widget-title">Filters</h2><div class="widget-actions"><button class="btn-min gray collapse-btn" data-collapse title="Collapse"></button></div></div>
+      <div class="widget-body"><div style="display:grid;gap:6px">
+        <label>Status
+          <select id="statusFilter"><option value="">Any status</option><option>Sent Quote</option><option>Sent Application</option><option>Pending Application Signature</option><option>Pending Medical Questionnaire</option><option>Purchased</option></select>
+        </label>
+        <label><input id="showArchived" type="checkbox" /> Show archived</label>
+        <label class="small"><input id="groupToggle" type="checkbox" /> Group today's activity by client</label>
+        <label class="small">Aging threshold (business days)
+          <select id="ageDays"><option>2</option><option selected>4</option><option>6</option><option>8</option></select>
+        </label>
+      </div></div>
+    </div>
+
+    <div class="widget" data-key="followups" draggable="true">
+      <div class="widget-head"><h2 class="widget-title">Follow Ups</h2><div class="widget-actions"><button class="btn-min gray collapse-btn" data-collapse title="Collapse"></button></div></div>
+      <div class="widget-body"><div id="followList" class="followups"></div></div>
+    </div>
+
+    <div class="widget" data-key="summaryReport" draggable="true">
+      <div class="widget-head"><h2 class="widget-title">Summary Report</h2><div class="widget-actions"><button class="btn-min gray" id="emailSummaryBtn">Email Summary</button><button class="btn-min gray collapse-btn" data-collapse title="Collapse"></button></div></div>
+      <div class="widget-body"><div style="display:flex;justify-content:space-between;align-items:center"><div><select id="reportRange"><option value="1">1d</option><option value="7" selected>7d</option><option value="14">14d</option><option value="30">30d</option><option value="60">60d</option><option value="90">90d</option></select></div></div></div>
+    </div>
+
+    <div class="widget" data-key="activityChart" draggable="true">
+      <div class="widget-head"><h2 class="widget-title">Activity Chart</h2><div class="widget-actions"><button class="btn-min gray collapse-btn" data-collapse title="Collapse"></button></div></div>
+      <div class="widget-body"><div style="display:flex;justify-content:space-between;align-items:center"><select id="chartRange"><option value="1">1d</option><option value="7" selected>7d</option><option value="14">14d</option><option value="30">30d</option><option value="60">60d</option><option value="90">90d</option></select></div><div id="chart" class="chart"></div></div>
+    </div>
+
+    <div class="widget" data-key="heatmap" draggable="true">
+      <div class="widget-head"><h2 class="widget-title">Heatmap (90d)</h2><div class="widget-actions"><button class="btn-min gray collapse-btn" data-collapse title="Collapse"></button></div></div>
+      <div class="widget-body"><div id="heatmap" class="heatmap"></div></div>
+    </div>
+
+    <div class="widget" data-key="goalsStreak" draggable="true">
+      <div class="widget-head"><h2 class="widget-title">Goals & Streaks</h2><div class="widget-actions"><button class="btn-min gray collapse-btn" data-collapse title="Collapse"></button></div></div>
+      <div class="widget-body"><div class="small" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">Weekly Calls Goal: <input id="goalCalls" type="number" value="20" style="width:80px" /> <button class="btn-min gray" id="saveGoal">Save</button> <span class="small muted">(progress resets weekly)</span></div><div style="margin-top:6px"><div id="goalBar" style="height:8px;background:#eef2ff;border:1px solid #cbd5e1;position:relative"><div id="goalFill" style="height:100%;width:0%;background:#60a5fa"></div></div><div class="small muted" id="goalLabel" style="margin-top:4px"></div></div><div class="small" style="margin-top:6px">Streak: <b id="streakDays">0</b> day(s)</div></div>
+    </div>
+
+    <div class="widget" data-key="pipeline" draggable="true">
+      <div class="widget-head"><h2 class="widget-title">Pipeline</h2><div class="widget-actions"><button class="btn-min gray collapse-btn" data-collapse title="Collapse"></button></div></div>
+      <div class="widget-body"><div id="pipeline" class="small"></div></div>
+    </div>
+
+    <div class="widget" data-key="nextTouch" draggable="true">
+      <div class="widget-head"><h2 class="widget-title">Next to Touch</h2><div class="widget-actions"><button class="btn-min gray collapse-btn" data-collapse title="Collapse"></button></div></div>
+      <div class="widget-body"><div id="nextList" class="nextlist"></div></div>
+    </div>
+
+    <div class="widget" data-key="tomorrowListWidget" draggable="true">
+      <div class="widget-head"><h2 class="widget-title">Tomorrow’s List</h2><div class="widget-actions"><button class="btn-min gray collapse-btn" data-collapse title="Collapse"></button></div></div>
+      <div class="widget-body"><div id="tomorrowList" class="nextlist"></div></div>
+    </div>
+
+    <div class="widget" data-key="todayActivity" draggable="true">
+      <div class="widget-head"><h2 class="widget-title">Today's Activity</h2><div class="widget-actions"><button class="btn-min gray" id="emailTodayDetailBtn">Email Today</button><button class="btn-min gray collapse-btn" data-collapse title="Collapse"></button></div></div>
+      <div class="widget-body"><div class="small muted" id="todayDate"></div><div class="activity" id="activity"></div></div>
+    </div>
+
+    <div class="widget" data-key="motivation" draggable="true">
+      <div class="widget-head"><h2 class="widget-title">Motivation</h2><div class="widget-actions"><button class="btn-min gray" id="quotesEditBtn">Edit quotes</button><button class="btn-min gray" id="quotesNextBtn">Next</button><button class="btn-min gray collapse-btn" data-collapse title="Collapse"></button></div></div>
+      <div class="widget-body"><div id="quoteView" class="quote">Add quotes to get started.</div><div class="small muted" id="quoteMeta" style="margin-top:4px"></div><div id="quoteEditor" class="hidden" style="margin-top:8px"><div class="small muted" style="margin-bottom:4px">One quote per line. Blank lines ignored.</div><textarea id="quotesTextarea" style="width:100%;min-height:120px"></textarea><div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px"><div class="small muted">Rotate every <select id="quoteInterval"><option value="5">5</option><option value="10">10</option><option value="15" selected>15</option><option value="30">30</option><option value="60">60</option></select> min • <label><input type="checkbox" id="quoteRandom" checked> Shuffle</label> • <label><input type="checkbox" id="quoteNoRepeat" checked> Avoid repeats</label></div><div><button class="btn-primary" id="quotesSaveBtn">Save</button><button class="btn-min gray" id="quotesCancelBtn">Cancel</button></div></div></div></div>
+    </div>
+  </aside>
+</div>
+
+<!-- Part B goes right below -->
+<!-- Part B — JS logic (save as part-b.js or inline under Part A) -->
+<script>
+(function(){
+  /* =========================
+   *  Constants & helpers
+   * ========================= */
+  var STABLE_KEY='hotlistStable';
+  var UI_KEY='hotlistUI';
+
+  var STATUS=['Sent Quote','Sent Application','Pending Application Signature','Pending Medical Questionnaire','Purchased'];
+  var STATUS_ABBR={'Sent Quote':'Quote','Sent Application':'App','Pending Application Signature':'SigPend','Pending Medical Questionnaire':'MedQ','Purchased':'Purchased'};
+  var STATUS_ICON={'Sent Quote':'\uD83E\uDD7E','Sent Application':'\uD83D\uDCDD','Pending Application Signature':'\u270D\uFE0F','Pending Medical Questionnaire':'\uD83E\uDDEA','Purchased':'\u2705'};
+  var EMOJI_CALL='\uD83D\uDCDE';
+  var EMOJI_MSG ='\uD83D\uDCAC';
+  var CLAP      ='\uD83D\uDC4F';
+
+  function $(sel,root){ return (root||document).querySelector(sel); }
+  function $all(sel,root){ return [].slice.call((root||document).querySelectorAll(sel)); }
+  function nowISO(){ return new Date().toISOString(); }
+  function startOfDay(d){ var x=new Date(d); x.setHours(0,0,0,0); return x; }
+  function addDays(d,n){ var x=new Date(d); x.setDate(x.getDate()+n); return x; }
+  function isWithin(ts,start,end){ var t=new Date(ts); return t>=start && t<end; }
+  function isToday(ts){ return new Date(ts).toDateString()===new Date().toDateString(); }
+  function fmtDay(ts){ var d=new Date(ts); return (d.getMonth()+1)+'/'+d.getDate(); }
+  function fmtTime(ts){ return new Date(ts).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); }
+  function last(arr){ return arr && arr.length ? arr[arr.length-1] : null; }
+  function uid(){ return 'h_'+Math.random().toString(36).slice(2)+Date.now().toString(36); }
+  function escapeHtml(s){ s=String(s==null?'':s); return s.replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]; }); }
+  function businessDaysSince(ts){ var start=startOfDay(new Date(ts)), end=startOfDay(new Date()), days=0, d=new Date(start); for(; d<end; d.setDate(d.getDate()+1)){ var wd=d.getDay(); if(wd!==0 && wd!==6) days++; } return days; }
+  function toLocalInputValue(iso){ if(!iso) return ''; var d=new Date(iso); var pad=function(n){return String(n).padStart(2,'0');}; return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'T'+pad(d.getHours())+':'+pad(d.getMinutes()); }
+  function fromLocalInputValue(val){ if(!val) return ''; var d=new Date(val); if(isNaN(+d)) return ''; return d.toISOString(); }
+
+  /* Elements */
+  var els={
+    appRoot:$('#appRoot'),
+    list:$('#list'), archivedList:$('#archivedList'), archivedBlock:$('#archivedBlock'),
+    kpis:$('#kpis'),
+    globalSearch:$('#globalSearch'), sortBy:$('#sortBy'),
+    statusFilter:$('#statusFilter'), showArchived:$('#showArchived'),
+    ageDays:$('#ageDays'), groupToggle:$('#groupToggle'),
+    emailSummaryBtn:$('#emailSummaryBtn'), reportRangeSel:$('#reportRange'),
+    chart:$('#chart'), chartRangeSel:$('#chartRange'), heatmap:$('#heatmap'),
+    todayDate:$('#todayDate'), activity:$('#activity'), emailTodayDetailBtn:$('#emailTodayDetailBtn'),
+    hopStart:$('#hopStart'), hopPause:$('#hopPause'), hopReset:$('#hopReset'), hopClock:$('#hopClock'), hopCalls:$('#hopCalls'),
+    goalCalls:$('#goalCalls'), saveGoal:$('#saveGoal'), goalFill:$('#goalFill'), goalLabel:$('#goalLabel'),
+    pipeline:$('#pipeline'), nextList:$('#nextList'), followList:$('#followList'),
+    quoteView:$('#quoteView'), quoteMeta:$('#quoteMeta'), quotesEditBtn:$('#quotesEditBtn'),
+    quotesNextBtn:$('#quotesNextBtn'), quoteEditor:$('#quoteEditor'), quotesTextarea:$('#quotesTextarea'),
+    quoteInterval:$('#quoteInterval'), quoteRandom:$('#quoteRandom'), quoteNoRepeat:$('#quoteNoRepeat'),
+    quotesSaveBtn:$('#quotesSaveBtn'), quotesCancelBtn:$('#quotesCancelBtn'),
+    sidebar:$('#sidebarWidgets'),
+    todayHitBlock:$('#todayHitBlock'), todayHitList:$('#todayHitList'), todayTableHead:$('#todayTableHead'),
+    tomorrowList:$('#tomorrowList'),
+    ribbonPurchased:$('#ribbonPurchased'), ribbonWeeklyCalls:$('#ribbonWeeklyCalls'), ribbonStreak:$('#ribbonStreak'),
+    scheduledBlock:$('#scheduledBlock'), scheduledList:$('#scheduledList'),
+    densitySelect:$('#densitySelect'),
+    toggleSidebarBtn:$('#toggleSidebarBtn')
+  };
+
+  /* UI state */
+  function loadUI(){ try{ return JSON.parse(localStorage.getItem(UI_KEY)||'{}'); }catch(e){ return {}; } }
+  function saveUI(u){ localStorage.setItem(UI_KEY, JSON.stringify(u)); }
+  var ui = loadUI();
+
+  function getAgeThreshold(){
+    var v = (ui.ageDays!=null) ? Number(ui.ageDays) : Number((els.ageDays && els.ageDays.value) || 4);
+    return isFinite(v) ? v : 4;
+  }
+
+  /* Stable state */
+  function coerceState(x){ var out={clients:[], quotes:{raw:'', list:[]}, quotesSettings:{interval:15, random:true, norepeat:true, recent:[]} }; if(!x) return out; if(Array.isArray(x)){ out.clients=x; return normalize(out); } if(typeof x==='object'){ if(Array.isArray(x.clients)) out.clients=x.clients; if(x.quotes) out.quotes=x.quotes; if(x.quotesSettings) out.quotesSettings=x.quotesSettings; return normalize(out);} return out; }
+  function normalize(state){ state.clients=(state.clients||[]).map(function(c){ return { id:c.id||uid(), name:c.name||'(Unnamed)', notes:(typeof c.notes==='string'?c.notes:''), status:c.status||'', lastTouch:c.lastTouch||nowISO(), createdAt:c.createdAt||c.lastTouch||nowISO(), archived:!!c.archived, followUp:(typeof c.followUp==='string'?c.followUp:''), callCount:(isFinite(c.callCount)?c.callCount:0), msgCount:(isFinite(c.msgCount)?c.msgCount:0), queueToday:!!c.queueToday, queueTomorrow:!!c.queueTomorrow, history:Array.isArray(c.history)? c.history.filter(Boolean).map(function(h){ return {id:(h.id||uid()), ts:(h.ts||nowISO()), action:(h.action||'status'), to:(h.to!=null?h.to:''), kind:(h.kind!=null?h.kind:'')}; }) : [] }; }); state.quotes = state.quotes || {raw:'', list:[]}; if(!Array.isArray(state.quotes.list)) state.quotes.list=[]; state.quotesSettings = state.quotesSettings || {interval:15, random:true, norepeat:true, recent:[]}; if(!Array.isArray(state.quotesSettings.recent)) state.quotesSettings.recent=[]; return state; }
+  function load(){ try{ var cur=JSON.parse(localStorage.getItem(STABLE_KEY)||'null'); if(cur) return coerceState(cur);}catch(e){} var fresh={clients:[], quotes:{raw:'', list:[]}, quotesSettings:{interval:15, random:true, norepeat:true, recent:[]}}; localStorage.setItem(STABLE_KEY, JSON.stringify(fresh)); return fresh; }
+  function save(data){ localStorage.setItem(STABLE_KEY, JSON.stringify(data)); }
+  var state = load();
+
+  /* Error banner */
+  window.addEventListener('error', function(e){ var b=$('#errorBanner'); if(!b) return; b.style.display='block'; var msg=(e && e.error && e.error.message) ? e.error.message : (e && e.message ? e.message : 'unknown error'); b.textContent='Script error: '+msg; });
+
+  /* Undo (simple) */
+  var undoStack=[]; function withUndo(mut){ var snap=JSON.stringify(state); mut(); undoStack.push(snap); if(undoStack.length>50) undoStack.shift(); }
+
+  /* UI-preserving render */
+  function preserveUIAndRender(mutator){
+    var prevDocY=window.scrollY, prevActY=els.activity?els.activity.scrollTop:0;
+    var sel=getSelectedClient(); var selId=sel?sel.id:null;
+    if(mutator) withUndo(mutator);
+    save(state); render();
+    if(selId) setSelectedRowById(selId);
+    window.scrollTo(0,prevDocY); if(els.activity) els.activity.scrollTop=prevActY;
+  }
+
+  /* CRUD / actions */
+  function addClient(name){ preserveUIAndRender(function(){ state.clients.push({id:uid(), name:name, notes:'', status:'', lastTouch:nowISO(), createdAt:nowISO(), archived:false, followUp:'', callCount:0, msgCount:0, queueToday:false, queueTomorrow:false, history:[]}); }); }
+  function setStatus(c,newStatus){ preserveUIAndRender(function(){ var when=nowISO(); c.status=newStatus; c.lastTouch=when; c.history.push({id:uid(), ts:when, action:'status', to:newStatus}); if(c.queueToday) c.queueToday=false; }); }
+  function clearStatus(c){ preserveUIAndRender(function(){ c.status=''; }); }
+  function incrementCall(c){ preserveUIAndRender(function(){ c.callCount=(c.callCount||0)+1; c.lastTouch=nowISO(); c.history.push({id:uid(), ts:nowISO(), action:'status', to:'Called'}); if(c.queueToday) c.queueToday=false; }); }
+  function decrementCall(c){ preserveUIAndRender(function(){ c.callCount=Math.max(0,(c.callCount||0)-1); }); }
+  function incrementMsg(c){ preserveUIAndRender(function(){ c.msgCount=(c.msgCount||0)+1; c.lastTouch=nowISO(); c.history.push({id:uid(), ts:nowISO(), action:'status', to:'Emailed'}); if(c.queueToday) c.queueToday=false; }); }
+  function decrementMsg(c){ preserveUIAndRender(function(){ c.msgCount=Math.max(0,(c.msgCount||0)-1); }); }
+  function updateNotes(c,notes){ c.notes=notes; save(state); }
+  function archiveClient(c,flag){ preserveUIAndRender(function(){ c.archived=!!flag; }); }
+  function deleteClient(c){ if(!confirm('Delete '+c.name+'?')) return; preserveUIAndRender(function(){ state.clients=state.clients.filter(function(x){return x.id!==c.id;}); }); }
+  function toggleQueueToday(c,val){ preserveUIAndRender(function(){ c.queueToday = (typeof val==='boolean') ? val : !c.queueToday; if(c.queueToday) c.queueTomorrow=false; }); }
+  function toggleQueueTomorrow(c,val){ preserveUIAndRender(function(){ c.queueTomorrow = (typeof val==='boolean') ? val : !c.queueTomorrow; if(c.queueTomorrow) c.queueToday=false; }); }
+
+  /* Follow-up picker */
+  var hiddenFollowPicker=document.createElement('input'); hiddenFollowPicker.type='datetime-local'; hiddenFollowPicker.className='hidden'; document.body.appendChild(hiddenFollowPicker); var followTargetClient=null;
+  function setFollowUpViaPicker(c){ followTargetClient=c; var d=c.followUp? new Date(c.followUp) : (function(){ var s=new Date(); s.setDate(s.getDate()+1); s.setHours(8,0,0,0); return s; })(); hiddenFollowPicker.value=toLocalInputValue(d.toISOString()); if(typeof hiddenFollowPicker.showPicker==='function'){ try{ hiddenFollowPicker.showPicker(); return; }catch(e){} } try{ hiddenFollowPicker.focus(); hiddenFollowPicker.click(); return; }catch(e){} var cur=hiddenFollowPicker.value.replace('T',' '); var val=prompt('Follow-up (YYYY-MM-DD HH:MM). Blank to clear:', cur); if(val===null) return; var norm=String(val).trim(); if(!norm){ c.followUp=''; save(state); render(); return; } var iso=new Date(norm.replace(' ','T')); if(isNaN(+iso)){ alert('Invalid date/time'); return; } c.followUp=iso.toISOString(); save(state); render(); }
+  hiddenFollowPicker.addEventListener('change', function(){ if(!followTargetClient) return; var iso=fromLocalInputValue(hiddenFollowPicker.value); followTargetClient.followUp=iso; save(state); render(); followTargetClient=null; });
+
+  /* KPIs / ribbons / pipeline / goals */
+  function computeKPIs(){ var active=state.clients.filter(function(c){return !c.archived;}); var touchedToday=active.filter(function(c){return isToday(c.lastTouch);}); var purchased=state.clients.filter(function(c){return c.status==='Purchased';}); var contacted=state.clients.filter(function(c){return (c.history||[]).length>0 && c.status!=='Purchased';}); var perClient=state.clients.map(function(c){ var fp=(c.history||[]).find(function(h){return h.action==='status' && h.to==='Purchased';}); var firstPur = fp ? fp.ts : null; if(!firstPur) return null; var calls=(c.history||[]).filter(function(h){ return h.action==='status' && h.to==='Called' && new Date(h.ts)<=new Date(firstPur); }).length; return calls; }).filter(function(v){return v!==null;}); var avgCalls = perClient.length ? (perClient.reduce(function(a,b){return a+b;},0)/perClient.length).toFixed(1) : '—'; return {total:active.length, touchedToday:touchedToday.length, purchased:purchased.length, contacted:contacted.length, convRate:(contacted.length? Math.round((purchased.length/Math.max(contacted.length,1))*100) : 0), avgCalls:avgCalls}; }
+  function renderKPIs(){ var k=computeKPIs(); els.kpis.innerHTML=''; [['Active Leads',k.total],['Touched Today',k.touchedToday],['Purchased',k.purchased],['Contacted (not purchased)',k.contacted],['Conv. Rate',(k.convRate||0)+'%'],['Avg Calls→Purchase',k.avgCalls]].forEach(function(pair){ var pill=document.createElement('div'); pill.className='pill'; pill.innerHTML='<b>'+pair[1]+'</b> <span class="muted">'+pair[0]+'</span>'; els.kpis.appendChild(pill); }); }
+  function pipelineStats(){ var counts={Calls:0,Emails:0,Quotes:0,Apps:0,Purchased:0}; state.clients.forEach(function(c){ (c.history||[]).forEach(function(h){ if(h.action!=='status') return; if(h.to==='Called') counts.Calls++; else if(h.to==='Emailed') counts.Emails++; else if(h.to==='Sent Quote') counts.Quotes++; else if(h.to==='Sent Application') counts.Apps++; else if(h.to==='Purchased') counts.Purchased++; }); }); function conv(a,b){ return a? Math.round((b/a)*100) : 0; } return {counts:counts, convCE:conv(counts.Calls,counts.Emails), convEQ:conv(counts.Emails,counts.Quotes), convQA:conv(counts.Quotes,counts.Apps), convAP:conv(counts.Apps,counts.Purchased)}; }
+  function renderPipeline(){ var p=pipelineStats(); els.pipeline.innerHTML = '' +'<div>Calls: <b>'+p.counts.Calls+'</b> → Emails: <b>'+p.counts.Emails+'</b> (<b>'+p.convCE+'%</b>)</div>' +'<div>Emails: <b>'+p.counts.Emails+'</b> → Quotes: <b>'+p.counts.Quotes+'</b> (<b>'+p.convEQ+'%</b>)</div>' +'<div>Quotes: <b>'+p.counts.Quotes+'</b> → Apps: <b>'+p.counts.Apps+'</b> (<b>'+p.convQA+'%</b>)</div>' +'<div>Apps: <b>'+p.counts.Apps+'</b> → Purchased: <b>'+p.counts.Purchased+'</b> (<b>'+p.convAP+'%</b>)</div>'; }
+  function weekRange(){ var end=startOfDay(new Date()), start=addDays(end,-6); return {start:start, end:addDays(end,1)}; }
+  function weeklyCalls(){ var r=weekRange(), cnt=0; state.clients.forEach(function(c){ (c.history||[]).forEach(function(h){ if(h.action==='status' && h.to==='Called' && isWithin(h.ts,r.start,r.end)) cnt++; }); }); return cnt; }
+  function renderGoals(){ var goal=(typeof ui.goal==='number'?Number(ui.goal):20); els.goalCalls.value=goal; var calls=weeklyCalls(); var pct=Math.min(100, Math.round((calls/Math.max(goal,1))*100)); els.goalFill.style.width=pct+'%'; els.goalLabel.textContent=calls+' / '+goal+' calls this week ('+pct+'%)'; var need=(typeof ui.streakMin==='number'?Number(ui.streakMin):1); $('#streakDays').textContent=String(calcStreak(need)); }
+  function touchesOnDay(day){ var start=startOfDay(day), end=addDays(start,1), cnt=0; state.clients.forEach(function(c){ (c.history||[]).forEach(function(h){ if(h.action==='status'){ var t=new Date(h.ts); if(t>=start && t<end) cnt++; }}); }); return cnt; }
+  function calcStreak(minPerDay){ var min=(typeof minPerDay==='number'?minPerDay:1), streak=0; for(var i=0;i<365;i++){ var day=addDays(new Date(), -i); if(touchesOnDay(day) >= min) streak++; else break; } return streak; }
+  function renderTrendRibbons(){ els.ribbonPurchased.textContent = state.clients.filter(function(c){return c.status==='Purchased';}).length; els.ribbonWeeklyCalls.textContent = weeklyCalls(); els.ribbonStreak.textContent = calcStreak(1); }
+
+  function colorClass(st){ return st==='Sent Quote'?'s-quote' : st==='Sent Application'?'s-app' : st==='Pending Application Signature'?'s-sig' : st==='Pending Medical Questionnaire'?'s-medq' : 's-pur'; }
+  function agingBadge(businessDays, thr){ var span=document.createElement('span'); var clr= businessDays > thr*2 ? 'red' : (businessDays > thr ? 'orange' : ''); span.className='age-badge'+(clr?(' '+clr):''); if(!clr){ span.style.display='none'; } span.textContent=String(businessDays); return span; }
+  function contactedToday(c){ var start=startOfDay(new Date()), end=addDays(start,1); return (c.history||[]).some(function(h){ return h.action==='status' && isWithin(h.ts,start,end); }); }
+
+  /* Tooltips */
+  function setTip(el, text){ el.classList.add('has-tip'); el.setAttribute('data-tip', text); }
+
+  /* Action icon group */
+  function buildIconBar(c, notesWrap, ta){
+    var bar=document.createElement('div'); bar.className='group--icons';
+    function icon(label,key,tip){ var b=document.createElement('button'); b.className='iconbtn'; b.dataset.act=key; b.textContent=label; setTip(b, tip); return b; }
+    var bNotes=icon('📝','notes','Notes'), bSched=icon('📅','schedule','Schedule'), bArch=icon('📂','archive','Archive'), bDel=icon('🗑','delete','Delete');
+    bar.appendChild(bNotes); bar.appendChild(bSched); bar.appendChild(bArch); bar.appendChild(bDel);
+    bNotes.addEventListener('click', function(){ notesWrap.classList.toggle('hidden'); if(!notesWrap.classList.contains('hidden')) ta.focus(); });
+    bArch.addEventListener('click', function(){ archiveClient(c,!c.archived); });
+    bDel.addEventListener('click', function(){ deleteClient(c); });
+    bSched.addEventListener('click', function(e){ openScheduleMenu(e.currentTarget, c); });
+    return bar;
+  }
+
+  function openScheduleMenu(anchorBtn, c){
+    closeMenus();
+    var menu=document.createElement('div'); menu.className='sched-menu';
+    var rect=anchorBtn.getBoundingClientRect(); menu.style.top=(rect.bottom+window.scrollY)+'px'; menu.style.left=(rect.left+window.scrollX)+'px';
+    menu.innerHTML=['<button data-m="today">Today</button>','<button data-m="tomorrow">Tomorrow</button>','<button data-m="pick">Pick Date/Time…</button>','<div style="border-top:1px solid var(--line);margin:4px 0"></div>','<button data-m="clear-fu">Clear Follow-Up</button>','<button data-m="clear-queues">Clear Today/Tomorrow</button>'].join('');
+    document.body.appendChild(menu);
+    menu.addEventListener('click', function(e){ var m=e.target.closest('button') && e.target.closest('button').dataset.m; if(m==='today'){ toggleQueueToday(c,true); } if(m==='tomorrow'){ toggleQueueTomorrow(c,true); } if(m==='pick'){ setFollowUpViaPicker(c); } if(m==='clear-fu'){ c.followUp=''; save(state); render(); } if(m==='clear-queues'){ c.queueToday=false; c.queueTomorrow=false; save(state); render(); } closeMenus(); });
+    setTimeout(function(){ var kill=function(ev){ if(!menu.contains(ev.target)){ closeMenus(); document.removeEventListener('mousedown',kill,true);} }; document.addEventListener('mousedown',kill,true); },0);
+  }
+  function closeMenus(){ $all('.sched-menu').forEach(function(n){ n.parentNode.removeChild(n); }); }
+
+  /* Build row */
+  function buildRow(c, opts){
+    opts=opts||{};
+    var thr=getAgeThreshold();
+
+    var row=document.createElement('div'); row.className='row '+(c.status==='Purchased'?'purchased':''); row.dataset.id=c.id;
+    if(!isToday(c.lastTouch)) row.classList.add('untouched');
+    row.addEventListener('click', function(){ setSelectedRowById(c.id); });
+
+    var lastStatusEvt = last((c.history||[]).filter(function(h){return h.action==='status' && STATUS.indexOf(h.to)!==-1;}).sort(function(a,b){return new Date(a.ts)-new Date(b.ts);}));
+
+    /* Middle (name, badges, notes) */
+    var mid=document.createElement('div');
+    var head=document.createElement('div'); head.className='name-line';
+
+    var icons=document.createElement('div'); icons.className='status-icons';
+    var bd=businessDaysSince(c.lastTouch||nowISO());
+    var badge=agingBadge(bd, thr); badge.style.marginRight='4px'; icons.appendChild(badge);
+    if(contactedToday(c)){ var touched=document.createElement('span'); touched.className='touched-badge'; touched.title='Touched today'; icons.appendChild(touched); }
+    if(lastStatusEvt){ var em=STATUS_ICON[lastStatusEvt.to]; if(em){ var s3=document.createElement('span'); s3.className='status-icon'; s3.textContent=em; setTip(s3, lastStatusEvt.to); } }
+
+    var name=document.createElement('div'); name.className='name'; name.textContent=c.name;
+
+    head.appendChild(icons); head.appendChild(name);
+    var tcount=document.createElement('span'); tcount.className='touchCount'; tcount.textContent='('+( (c.history||[]).length )+')'; head.appendChild(tcount);
+    if(opts.whenLabel){ var whenChip=document.createElement('span'); whenChip.className='tag-chip'; whenChip.textContent=opts.whenLabel; head.appendChild(whenChip); }
+    if(c.queueToday){ var chip1=document.createElement('span'); chip1.className='tag-chip'; chip1.textContent='Today'; head.appendChild(chip1); }
+    if(c.queueTomorrow){ var chip2=document.createElement('span'); chip2.className='tag-chip'; chip2.textContent='Tomorrow'; head.appendChild(chip2); }
+    mid.appendChild(head);
+
+    var firstLine=(c.notes||'').split('\n')[0] ? (c.notes||'').split('\n')[0].trim() : '';
+    var preview=null; if(firstLine){ preview=document.createElement('div'); preview.className='notes-preview'; preview.textContent=firstLine.slice(0,120); mid.appendChild(preview); }
+    var notesWrap=document.createElement('div'); notesWrap.className='notes hidden';
+    var ta=document.createElement('textarea'); ta.placeholder='Notes…'; ta.value=c.notes||'';
+    ta.addEventListener('input', function(){ updateNotes(c,ta.value); });
+    ta.addEventListener('keydown', function(e){ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); updateNotes(c, ta.value); var first=(ta.value||'').split('\n')[0] ? (ta.value||'').split('\n')[0].trim() : ''; if(first){ if(!preview){ preview=document.createElement('div'); preview.className='notes-preview'; mid.insertBefore(preview, notesWrap); } preview.textContent=first.slice(0,120); }else{ if(preview){ preview.parentNode.removeChild(preview); preview=null; } } notesWrap.classList.add('hidden'); ta.blur(); }});
+    notesWrap.appendChild(ta); mid.appendChild(notesWrap);
+
+    /* Right (action groups) */
+    var right=document.createElement('div'); right.className='actions-wrap';
+
+    // Quick counters (more spacing from statuses via group class)
+    var quick=document.createElement('div'); quick.className='group--quick';
+    var callBtn=document.createElement('button'); callBtn.className='qbtn has-tip'; callBtn.title='Log a Call'; setTip(callBtn,'Call'); callBtn.textContent=EMOJI_CALL;
+    var callBadge=document.createElement('span'); callBadge.className='badge'; callBadge.textContent=String(c.callCount||0); callBadge.setAttribute('data-zero', (c.callCount||0)===0 ? '1':'0'); callBtn.appendChild(callBadge); callBtn.addEventListener('click', function(){ incrementCall(c); });
+    var msgBtn=document.createElement('button'); msgBtn.className='qbtn has-tip'; msgBtn.title='Log a Message'; setTip(msgBtn,'Message'); msgBtn.textContent=EMOJI_MSG;
+    var msgBadge=document.createElement('span'); msgBadge.className='badge'; msgBadge.textContent=String(c.msgCount||0); msgBadge.setAttribute('data-zero', (c.msgCount||0)===0 ? '1':'0'); msgBtn.appendChild(msgBadge); msgBtn.addEventListener('click', function(){ incrementMsg(c); });
+    quick.appendChild(callBtn); quick.appendChild(msgBtn);
+
+    // Status icons with active caption & hover tip
+    var bar=document.createElement('div'); bar.className='group--status';
+    STATUS.forEach(function(st){
+      var btn=document.createElement('button'); btn.className='sbtn has-tip '+colorClass(st); setTip(btn, st);
+      if(c.status===st) btn.classList.add('active');
+      var ico=document.createElement('span'); ico.className='ico status-icon'; ico.textContent=STATUS_ICON[st] || '•';
+      var cap=document.createElement('span'); cap.className='label'; cap.textContent=STATUS_ABBR[st] || st;
+      btn.appendChild(ico); btn.appendChild(cap);
+      btn.addEventListener('click', function(){ setStatus(c,st); });
+      bar.appendChild(btn);
+    });
+
+    // Notes/Schedule/Archive/Delete (icon bar)
+    var iconbar = buildIconBar(c, notesWrap, ta);
+
+    right.appendChild(quick); right.appendChild(bar); right.appendChild(iconbar);
+    row.appendChild(mid); row.appendChild(right);
+    return row;
+  }
+
+  /* Selection */
+  function allRows(){ return $all('#todayHitList .row, #list .row'); }
+  var selectionIndex=0;
+  function setSelectedRowById(id){ var rows=allRows(); var idx=rows.findIndex(function(r){return r.dataset.id===id;}); if(idx>=0){ selectionIndex=idx; restoreSelection(); } }
+  function restoreSelection(){ var rows=allRows(); rows.forEach(function(r){ r.classList.remove('selected'); }); if(!rows.length) return; if(selectionIndex<0) selectionIndex=0; if(selectionIndex>=rows.length) selectionIndex=rows.length-1; rows[selectionIndex].classList.add('selected'); rows[selectionIndex].scrollIntoView({block:'nearest'}); }
+  function getSelectedClient(){ var rows=allRows(); if(!rows.length) return null; var id=rows[selectionIndex] && rows[selectionIndex].dataset.id; return state.clients.find(function(c){return c.id===id;}); }
+
+  /* Activity / chart / heatmap */
+  function todaysItems(){ var start=startOfDay(new Date()), end=addDays(start,1), items=[]; state.clients.forEach(function(c){ (c.history||[]).forEach(function(h){ if(h.action!=='status') return; if(isWithin(h.ts,start,end)) items.push({ts:h.ts,name:c.name,label:(STATUS_ABBR[h.to]||h.to),clientId:c.id,histId:h.id}); }); }); return items.sort(function(a,b){return new Date(b.ts)-new Date(a.ts);}); }
+  function todaysGrouped(){ var start=startOfDay(new Date()), end=addDays(start,1), map={}; state.clients.forEach(function(c){ (c.history||[]).forEach(function(h){ if(h.action!=='status') return; if(!isWithin(h.ts,start,end)) return; var label=(STATUS_ABBR[h.to]||h.to); var g=map[c.id] || {id:c.id,name:c.name,items:[]}; g.items.push({ts:h.ts,label:label,histId:h.id}); map[c.id]=g; }); }); var groups=Object.keys(map).map(function(k){ var g=map[k]; g.items=g.items.sort(function(a,b){return new Date(a.ts)-new Date(b.ts);}); g.latest=Math.max.apply(null, g.items.map(function(i){return +new Date(i.ts);})); return g; }).sort(function(a,b){return b.latest-a.latest;}); return groups; }
+  function renderActivity(){ if(els.todayDate) els.todayDate.textContent=new Date().toLocaleDateString([], {weekday:'long',month:'long',day:'numeric',year:'numeric'}); var grouped= !!ui.groupTodayByClient; els.groupToggle && (els.groupToggle.checked = grouped); if(!els.activity) return; els.activity.innerHTML=''; if(!grouped){ var items=todaysItems(); if(!items.length){ els.activity.innerHTML='<div class="muted small">No activity yet today.</div>'; return; } items.forEach(function(it){ var div=document.createElement('div'); div.className='item'; div.innerHTML='<div class="small muted">'+fmtTime(it.ts)+'</div><div><b>'+escapeHtml(it.name)+'</b> — '+escapeHtml(it.label)+'</div>'+'<button class="undo" data-undo data-client="'+it.clientId+'" data-hist="'+it.histId+'">Undo</button>'; els.activity.appendChild(div); }); } else { var groups=todaysGrouped(); if(!groups.length){ els.activity.innerHTML='<div class="muted small">No activity yet today.</div>'; return; } groups.forEach(function(g){ var who=document.createElement('div'); who.style.fontWeight='700'; who.textContent=g.name; who.style.margin='6px 0 4px'; els.activity.appendChild(who); g.items.forEach(function(it){ var div=document.createElement('div'); div.className='item'; div.innerHTML='<div class="small muted">'+fmtTime(it.ts)+'</div><div>— '+escapeHtml(it.label)+'</div>'+'<button class="undo" data-undo data-client="'+g.id+'" data-hist="'+it.histId+'">Undo</button>'; els.activity.appendChild(div); }); }); } }
+  if(els.activity) els.activity.addEventListener('click', function(e){ var btn=e.target.closest('[data-undo]'); if(!btn) return; var cid=btn.getAttribute('data-client'), hid=btn.getAttribute('data-hist'); var c=state.clients.find(function(x){return String(x.id)===String(cid);}); if(!c) return; var i=c.history.findIndex(function(h){ return String(h.id)===String(hid); }); if(i!==-1){ preserveUIAndRender(function(){ c.history.splice(i,1); var onlyStatus=c.history.filter(function(h){return h.action==='status' && STATUS.indexOf(h.to)!==-1;}).sort(function(a,b){return new Date(a.ts)-new Date(b.ts);}); var lastStatus=last(onlyStatus); c.status = lastStatus ? (lastStatus.to||'') : ''; var anyLast=last(c.history.sort(function(a,b){return new Date(a.ts)-new Date(b.ts);})); if(anyLast) c.lastTouch=anyLast.ts; }); } });
+
+  function lastNDays(n){ var out=[], i, day, next, count; for(i=n-1;i>=0;i--){ day=startOfDay(addDays(new Date(), -i)); next=addDays(day,1); count=0; state.clients.forEach(function(c){ (c.history||[]).forEach(function(h){ if(h.action==='status'){ var t=new Date(h.ts); if(t>=day && t<next) count++; }}); }); out.push({label:(day.getMonth()+1)+'/'+day.getDate(), count:count}); } return out; }
+  function renderChart(){ if(!els.chart) return; var days=parseInt((els.chartRangeSel && els.chartRangeSel.value) || '7',10); var data=lastNDays(days), max=1, i; for(i=0;i<data.length;i++){ if(data[i].count>max) max=data[i].count; } els.chart.innerHTML=''; data.forEach(function(d){ var wrap=document.createElement('div'); wrap.style.flex='1'; wrap.style.display='flex'; wrap.style.flexDirection='column'; wrap.style.alignItems='stretch'; var bar=document.createElement('div'); bar.className='bar'; bar.style.height=(Math.max(6, (d.count/max*100)))+'%'; var lab=document.createElement('div'); lab.className='barlab'; lab.textContent=d.label; wrap.appendChild(bar); wrap.appendChild(lab); els.chart.appendChild(wrap); }); }
+  function renderHeatmap(){ if(!els.heatmap) return; var days=90, data=lastNDays(days); function lvl(c){ return c===0?'': c<=1?'l1': c<=3?'l2': c<=6?'l3':'l4'; } els.heatmap.innerHTML=''; data.forEach(function(d){ var cell=document.createElement('div'); cell.className='cell '+lvl(d.count); cell.title=d.label+': '+d.count; els.heatmap.appendChild(cell); }); }
+
+  /* Followups & Next to Touch */
+  function renderFollowUps(){ if(!els.followList) return; var items=state.clients.filter(function(c){return !c.archived && c.followUp;}).map(function(c){return {c:c, when:new Date(c.followUp)};}).sort(function(a,b){return +a.when - +b.when;}); els.followList.innerHTML=''; if(!items.length){ els.followList.innerHTML='<div class="small muted">No follow ups set.</div>'; return; } items.forEach(function(rec){ var div=document.createElement('div'); div.className='followitem'; var left=document.createElement('div'); left.textContent=rec.c.name; var right=document.createElement('div'); right.className='small muted'; right.textContent=rec.when.toLocaleString([], {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}); div.appendChild(left); div.appendChild(right); els.followList.appendChild(div); }); }
+  function renderNextToTouch(){ if(!els.nextList) return; var thr=getAgeThreshold(); var list=state.clients.filter(function(c){return !c.archived;}).map(function(c){return {c:c, bd:businessDaysSince(c.lastTouch)};}).filter(function(x){return x.bd>thr;}).sort(function(a,b){return b.bd-a.bd;}).slice(0,25); els.nextList.innerHTML=''; if(!list.length){ els.nextList.innerHTML='<div class="small muted">All caught up '+CLAP+'</div>'; return; } list.forEach(function(it){ var div=document.createElement('div'); div.className='nextitem'; var left=document.createElement('div'); var b=agingBadge(it.bd, thr); b.classList.add('sm'); b.style.marginRight='6px'; b.style.display='inline-flex'; var nameSpan=document.createElement('span'); nameSpan.textContent=it.c.name; left.appendChild(b); left.appendChild(nameSpan); var right=document.createElement('div'); right.className='small muted'; right.textContent='Last: '+fmtDay(it.c.lastTouch)+' ('+it.bd+'bd)'; div.appendChild(left); div.appendChild(right); els.nextList.appendChild(div); }); }
+
+  /* Today + Tomorrow + Scheduled */
+  function renderTodayHit(){
+    var today = startOfDay(new Date());
+    var tomorrow = addDays(today,1);
+    var list = state.clients.filter(function(c){
+      if(c.archived) return false;
+      if(c.queueToday) return true;
+      if(c.followUp){ var t=new Date(c.followUp); if(!isNaN(+t) && isWithin(t,today,tomorrow)) return true; }
+      return false;
+    });
+    var wrap=els.todayHitBlock, target=els.todayHitList;
+    if(!wrap || !target) return;
+    if(!list.length){
+      wrap.classList.add('hidden'); target.innerHTML='<div class="small muted">No items for today.</div>';
+      if(els.todayTableHead) els.todayTableHead.style.display='none'; return;
+    }
+    wrap.classList.remove('hidden'); if(els.todayTableHead) els.todayTableHead.style.display='grid';
+    target.innerHTML=''; sortClients(list).forEach(function(c){ var row=buildRow(c); target.appendChild(row); });
+  }
+  function renderTomorrowList(){ if(!els.tomorrowList) return; var list = state.clients.filter(function(c){ return !c.archived && c.queueTomorrow; }); els.tomorrowList.innerHTML=''; if(!list.length){ els.tomorrowList.innerHTML='<div class="small muted">Nothing queued.</div>'; return; } sortClients(list).forEach(function(c){ var div=document.createElement('div'); div.className='nextitem'; div.innerHTML='<div>'+escapeHtml(c.name)+'</div><div class="small muted">last '+fmtDay(c.lastTouch)+'</div>'; els.tomorrowList.appendChild(div); }); }
+  function isFutureFollowUp(c){ if(!c.followUp) return false; var t=new Date(c.followUp); return !isNaN(+t) && t>new Date(); }
+
+  /* Root render */
+  function sortClients(arr){ var key=(ui.sortBy||'lastTouch'); if(key==='name'){ return arr.slice().sort(function(a,b){ return a.name.localeCompare(b.name); }); } return arr.slice().sort(function(a,b){ return new Date(b[key]||0)-new Date(a[key]||0); }); }
+  function renderList(container, clients, opts){ opts=opts||{}; if(!container) return; container.innerHTML=''; var q=(els.globalSearch && els.globalSearch.value ? els.globalSearch.value : '').toLowerCase().trim(); var filtered = clients.filter(function(c){ if(els.showArchived && els.showArchived.checked ? !c.archived : c.archived) return false; if(els.statusFilter && els.statusFilter.value && c.status!==els.statusFilter.value) return false; if(q && !(c.name.toLowerCase().includes(q) || (c.notes||'').toLowerCase().includes(q) || (c.status||'').toLowerCase().includes(q))) return false; return true; }); sortClients(filtered).forEach(function(c){ var row=buildRow(c, opts.rowOpts||{}); container.appendChild(row); }); restoreSelection(); }
+  function render(){ var activeAll=state.clients.filter(function(c){return !c.archived;}); var scheduled = activeAll.filter(isFutureFollowUp); var mainActive = activeAll.filter(function(c){ return !isFutureFollowUp(c) && !c.queueToday; }); var archived=state.clients.filter(function(c){return c.archived;}); renderKPIs(); renderPipeline(); renderGoals(); renderTrendRibbons(); renderList(els.list, mainActive); if(els.scheduledBlock && els.scheduledList){ if(scheduled.length){ els.scheduledBlock.classList.remove('hidden'); els.scheduledList.innerHTML=''; sortClients(scheduled).forEach(function(c){ var whenLabel=(new Date(c.followUp)).toLocaleString([], {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}); var row=buildRow(c, {whenLabel: whenLabel}); els.scheduledList.appendChild(row); }); } else { els.scheduledBlock.classList.add('hidden'); els.scheduledList.innerHTML=''; } } if(els.showArchived && els.showArchived.checked){ els.archivedBlock.classList.remove('hidden'); renderList(els.archivedList, archived); } else { els.archivedBlock.classList.add('hidden'); els.archivedList && (els.archivedList.innerHTML=''); } els.todayDate && (els.todayDate.textContent=new Date().toLocaleDateString([], {weekday:'long',month:'long',day:'numeric',year:'numeric'})); renderActivity(); renderChart(); renderHeatmap(); renderNextToTouch(); renderFollowUps(); renderTodayHit(); renderTomorrowList(); renderQuote(false); }
+
+  /* Quotes (light) */
+  var quoteTimer=null; function pickQuote(){ var list=(state.quotes && state.quotes.list)||[]; if(!list.length) return ''; var qs=state.quotesSettings||{interval:15, random:true, norepeat:true, recent:[]}; if(!qs.random){ var idx=Number(qs.lastIndex||0); idx=(idx+1)%list.length; qs.lastIndex=idx; return list[idx]; } var recent=Array.isArray(qs.recent)?qs.recent:[]; var tries=0, idx2=0; do{ idx2=Math.floor(Math.random()*list.length); tries++; } while(qs.norepeat && recent.indexOf(idx2)!==-1 && tries<25); recent.push(idx2); while(recent.length>Math.min(20, Math.ceil(list.length/3))) recent.shift(); qs.recent=recent; qs.lastIndex=idx2; state.quotesSettings=qs; save(state); return list[idx2]; }
+  function renderQuote(showNew){ if(showNew){ var q=pickQuote(); if(q) state.quotes._current=q; } if(!els.quoteView) return; var cur=(state.quotes && state.quotes._current) ? state.quotes._current : (((state.quotes||{}).list||[])[0]||''); els.quoteView.textContent = cur || 'Add quotes to get started.'; var count=((state.quotes||{}).list||[]).length; els.quoteMeta && (els.quoteMeta.textContent = count ? (count+' quotes • rotates every '+(state.quotesSettings&&state.quotesSettings.interval||15)+' min') : ''); }
+  function scheduleQuoteTimer(){ if(quoteTimer) clearInterval(quoteTimer); var mins=(state.quotesSettings && state.quotesSettings.interval) ? Number(state.quotesSettings.interval) : 15; if(mins>0){ quoteTimer=setInterval(function(){ renderQuote(true); }, mins*60*1000); } }
+
+  /* Filters & UI wiring */
+  ['change','input'].forEach(function(ev){
+    if(els.statusFilter) els.statusFilter.addEventListener(ev, render);
+    if(els.showArchived) els.showArchived.addEventListener(ev, render);
+    if(els.globalSearch) els.globalSearch.addEventListener(ev, render);
+    if(els.sortBy) els.sortBy.addEventListener(ev, function(){ ui.sortBy=els.sortBy.value; saveUI(ui); render(); });
+    if(els.chartRangeSel) els.chartRangeSel.addEventListener(ev, function(){ renderChart(); });
+  });
+
+  if(els.ageDays){
+    if(ui.ageDays!=null) els.ageDays.value = String(ui.ageDays);
+    els.ageDays.addEventListener('change', function(){ ui.ageDays = Number(els.ageDays.value||4); saveUI(ui); render(); });
+  }
+  if(typeof ui.groupTodayByClient==='undefined'){ ui.groupTodayByClient=true; saveUI(ui); }
+  if(els.groupToggle) els.groupToggle.addEventListener('change', function(){ ui.groupTodayByClient = !!els.groupToggle.checked; saveUI(ui); renderActivity(); });
+
+  if(els.globalSearch) els.globalSearch.addEventListener('keydown', function(e){
+    if(e.key==='Enter'){
+      var q=els.globalSearch.value.trim(); if(!q) return;
+      var exists=state.clients.some(function(c){ return c.name.toLowerCase()===q.toLowerCase(); });
+      if(!exists){ addClient(q); els.globalSearch.select(); }
+    }
+  });
+
+  /* Density */
+  function applyDensity(){ var mode = ui.density || 'comfortable'; document.body.setAttribute('data-density', mode); if(els.densitySelect) els.densitySelect.value = mode; }
+  if(typeof ui.density==='undefined'){ ui.density='comfortable'; saveUI(ui); }
+  if(els.densitySelect){ els.densitySelect.value=ui.density; els.densitySelect.addEventListener('change', function(){ ui.density=this.value; saveUI(ui); applyDensity(); }); }
+
+  /* Sidebar position + show/hide */
+  ;(function(){
+    var appRoot=els.appRoot;
+    function applySidebarPos(){ if(ui.sidebarLeft){ appRoot.classList.add('leftbar'); } else { appRoot.classList.remove('leftbar'); } }
+    function applySidebarVisibility(){
+      if(ui.sidebarHidden){ appRoot.classList.add('no-side'); if(els.toggleSidebarBtn) els.toggleSidebarBtn.textContent='Show Sidebar'; }
+      else { appRoot.classList.remove('no-side'); if(els.toggleSidebarBtn) els.toggleSidebarBtn.textContent='Hide Sidebar'; }
+    }
+    if(typeof ui.sidebarLeft==='undefined'){ ui.sidebarLeft=false; }
+    if(typeof ui.sidebarHidden==='undefined'){ ui.sidebarHidden=false; }
+    applySidebarPos(); applySidebarVisibility();
+    // Add the move-left/right helper in the controls stack
+    var controls=document.querySelector('.controls .stack');
+    if(controls){
+      var moveBtn=document.createElement('button'); moveBtn.className='btn-min gray'; function label(){ moveBtn.textContent = ui.sidebarLeft ? 'Move Sidebar Right' : 'Move Sidebar Left'; }
+      label(); moveBtn.addEventListener('click', function(){ ui.sidebarLeft=!ui.sidebarLeft; saveUI(ui); applySidebarPos(); label(); });
+      controls.appendChild(moveBtn);
+    }
+    if(els.toggleSidebarBtn){
+      els.toggleSidebarBtn.addEventListener('click', function(){
+        ui.sidebarHidden = !ui.sidebarHidden; saveUI(ui); applySidebarVisibility();
+      });
+    }
+    saveUI(ui);
+  })();
+
+  /* Power Hour */
+  var hopTimer=null, hopRemaining=60*60, hopRunning=false; function renderHOP(){ if(!els.hopClock) return; var h=Math.floor(hopRemaining/3600), m=Math.floor((hopRemaining%3600)/60), s=hopRemaining%60; els.hopClock.textContent=[h,m,s].map(function(v){return String(v).padStart(2,'0');}).join(':'); }
+  if(els.hopStart) els.hopStart.addEventListener('click', function(){ if(hopRunning) return; hopRunning=true; hopTimer=setInterval(function(){ hopRemaining=Math.max(0, hopRemaining-1); renderHOP(); if(hopRemaining===0){ clearInterval(hopTimer); hopRunning=false; } },1000); });
+  if(els.hopPause) els.hopPause.addEventListener('click', function(){ hopRunning=false; clearInterval(hopTimer); });
+  if(els.hopReset) els.hopReset.addEventListener('click', function(){ hopRunning=false; clearInterval(hopTimer); hopRemaining=60*60; els.hopCalls && (els.hopCalls.textContent='0'); renderHOP(); });
+
+  /* Keyboard shortcuts — DO NOT steal Ctrl/Cmd combos (so Ctrl+L / Ctrl+R work) */
+  document.addEventListener('keydown', function(e){
+    var tag=(document.activeElement && document.activeElement.tagName)||'';
+    if(e.ctrlKey || e.metaKey) return;            // <-- Let browser handle Ctrl/Cmd shortcuts
+    if(tag==='INPUT' || tag==='TEXTAREA' || tag==='SELECT') return;
+
+    var key=e.key;
+    var rows=allRows(); if(!rows.length && !['F','f','d','D'].includes(key)) return;
+
+    if(key==='ArrowDown' || key==='j' || key==='J'){ selectionIndex++; restoreSelection(); e.preventDefault(); }
+    if(key==='ArrowUp' || key==='k' || key==='K'){ selectionIndex--; restoreSelection(); e.preventDefault(); }
+
+    var map={'1':'Sent Quote','2':'Sent Application','3':'Pending Application Signature','4':'Pending Medical Questionnaire','5':'Purchased'};
+    if(map[key]){ var c1=getSelectedClient(); if(c1){ setStatus(c1,map[key]); e.preventDefault(); } }
+    
+    if(key==='0'){ var c0=getSelectedClient(); if(c0){ clearStatus(c0); e.preventDefault(); } }
+
+    if(key==='a' || key==='A'){ 
+      var c2=getSelectedClient(); 
+      if(c2){ 
+        if(e.shiftKey){ decrementCall(c2); } else { incrementCall(c2); }
+        e.preventDefault(); 
+      } 
+    }
+    if(key==='l' || key==='L'){ 
+      var c3=getSelectedClient(); 
+      if(c3){ 
+        if(e.shiftKey){ decrementMsg(c3); } else { incrementMsg(c3); }
+        e.preventDefault(); 
+      } 
+    }
+    if(key==='n' || key==='N'){ var rows2=allRows(); var row=rows2[selectionIndex]; if(!row) return; var ta=row.querySelector('textarea'); var wrap=row.querySelector('.notes'); if(wrap){ wrap.classList.toggle('hidden'); if(!wrap.classList.contains('hidden') && ta) ta.focus(); } e.preventDefault(); }
+
+    if(key==='F' || key==='f'){ var c4=getSelectedClient() || state.clients.find(function(c){return !c.archived && !isFutureFollowUp(c) && !c.queueToday && !c.queueTomorrow;}); if(c4){ toggleQueueToday(c4); e.preventDefault(); } }
+    if(key==='d' || key==='D'){ var c5=getSelectedClient() || state.clients.find(function(c){return !c.archived && !isFutureFollowUp(c) && !c.queueToday && !c.queueTomorrow;}); if(c5){ toggleQueueTomorrow(c5); e.preventDefault(); } }
+
+    // Undo (U) / placeholder Redo (R)
+    if(key==='u' || key==='U'){ var prev=undoStack.pop(); if(prev){ state=coerceState(JSON.parse(prev)); save(state); render(); } }
+    if(key==='r' || key==='R'){ /* Hook a redo stack here if needed */ }
+  });
+
+  /* Widgets drag & collapse */
+  function loadWidgetOrder(){ return Array.isArray(ui.widgetOrder)? ui.widgetOrder : $all('#sidebarWidgets .widget').map(function(w){return w.dataset.key;}); }
+  function saveWidgetOrder(keys){ ui.widgetOrder=keys; saveUI(ui); }
+  function applyWidgetOrder(){ var keys=loadWidgetOrder(), map={}; $all('#sidebarWidgets .widget').forEach(function(w){ map[w.dataset.key]=w; }); keys.forEach(function(k){ if(map[k]) els.sidebar.appendChild(map[k]); }); }
+  function enableDrag(){ var dragging=null; els.sidebar.addEventListener('dragstart', function(e){ var w=e.target.closest('.widget'); if(!w) return; dragging=w; e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain', w.dataset.key || 'widget'); w.classList.add('dragging'); }); els.sidebar.addEventListener('dragover', function(e){ if(!dragging) return; e.preventDefault(); var w=e.target.closest('.widget'); if(!w || w===dragging) return; w.classList.add('drag-over'); }); els.sidebar.addEventListener('dragleave', function(e){ var w=e.target.closest('.widget'); if(w) w.classList.remove('drag-over'); }); els.sidebar.addEventListener('drop', function(e){ if(!dragging) return; e.preventDefault(); var target=e.target.closest('.widget'); if(!target || target===dragging) return; target.classList.remove('drag-over'); var rect=target.getBoundingClientRect(); var before=(e.clientY-rect.top) < rect.height/2; els.sidebar.insertBefore(dragging, before? target : target.nextSibling); dragging.classList.remove('dragging'); dragging=null; var order=$all('#sidebarWidgets .widget').map(function(w){return w.dataset.key;}); saveWidgetOrder(order); }); els.sidebar.addEventListener('dragend', function(){ var d=els.sidebar.querySelector('.dragging'); if(d) d.classList.remove('dragging'); dragging=null; }); }
+  function enableCollapse(){ els.sidebar.addEventListener('click', function(e){ var btn=e.target.closest('.collapse-btn'); if(!btn) return; var w=btn.closest('.widget'); if(!w) return; var body=w.querySelector('.widget-body'); if(!body) return; body.classList.toggle('hidden'); ui.widgetCollapsed = ui.widgetCollapsed || {}; ui.widgetCollapsed[w.dataset.key] = body.classList.contains('hidden'); saveUI(ui); }); ui.widgetCollapsed = ui.widgetCollapsed || {}; $all('#sidebarWidgets .widget').forEach(function(w){ var body=w.querySelector('.widget-body'); if(!body) return; if(ui.widgetCollapsed[w.dataset.key]) body.classList.add('hidden'); else body.classList.remove('hidden'); }); }
+
+  /* Boot */
+  if(typeof ui.sortBy==='undefined') ui.sortBy='lastTouch';
+  if($('#sortBy')) $('#sortBy').value=ui.sortBy||'lastTouch';
+
+  if(els.ageDays){ if(ui.ageDays!=null) els.ageDays.value = String(ui.ageDays); else els.ageDays.value='4'; }
+  if(typeof ui.density==='undefined'){ ui.density='comfortable'; }
+  applyDensity();
+
+  // ensure widgets are draggable
+  $all('#sidebarWidgets .widget').forEach(function(w){ if(!w.getAttribute('draggable')) w.setAttribute('draggable','true'); });
+
+  applyWidgetOrder(); enableDrag(); enableCollapse();
+  renderQuote(false); scheduleQuoteTimer();
+  render();
+})();
+</script>
+
+</body>
+</html>
