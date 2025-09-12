@@ -47,10 +47,17 @@ body{
 /* Layout shell */
 .app{
   display:grid; grid-template-columns:1fr minmax(330px, 400px); grid-template-areas:"main side";
-  gap:14px; padding:14px; max-width:1600px; margin:0 auto; min-height:100vh;
+  gap:14px; padding:14px; max-width:1800px; margin:0 auto; min-height:100vh; position:relative;
 }
 .app > section.card{grid-area:main}
 .app > aside.card{grid-area:side}
+.app > aside.card.left-sidebar{grid-area:left}
+
+/* Dual sidebar layouts */
+.app.dual-sidebar{
+  grid-template-columns:minmax(300px, 380px) 1fr minmax(300px, 380px); 
+  grid-template-areas:"left main side";
+}
 .app.leftbar{grid-template-columns:400px 1fr;grid-template-areas:"side main"}
 .app.no-side{grid-template-columns:1fr; grid-template-areas:"main"}
 .app.no-side > aside{display:none !important}
@@ -154,16 +161,20 @@ button:focus-visible{outline:none; box-shadow:var(--ring)}
 }
 
 /* Left column */
-.leftcol{display:flex;flex-direction:column;gap:2px;justify-content:center}
+.leftcol{display:flex;flex-direction:column;gap:2px;justify-content:center;min-width:0;overflow:hidden}
 .stamp{font-variant-numeric:tabular-nums;color:#6b7390;font-size:12px}
 .lastmeta{font-size:11px;color:#6b7390}
 
-.name-line{display:flex;gap:10px;align-items:center;min-width:0;flex-wrap:wrap}
+.name-line{display:flex;gap:10px;align-items:center;min-width:0;overflow:hidden}
 .name{font-weight:850;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:none}
 .touchCount{opacity:.55;font-size:11px;margin-left:4px;flex:0 0 auto}
 .status-icons{display:flex;gap:6px;align-items:center;flex:0 0 auto}
 .status-icon{font-size:22px;line-height:1}
-.notes-preview{font-size:12px;color:#6b7390;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; margin-left:11px;}
+.notes-preview{
+  font-size:12px;color:#6b7390;margin-top:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  margin-left:11px;max-width:100%;
+}
 
 /* Action groups */
 .actions-wrap{
@@ -265,6 +276,20 @@ button:focus-visible{outline:none; box-shadow:var(--ring)}
 .collapse-btn{font-size:14px;line-height:1;padding:4px 8px;width:28px;text-align:center;border-radius:10px}
 .collapse-btn::after{content:"–"}
 .widget-body.hidden{display:none}
+
+/* Drag zones for dual sidebar */
+.sidebar-drag-zone{
+  position:absolute; top:60px; bottom:20px; width:120px; z-index:999;
+  background:linear-gradient(90deg, rgba(79,121,255,.15), rgba(79,121,255,.05));
+  border:3px dashed var(--info); opacity:0; pointer-events:none;
+  transition:opacity .2s ease; display:flex; align-items:center; justify-content:center; flex-direction:column;
+  font-size:16px; color:var(--info); font-weight:bold;
+}
+.sidebar-drag-zone.left{left:20px; border-radius:12px}
+.sidebar-drag-zone.right{right:20px; border-radius:12px}
+.sidebar-drag-zone.active{opacity:1; pointer-events:auto; display:flex !important}
+.sidebar-drag-zone::after{content:"📁 Drop Widget Here"}
+.sidebar.drag-target{outline:3px dashed var(--info); background:rgba(79,121,255,.05)}
 
 /* Activity */
 .activity{max-height:30vh;overflow:auto}
@@ -387,6 +412,15 @@ body[data-density="ultra-compact"] .hot-flames{font-size:12px; left:8px; bottom:
 </head>
 <body>
 <div class="app" id="appRoot">
+  <!-- ===== DRAG ZONES ===== -->
+  <div class="sidebar-drag-zone left" id="leftDragZone"></div>
+  <div class="sidebar-drag-zone right" id="rightDragZone"></div>
+  
+  <!-- ===== LEFT SIDEBAR (hidden by default) ===== -->
+  <aside class="card sidebar left-sidebar" id="leftSidebar" style="display:none;">
+    <h2>Left Widgets</h2>
+  </aside>
+  
   <!-- ===== MAIN LIST ===== -->
   <section class="card">
     <header>
@@ -580,7 +614,8 @@ body[data-density="ultra-compact"] .hot-flames{font-size:12px; left:8px; bottom:
     quotesNextBtn:$('#quotesNextBtn'), quoteEditor:$('#quoteEditor'), quotesTextarea:$('#quotesTextarea'),
     quoteInterval:$('#quoteInterval'), quoteRandom:$('#quoteRandom'), quoteNoRepeat:$('#quoteNoRepeat'),
     quotesSaveBtn:$('#quotesSaveBtn'), quotesCancelBtn:$('#quotesCancelBtn'),
-    sidebar:$('#sidebarWidgets'),
+    sidebar:$('#sidebarWidgets'), leftSidebar:$('#leftSidebar'),
+    leftDragZone:$('#leftDragZone'), rightDragZone:$('#rightDragZone'),
     todayHitBlock:$('#todayHitBlock'), todayHitList:$('#todayHitList'), todayTableHead:$('#todayTableHead'),
     tomorrowList:$('#tomorrowList'),
     ribbonPurchased:$('#ribbonPurchased'), ribbonWeeklyCalls:$('#ribbonWeeklyCalls'), ribbonStreak:$('#ribbonStreak'),
@@ -728,6 +763,7 @@ body[data-density="ultra-compact"] .hot-flames{font-size:12px; left:8px; bottom:
     } else {
       // Standard layout (comfortable/compact)
       var mid=document.createElement('div');
+      mid.className='leftcol';
       var head=document.createElement('div'); head.className='name-line';
 
       var icons=document.createElement('div'); icons.className='status-icons';
@@ -1047,7 +1083,164 @@ body[data-density="ultra-compact"] .hot-flames{font-size:12px; left:8px; bottom:
   function loadWidgetOrder(){ return Array.isArray(ui.widgetOrder)? ui.widgetOrder : $all('#sidebarWidgets .widget').map(function(w){return w.dataset.key;}); }
   function saveWidgetOrder(keys){ ui.widgetOrder=keys; saveUI(ui); }
   function applyWidgetOrder(){ var keys=loadWidgetOrder(), map={}; $all('#sidebarWidgets .widget').forEach(function(w){ map[w.dataset.key]=w; }); keys.forEach(function(k){ if(map[k]) els.sidebar.appendChild(map[k]); }); }
-  function enableDrag(){ var dragging=null; els.sidebar.addEventListener('dragstart', function(e){ var w=e.target.closest('.widget'); if(!w) return; dragging=w; e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain', w.dataset.key || 'widget'); w.classList.add('dragging'); }); els.sidebar.addEventListener('dragover', function(e){ if(!dragging) return; e.preventDefault(); var w=e.target.closest('.widget'); if(!w || w===dragging) return; w.classList.add('drag-over'); }); els.sidebar.addEventListener('dragleave', function(e){ var w=e.target.closest('.widget'); if(w) w.classList.remove('drag-over'); }); els.sidebar.addEventListener('drop', function(e){ if(!dragging) return; e.preventDefault(); var target=e.target.closest('.widget'); if(!target || target===dragging) return; target.classList.remove('drag-over'); var rect=target.getBoundingClientRect(); var before=(e.clientY-rect.top) < rect.height/2; els.sidebar.insertBefore(dragging, before? target : target.nextSibling); dragging.classList.remove('dragging'); dragging=null; var order=$all('#sidebarWidgets .widget').map(function(w){return w.dataset.key;}); saveWidgetOrder(order); }); els.sidebar.addEventListener('dragend', function(){ var d=els.sidebar.querySelector('.dragging'); if(d) d.classList.remove('dragging'); dragging=null; }); }
+  
+  function loadLeftWidgets(){ return Array.isArray(ui.leftWidgets) ? ui.leftWidgets : []; }
+  function saveLeftWidgets(keys){ ui.leftWidgets=keys; saveUI(ui); }
+  function saveWidgetLayout(){ 
+    var rightKeys = $all('#sidebarWidgets .widget').map(function(w){return w.dataset.key;});
+    var leftKeys = $all('#leftSidebar .widget').map(function(w){return w.dataset.key;});
+    ui.widgetOrder = rightKeys; ui.leftWidgets = leftKeys; saveUI(ui); 
+  }
+  
+  function applyDualSidebarLayout(){
+    var leftWidgets = els.leftSidebar ? els.leftSidebar.querySelectorAll('.widget') : [];
+    var hasLeft = leftWidgets.length > 0;
+    if(hasLeft){
+      els.appRoot.classList.add('dual-sidebar');
+      els.leftSidebar.style.display = 'block';
+    } else {
+      els.appRoot.classList.remove('dual-sidebar');
+      els.leftSidebar.style.display = 'none';
+    }
+  }
+  
+  function showDragZones(){ 
+    if(els.leftDragZone) {
+      els.leftDragZone.style.display = 'flex';
+      els.leftDragZone.classList.add('active');
+    }
+    if(els.rightDragZone) {
+      els.rightDragZone.style.display = 'flex';
+      els.rightDragZone.classList.add('active');
+    }
+  }
+  function hideDragZones(){ 
+    if(els.leftDragZone) {
+      els.leftDragZone.style.display = 'none';
+      els.leftDragZone.classList.remove('active');
+    }
+    if(els.rightDragZone) {
+      els.rightDragZone.style.display = 'none';
+      els.rightDragZone.classList.remove('active');
+    }
+  }
+  
+  function enableDrag(){ 
+    var dragging=null; 
+    
+    // Universal drag start for any widget
+    document.addEventListener('dragstart', function(e){ 
+      var w=e.target.closest('.widget'); 
+      if(!w) return; 
+      dragging=w; 
+      e.dataTransfer.effectAllowed='move'; 
+      e.dataTransfer.setData('text/plain', w.dataset.key || 'widget'); 
+      w.classList.add('dragging'); 
+      showDragZones();
+    }); 
+    
+    // Drag over handlers for both sidebars and drag zones
+    [els.sidebar, els.leftSidebar, els.leftDragZone, els.rightDragZone].forEach(function(container){
+      if(!container) return;
+      container.addEventListener('dragover', function(e){ 
+        if(!dragging) return; 
+        e.preventDefault(); 
+        e.dataTransfer.dropEffect = 'move';
+        var w=e.target.closest('.widget'); 
+        if(w && w!==dragging) { 
+          w.classList.add('drag-over'); 
+        }
+        // Highlight the container itself if dragging over empty space
+        if(container === els.leftDragZone || container === els.rightDragZone || (!w && (container === els.sidebar || container === els.leftSidebar))) {
+          container.classList.add('drag-target');
+        }
+      }); 
+      container.addEventListener('dragleave', function(e){ 
+        var w=e.target.closest('.widget'); 
+        if(w) w.classList.remove('drag-over'); 
+        container.classList.remove('drag-target');
+      }); 
+    });
+    
+    // Drop handlers
+    els.sidebar.addEventListener('drop', function(e){ 
+      if(!dragging) return; 
+      e.preventDefault(); 
+      var target=e.target.closest('.widget'); 
+      if(target && target!==dragging){ 
+        target.classList.remove('drag-over'); 
+        var rect=target.getBoundingClientRect(); 
+        var before=(e.clientY-rect.top) < rect.height/2; 
+        els.sidebar.insertBefore(dragging, before? target : target.nextSibling); 
+      } else {
+        els.sidebar.appendChild(dragging);
+      }
+      dragging.classList.remove('dragging'); 
+      els.sidebar.classList.remove('drag-target');
+      hideDragZones(); 
+      applyDualSidebarLayout();
+      saveWidgetLayout();
+      dragging=null;
+    }); 
+    
+    if(els.leftSidebar){
+      els.leftSidebar.addEventListener('drop', function(e){ 
+        if(!dragging) return; 
+        e.preventDefault(); 
+        var target=e.target.closest('.widget'); 
+        if(target && target!==dragging){ 
+          target.classList.remove('drag-over'); 
+          var rect=target.getBoundingClientRect(); 
+          var before=(e.clientY-rect.top) < rect.height/2; 
+          els.leftSidebar.insertBefore(dragging, before? target : target.nextSibling); 
+        } else {
+          els.leftSidebar.appendChild(dragging);
+        }
+        dragging.classList.remove('dragging'); 
+        els.leftSidebar.classList.remove('drag-target');
+        hideDragZones(); 
+        applyDualSidebarLayout();
+        saveWidgetLayout();
+        dragging=null;
+      }); 
+    }
+    
+    if(els.leftDragZone){
+      els.leftDragZone.addEventListener('drop', function(e){ 
+        if(!dragging) return; 
+        e.preventDefault(); 
+        els.leftSidebar.appendChild(dragging);
+        dragging.classList.remove('dragging'); 
+        els.leftDragZone.classList.remove('drag-target');
+        hideDragZones(); 
+        applyDualSidebarLayout();
+        saveWidgetLayout();
+        dragging=null;
+      }); 
+    }
+    
+    if(els.rightDragZone){
+      els.rightDragZone.addEventListener('drop', function(e){ 
+        if(!dragging) return; 
+        e.preventDefault(); 
+        els.sidebar.appendChild(dragging);
+        dragging.classList.remove('dragging'); 
+        els.rightDragZone.classList.remove('drag-target');
+        hideDragZones(); 
+        applyDualSidebarLayout();
+        saveWidgetLayout();
+        dragging=null;
+      }); 
+    }
+    
+    // Drag end cleanup
+    document.addEventListener('dragend', function(){ 
+      var d=document.querySelector('.dragging'); 
+      if(d) d.classList.remove('dragging'); 
+      hideDragZones();
+      dragging=null; 
+    }); 
+  }
   function enableCollapse(){ els.sidebar.addEventListener('click', function(e){ var btn=e.target.closest('.collapse-btn'); if(!btn) return; var w=btn.closest('.widget'); if(!w) return; var body=w.querySelector('.widget-body'); if(!body) return; body.classList.toggle('hidden'); ui.widgetCollapsed = ui.widgetCollapsed || {}; ui.widgetCollapsed[w.dataset.key] = body.classList.contains('hidden'); saveUI(ui); }); ui.widgetCollapsed = ui.widgetCollapsed || {}; $all('#sidebarWidgets .widget').forEach(function(w){ var body=w.querySelector('.widget-body'); if(!body) return; if(ui.widgetCollapsed[w.dataset.key]) body.classList.add('hidden'); else body.classList.remove('hidden'); }); }
 
   /* Boot */
@@ -1061,7 +1254,17 @@ body[data-density="ultra-compact"] .hot-flames{font-size:12px; left:8px; bottom:
   // ensure widgets are draggable
   $all('#sidebarWidgets .widget').forEach(function(w){ if(!w.getAttribute('draggable')) w.setAttribute('draggable','true'); });
 
-  applyWidgetOrder(); enableDrag(); enableCollapse();
+  // Initialize dual sidebar system
+  if(typeof ui.leftWidgets === 'undefined') ui.leftWidgets = [];
+  
+  // Apply saved left widget positions
+  var leftKeys = loadLeftWidgets();
+  leftKeys.forEach(function(key){
+    var widget = $('#' + key) || $('[data-key="' + key + '"]');
+    if(widget && els.leftSidebar) els.leftSidebar.appendChild(widget);
+  });
+  
+  applyWidgetOrder(); applyDualSidebarLayout(); enableDrag(); enableCollapse();
   renderQuote(false); scheduleQuoteTimer();
   render();
 })();
