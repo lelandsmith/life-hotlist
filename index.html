@@ -69,7 +69,6 @@ body{
   position:relative;
   overflow-y:auto;
   max-height:calc(100vh - 28px);
-  padding-bottom:60px; /* Space for shortcuts */
 }
 .app > aside.card{grid-area:side}
 .app > aside.card.left-sidebar{
@@ -109,16 +108,33 @@ h1{
 }
 .muted{color:var(--muted)} .small{font-size:12px}
 
+/* Keyboard styles */
+kbd {
+  background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-family: monospace;
+  font-size: 12px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  display: inline-block;
+}
+@media (prefers-color-scheme: dark) {
+  kbd {
+    background: linear-gradient(to bottom, #3a3f5c, #2b335e);
+    border-color: #4a5568;
+  }
+}
+
 /* Shortcuts section */
 .shortcuts-section{
-  position:absolute;
-  bottom:0;
-  left:0;
-  right:0;
+  position:static;
+  margin-top:2px;
+  margin-bottom:2px;
   padding:12px 16px;
   background:linear-gradient(135deg, #f8fafc, #f1f5f9);
   border:1px solid #e2e8f0;
-  border-radius:8px 8px 0 0;
+  border-radius:8px;
   font-size:12px;
   color:#6b7390;
   line-height:1.6;
@@ -613,9 +629,9 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     <div class="confetti-container" id="confettiContainer"></div>
   </div>
   
-  <!-- ===== LEFT SIDEBAR (hidden by default) ===== -->
+  <!-- ===== LEFT SIDEBAR (for drag and drop dual sidebar only) ===== -->
   <aside class="card sidebar left-sidebar" id="leftSidebar" style="display:none;">
-    <h2>Left Widgets</h2>
+    <!-- Widgets can be dragged here for dual sidebar layout -->
   </aside>
   
   <!-- ===== MAIN LIST ===== -->
@@ -624,11 +640,6 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
       <div style="display:flex;flex-direction:column;gap:4px">
         <h1>Life Hotlist</h1>
         <div id="errorBanner" class="error-banner"></div>
-        <div class="ribbons" id="trendRibbons">
-          <div class="ribbon">Purchased: <b id="ribbonPurchased">0</b></div>
-          <div class="ribbon">Weekly calls: <b id="ribbonWeeklyCalls">0</b></div>
-          <div class="ribbon">Streak: <b id="ribbonStreak">0</b> day(s)</div>
-        </div>
         
         <!-- Daily Outreach Progress Bar -->
         <div class="progress-stats">
@@ -656,16 +667,10 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
             <button class="btn-save" id="saveDailyGoal">Save</button>
           </div>
         </div>
-        
-        <!-- 7-Day Outreach History -->
-        <div class="outreach-history" id="outreachHistory">
-          <span class="history-label">Last 7 days:</span>
-          <div class="history-days" id="historyDays"></div>
-        </div>
       </div>
       <div class="controls">
         <div class="stack">
-          <input id="globalSearch" type="text" placeholder="Search…  ⏎ to quick-add" style="min-width:240px" />
+          <input id="globalSearch" type="text" placeholder="Search clients or add new (press Enter)" style="min-width:280px" />
           <label class="small">Sort
             <select id="sortBy">
               <option value="lastTouch">Last touched</option>
@@ -681,22 +686,11 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
             </select>
           </label>
           <!-- Move left/right stays in JS; new hide/show button below -->
-          <button id="toggleSidebarBtn" class="btn-min gray" title="Hide or Show the Sidebar Widgets">Hide Sidebar</button>
+          <button id="toggleSidebarBtn" class="btn-min gray" title="Hide or Show the Sidebar Widgets">◧</button>
         </div>
       </div>
     </header>
 
-    <!-- Today wrapper -->
-    <div id="todayHitBlock" class="queue-block hidden">
-      <div class="queue-head">
-        <div class="queue-title">Today</div>
-        <div class="small muted">Queued for today. Items drop out automatically after contact.</div>
-      </div>
-      <div class="table-head" id="todayTableHead" style="display:none">
-        <div>Client • Notes</div><div>Actions</div>
-      </div>
-      <div id="todayHitList"></div>
-    </div>
 
     <div class="table-head">
       <div>Client • Notes</div>
@@ -714,15 +708,30 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
       <h2>Archived</h2>
       <div id="archivedList"></div>
     </div>
-    
+
     <!-- Shortcuts section at bottom of main content -->
     <div class="shortcuts-section" id="shortcutsSection">
-      <strong style="color:#475569">Keyboard Shortcuts:</strong> ↑/↓ or J/K • 1–5 status • <b>0</b> clear status • N notes • A call • L message • <b>Shift+A/L</b> remove call/msg • <b>H</b> hot lead • <b>F</b> Today • <b>d</b> Tomorrow • Click a row to focus
+      <strong style="color:#475569">Shortcuts:</strong> ↑/↓ or J/K navigate • 1–5 status • <b>0</b> clear • N notes • A call • L message • <b>Shift+A/L</b> remove • <b>H</b> hot • <b>F</b> today • <b>D</b> tomorrow • <span style="opacity:0.7; font-weight:600">⌘/ for help</span>
     </div>
   </section>
 
   <!-- ===== SIDEBAR WIDGETS ===== -->
   <aside class="card sidebar" id="sidebarWidgets">
+    <!-- Today's Queue - Permanent widget at top -->
+    <div class="widget" data-key="todayQueue" draggable="false">
+      <div class="widget-head"><h2 class="widget-title">Today's Queue</h2><div class="widget-actions"><button class="btn-min gray collapse-btn" data-collapse title="Collapse"></button></div></div>
+      <div class="widget-body">
+        <div class="small muted" style="margin-bottom:8px">Queued for today. Items drop out automatically after contact.</div>
+        <div id="todayHitList"></div>
+
+        <!-- 7-Day Outreach History -->
+        <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--line);">
+          <div style="font-weight:600; color:var(--muted); margin-bottom:8px; font-size:12px;">LAST 7 DAYS</div>
+          <div class="history-days" id="historyDays" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
+        </div>
+      </div>
+    </div>
+
     <div class="widget" data-key="powerHour" draggable="true">
       <div class="widget-head"><h2 class="widget-title">Power Hour</h2><div class="widget-actions"><button class="btn-min gray" id="hopReset">Reset</button></div></div>
       <div class="widget-body"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div><span id="hopClock" class="small muted">01:00:00</span></div><div class="small muted">Calls this session: <b id="hopCalls">0</b></div></div><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><button class="btn-primary" id="hopStart">Start</button><button class="btn-min gray" id="hopPause">Pause</button></div></div>
@@ -752,10 +761,7 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
       <div class="widget-body"><div style="display:flex;justify-content:space-between;align-items:center"><div><select id="reportRange"><option value="1">1d</option><option value="7" selected>7d</option><option value="14">14d</option><option value="30">30d</option><option value="60">60d</option><option value="90">90d</option></select></div></div></div>
     </div>
 
-    <div class="widget" data-key="activityChart" draggable="true">
-      <div class="widget-head"><h2 class="widget-title">Activity Chart</h2><div class="widget-actions"><button class="btn-min gray collapse-btn" data-collapse title="Collapse"></button></div></div>
-      <div class="widget-body"><div style="display:flex;justify-content:space-between;align-items:center"><select id="chartRange"><option value="1">1d</option><option value="7" selected>7d</option><option value="14">14d</option><option value="30">30d</option><option value="60">60d</option><option value="90">90d</option></select></div><div id="chart" class="chart"></div></div>
-    </div>
+    <!-- Activity Chart widget removed but data preserved -->
 
     <div class="widget" data-key="heatmap" draggable="true">
       <div class="widget-head"><h2 class="widget-title">Heatmap (90d)</h2><div class="widget-actions"><button class="btn-min gray collapse-btn" data-collapse title="Collapse"></button></div></div>
@@ -846,7 +852,7 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     quotesSaveBtn:$('#quotesSaveBtn'), quotesCancelBtn:$('#quotesCancelBtn'),
     sidebar:$('#sidebarWidgets'), leftSidebar:$('#leftSidebar'),
     leftDragZone:$('#leftDragZone'), rightDragZone:$('#rightDragZone'),
-    todayHitBlock:$('#todayHitBlock'), todayHitList:$('#todayHitList'), todayTableHead:$('#todayTableHead'),
+    todayHitList:$('#todayHitList'),
     tomorrowList:$('#tomorrowList'),
     ribbonPurchased:$('#ribbonPurchased'), ribbonWeeklyCalls:$('#ribbonWeeklyCalls'), ribbonStreak:$('#ribbonStreak'),
     dailyOutreachGoal:$('#dailyOutreachGoal'), dailyOutreachBar:$('#dailyOutreachBar'), 
@@ -931,7 +937,18 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   /* Goals widget removed - functionality now in daily outreach bar */
   function touchesOnDay(day){ var start=startOfDay(day), end=addDays(start,1), cnt=0; state.clients.forEach(function(c){ (c.history||[]).forEach(function(h){ if(h.action==='status'){ var t=new Date(h.ts); if(t>=start && t<end) cnt++; }}); }); return cnt; }
   function calcStreak(minPerDay){ var min=(typeof minPerDay==='number'?minPerDay:1), streak=0; for(var i=0;i<365;i++){ var day=addDays(new Date(), -i); if(touchesOnDay(day) >= min) streak++; else break; } return streak; }
-  function renderTrendRibbons(){ els.ribbonPurchased.textContent = state.clients.filter(function(c){return c.status==='Purchased';}).length; els.ribbonWeeklyCalls.textContent = weeklyCalls(); els.ribbonStreak.textContent = calcStreak(1); }
+  // Keep collecting KPI data for email summaries
+  function getKPIData(){
+    return {
+      purchased: state.clients.filter(function(c){return c.status==='Purchased';}).length,
+      weeklyCalls: weeklyCalls(),
+      streak: calcStreak(1)
+    };
+  }
+  function renderTrendRibbons(){
+    // Data collection continues but no UI update needed
+    getKPIData();
+  }
   
   /* Goal Achievement Celebration */
   var celebrationActive = false;
@@ -1317,14 +1334,19 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
       if(c.followUp){ var t=new Date(c.followUp); if(!isNaN(+t) && isWithin(t,today,tomorrow)) return true; }
       return false;
     });
-    var wrap=els.todayHitBlock, target=els.todayHitList;
-    if(!wrap || !target) return;
+    var target=els.todayHitList;
+    if(!target) return;
     if(!list.length){
-      wrap.classList.add('hidden'); target.innerHTML='<div class="small muted">No items for today.</div>';
-      if(els.todayTableHead) els.todayTableHead.style.display='none'; return;
+      target.innerHTML='<div class="small muted">No items queued for today.</div>';
+      return;
     }
-    wrap.classList.remove('hidden'); if(els.todayTableHead) els.todayTableHead.style.display='grid';
-    target.innerHTML=''; sortClients(list).forEach(function(c){ var row=buildRow(c); target.appendChild(row); });
+    target.innerHTML='';
+    sortClients(list).forEach(function(c){
+      var item = document.createElement('div');
+      item.className = 'nextitem';
+      item.innerHTML = '<div>' + escapeHtml(c.name) + '</div><div class="small muted">last ' + fmtDay(c.lastTouch) + '</div>';
+      target.appendChild(item);
+    });
   }
   function renderTomorrowList(){ if(!els.tomorrowList) return; var list = state.clients.filter(function(c){ return !c.archived && c.queueTomorrow; }); els.tomorrowList.innerHTML=''; if(!list.length){ els.tomorrowList.innerHTML='<div class="small muted">Nothing queued.</div>'; return; } sortClients(list).forEach(function(c){ var div=document.createElement('div'); div.className='nextitem'; div.innerHTML='<div>'+escapeHtml(c.name)+'</div><div class="small muted">last '+fmtDay(c.lastTouch)+'</div>'; els.tomorrowList.appendChild(div); }); }
   function isFutureFollowUp(c){ if(!c.followUp) return false; var t=new Date(c.followUp); return !isNaN(+t) && t>new Date(); }
@@ -1343,7 +1365,34 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
       return new Date(b[key]||0)-new Date(a[key]||0); 
     }); 
   }
-  function renderList(container, clients, opts){ opts=opts||{}; if(!container) return; container.innerHTML=''; var q=(els.globalSearch && els.globalSearch.value ? els.globalSearch.value : '').toLowerCase().trim(); var filtered = clients.filter(function(c){ if(els.showArchived && els.showArchived.checked ? !c.archived : c.archived) return false; if(els.statusFilter && els.statusFilter.value && c.status!==els.statusFilter.value) return false; if(q && !(c.name.toLowerCase().includes(q) || (c.notes||'').toLowerCase().includes(q) || (c.status||'').toLowerCase().includes(q))) return false; return true; }); sortClients(filtered).forEach(function(c){ var row=buildRow(c, opts.rowOpts||{}); container.appendChild(row); }); restoreSelection(); }
+  function renderList(container, clients, opts){
+    opts=opts||{};
+    if(!container) return;
+    container.innerHTML='';
+    var q=(els.globalSearch && els.globalSearch.value ? els.globalSearch.value : '').toLowerCase().trim();
+    var filtered = clients.filter(function(c){
+      if(els.showArchived && els.showArchived.checked ? !c.archived : c.archived) return false;
+      if(els.statusFilter && els.statusFilter.value && c.status!==els.statusFilter.value) return false;
+      if(q && !(c.name.toLowerCase().includes(q) || (c.notes||'').toLowerCase().includes(q) || (c.status||'').toLowerCase().includes(q))) return false;
+      return true;
+    });
+
+    // Show empty state message if no clients
+    if(filtered.length === 0 && clients.length === 0 && !q){
+      var emptyMsg = document.createElement('div');
+      emptyMsg.style.cssText = 'padding:40px 20px; text-align:center; color:var(--muted);';
+      emptyMsg.innerHTML = '<div style="font-size:16px; margin-bottom:10px;">No clients yet</div>' +
+        '<div style="font-size:14px;">Use the search bar above to add your first client.<br/>Just type a name and press Enter!</div>';
+      container.appendChild(emptyMsg);
+      return;
+    }
+
+    sortClients(filtered).forEach(function(c){
+      var row=buildRow(c, opts.rowOpts||{});
+      container.appendChild(row);
+    });
+    restoreSelection();
+  }
   function render(){ var activeAll=state.clients.filter(function(c){return !c.archived;}); var scheduled = activeAll.filter(isFutureFollowUp); var mainActive = activeAll.filter(function(c){ return !isFutureFollowUp(c) && !c.queueToday; }); var archived=state.clients.filter(function(c){return c.archived;}); renderKPIs(); renderPipeline(); renderTrendRibbons(); renderDailyOutreach(); renderList(els.list, mainActive); if(els.scheduledBlock && els.scheduledList){ if(scheduled.length){ els.scheduledBlock.classList.remove('hidden'); els.scheduledList.innerHTML=''; sortClients(scheduled).forEach(function(c){ var whenLabel=(new Date(c.followUp)).toLocaleString([], {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}); var row=buildRow(c, {whenLabel: whenLabel}); els.scheduledList.appendChild(row); }); } else { els.scheduledBlock.classList.add('hidden'); els.scheduledList.innerHTML=''; } } if(els.showArchived && els.showArchived.checked){ els.archivedBlock.classList.remove('hidden'); renderList(els.archivedList, archived); } else { els.archivedBlock.classList.add('hidden'); els.archivedList && (els.archivedList.innerHTML=''); } els.todayDate && (els.todayDate.textContent=new Date().toLocaleDateString([], {weekday:'long',month:'long',day:'numeric',year:'numeric'})); renderActivity(); renderChart(); renderHeatmap(); renderNextToTouch(); renderFollowUps(); renderTodayHit(); renderTomorrowList(); renderQuote(false); }
 
   /* Quotes (light) */
@@ -1383,60 +1432,44 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   /* Sidebar position + show/hide */
   ;(function(){
     var appRoot=els.appRoot;
-    function applySidebarPos(){ if(ui.sidebarLeft){ appRoot.classList.add('leftbar'); } else { appRoot.classList.remove('leftbar'); } }
+    // Removed applySidebarPos - now handled in move button logic
     function applySidebarVisibility(){
-      if(ui.sidebarHidden){ appRoot.classList.add('no-side'); if(els.toggleSidebarBtn) els.toggleSidebarBtn.textContent='Show Sidebar'; }
-      else { appRoot.classList.remove('no-side'); if(els.toggleSidebarBtn) els.toggleSidebarBtn.textContent='Hide Sidebar'; }
+      if(ui.sidebarHidden){ appRoot.classList.add('no-side'); if(els.toggleSidebarBtn) els.toggleSidebarBtn.textContent='◨'; }
+      else { appRoot.classList.remove('no-side'); if(els.toggleSidebarBtn) els.toggleSidebarBtn.textContent='◧'; }
     }
     if(typeof ui.sidebarLeft==='undefined'){ ui.sidebarLeft=false; }
     if(typeof ui.sidebarHidden==='undefined'){ ui.sidebarHidden=false; }
-    applySidebarPos(); applySidebarVisibility();
+
+    // Apply saved sidebar position
+    if(ui.sidebarLeft){
+      appRoot.classList.add('leftbar');
+    }
+
+    applySidebarVisibility();
     // Add the move-left/right helper in the controls stack
     var controls=document.querySelector('.controls .stack');
     if(controls){
-      var moveBtn=document.createElement('button'); 
-      moveBtn.className='btn-min gray'; 
-      function label(){ 
-        moveBtn.textContent = ui.sidebarLeft ? 'Move Sidebar Right' : 'Move Sidebar Left'; 
+      var moveBtn=document.createElement('button');
+      moveBtn.className='btn-min gray';
+      moveBtn.title = 'Move sidebar to the other side';
+      function label(){
+        moveBtn.textContent = ui.sidebarLeft ? '→' : '←';
       }
       label(); 
-      moveBtn.addEventListener('click', function(){ 
-        // Move all widgets to the clicked side
-        ui.sidebarLeft = !ui.sidebarLeft; 
-        saveUI(ui); 
-        
-        // Move widgets from right sidebar to left sidebar or vice versa
-        var leftSidebar = $('#leftSidebar');
-        var rightSidebar = $('#sidebarWidgets');
-        
-        if(ui.sidebarLeft && leftSidebar && rightSidebar){
-          // Move all widgets to left sidebar
-          var widgets = rightSidebar.querySelectorAll('.widget');
-          widgets.forEach(function(widget){
-            leftSidebar.appendChild(widget);
-          });
-          // Show left sidebar, hide right sidebar
-          leftSidebar.style.display = 'block';
-          rightSidebar.style.display = 'none';
-          // Remove conflicting classes and add proper layout
-          appRoot.classList.remove('leftbar');
-          appRoot.classList.add('dual-sidebar');
-        } else if(!ui.sidebarLeft && leftSidebar && rightSidebar){
-          // Move all widgets to right sidebar  
-          var widgets = leftSidebar.querySelectorAll('.widget');
-          widgets.forEach(function(widget){
-            rightSidebar.appendChild(widget);
-          });
-          // Hide left sidebar, show right sidebar
-          leftSidebar.style.display = 'none';
-          rightSidebar.style.display = 'block';
-          // Remove dual-sidebar layout
-          appRoot.classList.remove('dual-sidebar');
+      moveBtn.addEventListener('click', function(){
+        // Toggle sidebar position
+        ui.sidebarLeft = !ui.sidebarLeft;
+
+        // Simply toggle the leftbar class - CSS handles the rest
+        if(ui.sidebarLeft){
+          appRoot.classList.add('leftbar');
+        } else {
           appRoot.classList.remove('leftbar');
         }
-        
-        // Don't call applySidebarPos() as it conflicts with our logic
-        label(); 
+
+        // Save state and update button
+        saveUI(ui);
+        label();
       });
       controls.appendChild(moveBtn);
     }
@@ -1445,8 +1478,6 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
         ui.sidebarHidden = !ui.sidebarHidden; saveUI(ui); applySidebarVisibility();
       });
     }
-    
-    saveUI(ui);
   })();
 
   /* Power Hour */
@@ -1455,10 +1486,35 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   if(els.hopPause) els.hopPause.addEventListener('click', function(){ hopRunning=false; clearInterval(hopTimer); });
   if(els.hopReset) els.hopReset.addEventListener('click', function(){ hopRunning=false; clearInterval(hopTimer); hopRemaining=60*60; els.hopCalls && (els.hopCalls.textContent='0'); renderHOP(); });
 
-  /* Keyboard shortcuts — DO NOT steal Ctrl/Cmd combos (so Ctrl+L / Ctrl+R work) */
+  /* Shortcuts modal functions */
+  function showShortcutsModal(){
+    document.getElementById('shortcutsModal').style.display = 'block';
+  }
+  function closeShortcutsModal(){
+    document.getElementById('shortcutsModal').style.display = 'none';
+  }
+  window.showShortcutsModal = showShortcutsModal;
+  window.closeShortcutsModal = closeShortcutsModal;
+
+  /* Keyboard shortcuts */
   document.addEventListener('keydown', function(e){
     var tag=(document.activeElement && document.activeElement.tagName)||'';
-    if(e.ctrlKey || e.metaKey) return;            // <-- Let browser handle Ctrl/Cmd shortcuts
+
+    // Handle Cmd+/ or Ctrl+/ for shortcuts modal
+    if((e.metaKey || e.ctrlKey) && e.key === '/'){
+      showShortcutsModal();
+      e.preventDefault();
+      return;
+    }
+
+    // Handle Escape to close modal
+    if(e.key === 'Escape' && document.getElementById('shortcutsModal').style.display === 'block'){
+      closeShortcutsModal();
+      e.preventDefault();
+      return;
+    }
+
+    if(e.ctrlKey || e.metaKey) return;            // <-- Let browser handle other Ctrl/Cmd shortcuts
     if(tag==='INPUT' || tag==='TEXTAREA' || tag==='SELECT') return;
 
     var key=e.key;
@@ -1521,9 +1577,22 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   });
 
   /* Widgets drag & collapse */
-  function loadWidgetOrder(){ return Array.isArray(ui.widgetOrder)? ui.widgetOrder : $all('#sidebarWidgets .widget').map(function(w){return w.dataset.key;}); }
+  function loadWidgetOrder(){
+    if(Array.isArray(ui.widgetOrder) && ui.widgetOrder.length > 0) {
+      return ui.widgetOrder;
+    }
+    // Default order: Today's Activity, Power Hour, Motivation, Heatmap, Tomorrow's List, then others
+    var defaultOrder = ['todayActivity', 'powerHour', 'motivation', 'heatmap', 'tomorrowListWidget'];
+    var allWidgets = $all('#sidebarWidgets .widget').map(function(w){return w.dataset.key;});
+    var otherWidgets = allWidgets.filter(function(key){ return !defaultOrder.includes(key); });
+    return defaultOrder.concat(otherWidgets);
+  }
   function saveWidgetOrder(keys){ ui.widgetOrder=keys; saveUI(ui); }
-  function applyWidgetOrder(){ var keys=loadWidgetOrder(), map={}; $all('#sidebarWidgets .widget').forEach(function(w){ map[w.dataset.key]=w; }); keys.forEach(function(k){ if(map[k]) els.sidebar.appendChild(map[k]); }); }
+  function applyWidgetOrder(){
+    var keys=loadWidgetOrder(), map={};
+    $all('#sidebarWidgets .widget[draggable="true"]').forEach(function(w){ map[w.dataset.key]=w; });
+    keys.forEach(function(k){ if(map[k]) els.sidebar.appendChild(map[k]); });
+  }
   
   function loadLeftWidgets(){ return Array.isArray(ui.leftWidgets) ? ui.leftWidgets : []; }
   function saveLeftWidgets(keys){ ui.leftWidgets=keys; saveUI(ui); }
@@ -1728,16 +1797,168 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   
   // Apply saved left widget positions
   var leftKeys = loadLeftWidgets();
+  var hasLeftWidgets = leftKeys.length > 0;
+
   leftKeys.forEach(function(key){
     var widget = $('#' + key) || $('[data-key="' + key + '"]');
     if(widget && els.leftSidebar) els.leftSidebar.appendChild(widget);
   });
-  
-  applyWidgetOrder(); applyDualSidebarLayout(); enableDrag(); enableCollapse();
+
+  // Apply widget order for right sidebar
+  applyWidgetOrder();
+
+  // Apply dual sidebar layout if widgets are split between sidebars
+  applyDualSidebarLayout();
+
+  enableDrag(); enableCollapse();
   renderQuote(false); scheduleQuoteTimer(); renderDailyOutreach();
+
+  /* Email functionality with KPI data */
+  if(els.emailTodayDetailBtn){
+    els.emailTodayDetailBtn.addEventListener('click', function(){
+      var kpis = getKPIData();
+      var today = new Date().toLocaleDateString();
+      var dailyStats = getDailyStats();
+
+      var subject = 'Life Hotlist - Today\'s Activity (' + today + ')';
+      var body = 'Today\'s Activity Report\n\n';
+      body += '=== KPIs ===\n';
+      body += 'Purchased: ' + kpis.purchased + '\n';
+      body += 'Weekly Calls: ' + kpis.weeklyCalls + '\n';
+      body += 'Streak: ' + kpis.streak + ' day(s)\n\n';
+      body += '=== Daily Activity ===\n';
+      body += 'Calls: ' + dailyStats.calls + '\n';
+      body += 'Messages: ' + dailyStats.messages + '\n\n';
+
+      // Add today's activity details
+      var todayActivities = getTodayActivities();
+      if(todayActivities.length > 0){
+        body += '=== Activity Details ===\n';
+        todayActivities.forEach(function(a){
+          body += a.time + ' - ' + a.client + ': ' + a.action + '\n';
+        });
+      }
+
+      window.location.href = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+    });
+  }
+
+  if(els.emailSummaryBtn){
+    els.emailSummaryBtn.addEventListener('click', function(){
+      var kpis = getKPIData();
+      var range = els.reportRangeSel ? els.reportRangeSel.value : '7';
+      var rangeDays = parseInt(range);
+
+      var subject = 'Life Hotlist - ' + rangeDays + ' Day Summary Report';
+      var body = rangeDays + ' Day Summary Report\n\n';
+      body += '=== KPIs ===\n';
+      body += 'Total Purchased: ' + kpis.purchased + '\n';
+      body += 'Weekly Calls: ' + kpis.weeklyCalls + '\n';
+      body += 'Current Streak: ' + kpis.streak + ' day(s)\n\n';
+
+      // Add pipeline summary
+      var pipeline = getPipelineData();
+      body += '=== Pipeline ===\n';
+      Object.keys(pipeline).forEach(function(status){
+        body += status + ': ' + pipeline[status] + '\n';
+      });
+
+      window.location.href = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+    });
+  }
+
+  // Helper function to get today's activities
+  function getTodayActivities(){
+    var activities = [];
+    var today = startOfDay(new Date());
+    var tomorrow = addDays(today, 1);
+
+    state.clients.forEach(function(c){
+      (c.history || []).forEach(function(h){
+        var ts = new Date(h.ts);
+        if(ts >= today && ts < tomorrow){
+          activities.push({
+            time: ts.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
+            client: c.name,
+            action: h.action === 'status' ? 'Status: ' + h.to : h.action
+          });
+        }
+      });
+    });
+
+    return activities.sort(function(a, b){ return b.time.localeCompare(a.time); });
+  }
+
+  // Helper to get pipeline data
+  function getPipelineData(){
+    var pipeline = {};
+    state.clients.forEach(function(c){
+      if(!c.archived && c.status){
+        pipeline[c.status] = (pipeline[c.status] || 0) + 1;
+      }
+    });
+    return pipeline;
+  }
+
   render();
 })();
 </script>
+
+<!-- Shortcuts Modal -->
+<div id="shortcutsModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:9999;">
+  <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:var(--card); border-radius:var(--radius); padding:24px; max-width:600px; width:90%; max-height:80vh; overflow-y:auto; box-shadow:var(--shadow);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <h2 style="margin:0; color:var(--ink);">Keyboard Shortcuts</h2>
+      <button onclick="closeShortcutsModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:var(--muted);">×</button>
+    </div>
+    <div style="display:grid; gap:16px;">
+      <div>
+        <h3 style="color:var(--green); margin-bottom:8px; font-size:14px;">Navigation</h3>
+        <div style="display:grid; gap:4px; font-size:13px;">
+          <div><kbd>↑/↓</kbd> or <kbd>J/K</kbd> - Navigate between clients</div>
+          <div><kbd>Click</kbd> - Focus on a client row</div>
+        </div>
+      </div>
+      <div>
+        <h3 style="color:var(--green); margin-bottom:8px; font-size:14px;">Status Management</h3>
+        <div style="display:grid; gap:4px; font-size:13px;">
+          <div><kbd>1</kbd> - Sent Quote</div>
+          <div><kbd>2</kbd> - Sent Application</div>
+          <div><kbd>3</kbd> - Pending Application Signature</div>
+          <div><kbd>4</kbd> - Pending Medical Questionnaire</div>
+          <div><kbd>5</kbd> - Purchased</div>
+          <div><kbd>0</kbd> - Clear status</div>
+        </div>
+      </div>
+      <div>
+        <h3 style="color:var(--green); margin-bottom:8px; font-size:14px;">Actions</h3>
+        <div style="display:grid; gap:4px; font-size:13px;">
+          <div><kbd>A</kbd> - Log a call</div>
+          <div><kbd>L</kbd> - Log a message/email</div>
+          <div><kbd>Shift+A</kbd> - Remove a call</div>
+          <div><kbd>Shift+L</kbd> - Remove a message</div>
+          <div><kbd>N</kbd> - Toggle notes</div>
+          <div><kbd>H</kbd> - Mark as hot lead</div>
+        </div>
+      </div>
+      <div>
+        <h3 style="color:var(--green); margin-bottom:8px; font-size:14px;">Scheduling</h3>
+        <div style="display:grid; gap:4px; font-size:13px;">
+          <div><kbd>F</kbd> - Queue for today</div>
+          <div><kbd>D</kbd> - Queue for tomorrow</div>
+          <div><kbd>U</kbd> - Undo last action</div>
+        </div>
+      </div>
+      <div>
+        <h3 style="color:var(--green); margin-bottom:8px; font-size:14px;">Help</h3>
+        <div style="display:grid; gap:4px; font-size:13px;">
+          <div><kbd>⌘/</kbd> or <kbd>Ctrl+/</kbd> - Show this help</div>
+          <div><kbd>Esc</kbd> - Close this dialog</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
