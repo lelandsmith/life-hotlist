@@ -106,6 +106,52 @@ h1{
   font-weight:800;
   margin:0;
 }
+
+/* Flame title styling */
+.flame-title {
+  background: linear-gradient(135deg, #ff6b35, #ff8c00, #ffa500);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 15px rgba(255, 140, 0, 0.4))
+          drop-shadow(0 0 30px rgba(255, 165, 0, 0.2));
+  position: relative;
+  display: inline-block;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Hot flame animation when marking client hot */
+@keyframes flameTravel {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  20% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  80% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.flame-burst {
+  position: fixed;
+  font-size: 96px;
+  z-index: 10000;
+  pointer-events: none;
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
 .muted{color:var(--muted)} .small{font-size:12px}
 
 /* Keyboard styles */
@@ -545,7 +591,30 @@ button:focus-visible{outline:none; box-shadow:var(--ring)}
 /* Chips */
 .tag-chip{
   display:inline-block;border:1px solid #cbd5e1;background:#f8fafc;font-size:11px;
-  padding:2px 6px;margin-left:4px;white-space:nowrap;flex-shrink:0;border-radius:999px
+  padding:2px 6px;margin-left:4px;white-space:nowrap;flex-shrink:0;border-radius:999px;
+  position:relative;
+}
+.tag-chip.scheduled{
+  padding-right:8px;
+}
+.tag-chip.scheduled .unschedule-x{
+  display:none;
+  position:absolute;
+  right:2px;
+  top:-2px;
+  background:#dc2626;
+  color:white;
+  border-radius:50%;
+  width:14px;
+  height:14px;
+  line-height:14px;
+  text-align:center;
+  font-size:10px;
+  cursor:pointer;
+  font-weight:bold;
+}
+.tag-chip.scheduled:hover .unschedule-x{
+  display:block;
 }
 
 /* Density switch */
@@ -638,7 +707,7 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   <section class="card">
     <header>
       <div style="display:flex;flex-direction:column;gap:4px">
-        <h1>Life Hotlist</h1>
+        <h1 id="hotlistTitle" class="flame-title">Life Hotlist 🔥</h1>
         <div id="errorBanner" class="error-banner"></div>
         
         <!-- Daily Outreach Progress Bar -->
@@ -751,8 +820,8 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
       </div></div>
     </div>
 
-    <div class="widget" data-key="followups" draggable="true">
-      <div class="widget-head"><h2 class="widget-title">Follow Ups</h2><div class="widget-actions"><button class="btn-min gray collapse-btn" data-collapse title="Collapse"></button></div></div>
+    <div class="widget" data-key="scheduled" draggable="true">
+      <div class="widget-head"><h2 class="widget-title">Scheduled</h2><div class="widget-actions"><button class="btn-min gray collapse-btn" data-collapse title="Collapse"></button></div></div>
       <div class="widget-body"><div id="followList" class="followups"></div></div>
     </div>
 
@@ -783,10 +852,6 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
       <div class="widget-body"><div id="nextList" class="nextlist"></div></div>
     </div>
 
-    <div class="widget" data-key="tomorrowListWidget" draggable="true">
-      <div class="widget-head"><h2 class="widget-title">Tomorrow’s List</h2><div class="widget-actions"><button class="btn-min gray collapse-btn" data-collapse title="Collapse"></button></div></div>
-      <div class="widget-body"><div id="tomorrowList" class="nextlist"></div></div>
-    </div>
 
     <div class="widget" data-key="todayActivity" draggable="true">
       <div class="widget-head"><h2 class="widget-title">Today's Activity</h2><div class="widget-actions"><button class="btn-min gray" id="emailTodayDetailBtn">Email Today</button><button class="btn-min gray collapse-btn" data-collapse title="Collapse"></button></div></div>
@@ -869,6 +934,32 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   function loadUI(){ try{ return JSON.parse(localStorage.getItem(UI_KEY)||'{}'); }catch(e){ return {}; } }
   function saveUI(u){ localStorage.setItem(UI_KEY, JSON.stringify(u)); }
   var ui = loadUI();
+
+  /* Daily queue rotation */
+  function rotateDailyQueues(){
+    var today = new Date().toDateString();
+    var lastRotation = ui.lastQueueRotation || '';
+
+    if(lastRotation !== today){
+      // It's a new day, rotate queues
+      var rotated = false;
+      state.clients.forEach(function(c){
+        if(c.queueTomorrow){
+          c.queueToday = true;
+          c.queueTomorrow = false;
+          rotated = true;
+        }
+      });
+
+      if(rotated){
+        save(state);
+      }
+
+      // Save today's date as last rotation
+      ui.lastQueueRotation = today;
+      saveUI(ui);
+    }
+  }
 
   function getAgeThreshold(){
     var v = (ui.ageDays!=null) ? Number(ui.ageDays) : Number((els.ageDays && els.ageDays.value) || 4);
@@ -1196,7 +1287,12 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
         touchedDot.title='Touched today';
         head.appendChild(touchedDot); 
       }
-      if(opts.whenLabel){ var whenChip=document.createElement('span'); whenChip.className='tag-chip'; whenChip.textContent=opts.whenLabel; head.appendChild(whenChip); }
+      if(opts.whenLabel){
+        var whenChip=document.createElement('span');
+        whenChip.className='tag-chip scheduled';
+        whenChip.innerHTML = opts.whenLabel + '<span class="unschedule-x" data-client-id="' + c.id + '">×</span>';
+        head.appendChild(whenChip);
+      }
       if(c.queueToday){ var chip1=document.createElement('span'); chip1.className='tag-chip'; chip1.textContent='Today'; head.appendChild(chip1); }
       if(c.queueTomorrow){ var chip2=document.createElement('span'); chip2.className='tag-chip'; chip2.textContent='Tomorrow'; head.appendChild(chip2); }
       mid.appendChild(head);
@@ -1240,7 +1336,13 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
       if(c.hot) hotBtn.classList.add('active');
       var hotIco=document.createElement('span'); hotIco.className='ico'; hotIco.textContent='🔥';
       hotBtn.appendChild(hotIco);
-      hotBtn.addEventListener('click', function(){ preserveUIAndRender(function(){ c.hot = !c.hot; }); });
+      hotBtn.addEventListener('click', function(e){
+        var wasHot = c.hot;
+        preserveUIAndRender(function(){ c.hot = !c.hot; });
+        if(!wasHot && c.hot){
+          showFlameAnimation(e);
+        }
+      });
       actionsSection.appendChild(hotBtn);
       
       // Action icons
@@ -1249,7 +1351,12 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
       
       // Tags section
       var tagsSection=document.createElement('div'); tagsSection.className='tags-section';
-      if(opts.whenLabel){ var whenChip=document.createElement('span'); whenChip.className='tag-chip'; whenChip.textContent=opts.whenLabel; tagsSection.appendChild(whenChip); }
+      if(opts.whenLabel){
+        var whenChip=document.createElement('span');
+        whenChip.className='tag-chip scheduled';
+        whenChip.innerHTML = opts.whenLabel + '<span class="unschedule-x" data-client-id="' + c.id + '">×</span>';
+        tagsSection.appendChild(whenChip);
+      }
       if(c.queueToday){ var chip1=document.createElement('span'); chip1.className='tag-chip'; chip1.textContent='Today'; tagsSection.appendChild(chip1); }
       if(c.queueTomorrow){ var chip2=document.createElement('span'); chip2.className='tag-chip'; chip2.textContent='Tomorrow'; tagsSection.appendChild(chip2); }
       
@@ -1285,7 +1392,13 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
       var hotIco=document.createElement('span'); hotIco.className='ico'; hotIco.textContent='🔥';
       var hotCap=document.createElement('span'); hotCap.className='label'; hotCap.textContent='Hot';
       hotBtn.appendChild(hotIco); hotBtn.appendChild(hotCap);
-      hotBtn.addEventListener('click', function(){ preserveUIAndRender(function(){ c.hot = !c.hot; }); });
+      hotBtn.addEventListener('click', function(e){
+        var wasHot = c.hot;
+        preserveUIAndRender(function(){ c.hot = !c.hot; });
+        if(!wasHot && c.hot){
+          showFlameAnimation(e);
+        }
+      });
       bar.appendChild(hotBtn);
 
       // Notes/Schedule/Archive/Delete (icon bar)
@@ -1321,7 +1434,54 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   function renderHeatmap(){ if(!els.heatmap) return; var days=90, data=lastNDays(days); function lvl(c){ return c===0?'': c<=1?'l1': c<=3?'l2': c<=6?'l3':'l4'; } els.heatmap.innerHTML=''; data.forEach(function(d){ var cell=document.createElement('div'); cell.className='cell '+lvl(d.count); cell.title=d.label+': '+d.count; els.heatmap.appendChild(cell); }); }
 
   /* Followups & Next to Touch */
-  function renderFollowUps(){ if(!els.followList) return; var items=state.clients.filter(function(c){return !c.archived && c.followUp;}).map(function(c){return {c:c, when:new Date(c.followUp)};}).sort(function(a,b){return +a.when - +b.when;}); els.followList.innerHTML=''; if(!items.length){ els.followList.innerHTML='<div class="small muted">No follow ups set.</div>'; return; } items.forEach(function(rec){ var div=document.createElement('div'); div.className='followitem'; var left=document.createElement('div'); left.textContent=rec.c.name; var right=document.createElement('div'); right.className='small muted'; right.textContent=rec.when.toLocaleString([], {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}); div.appendChild(left); div.appendChild(right); els.followList.appendChild(div); }); }
+  function renderFollowUps(){
+    if(!els.followList) return;
+    var now = new Date();
+    var items = state.clients.filter(function(c){
+      // Exclude archived and tomorrow-queued clients
+      return !c.archived && c.followUp && !c.queueTomorrow;
+    }).map(function(c){
+      var when = new Date(c.followUp);
+      var daysUntil = Math.ceil((when - now) / (1000 * 60 * 60 * 24));
+      return {c:c, when:when, daysUntil:daysUntil};
+    }).sort(function(a,b){return +a.when - +b.when;});
+
+    els.followList.innerHTML='';
+    if(!items.length){
+      els.followList.innerHTML='<div class="small muted">No scheduled follow ups.</div>';
+      return;
+    }
+
+    items.forEach(function(rec){
+      var div=document.createElement('div');
+      div.className='followitem';
+
+      var left=document.createElement('div');
+      left.textContent=rec.c.name;
+
+      var right=document.createElement('div');
+      right.className='small muted';
+
+      // Show countdown and turn red if overdue
+      if(rec.daysUntil < 0){
+        right.style.color = '#dc2626';
+        right.style.fontWeight = '600';
+        right.textContent = Math.abs(rec.daysUntil) + ' days overdue';
+      } else if(rec.daysUntil === 0){
+        right.style.color = '#f59e0b';
+        right.style.fontWeight = '600';
+        right.textContent = 'Due today';
+      } else if(rec.daysUntil === 1){
+        right.textContent = 'Tomorrow';
+      } else {
+        right.textContent = 'In ' + rec.daysUntil + ' days';
+      }
+
+      div.appendChild(left);
+      div.appendChild(right);
+      els.followList.appendChild(div);
+    });
+  }
   function renderNextToTouch(){ if(!els.nextList) return; var thr=getAgeThreshold(); var list=state.clients.filter(function(c){return !c.archived;}).map(function(c){return {c:c, bd:businessDaysSince(c.lastTouch)};}).filter(function(x){return x.bd>thr;}).sort(function(a,b){return b.bd-a.bd;}).slice(0,25); els.nextList.innerHTML=''; if(!list.length){ els.nextList.innerHTML='<div class="small muted">All caught up '+CLAP+'</div>'; return; } list.forEach(function(it){ var div=document.createElement('div'); div.className='nextitem'; var left=document.createElement('div'); var b=agingBadge(it.bd, thr); b.classList.add('sm'); b.style.marginRight='6px'; b.style.display='inline-flex'; var nameSpan=document.createElement('span'); nameSpan.textContent=it.c.name; left.appendChild(b); left.appendChild(nameSpan); var right=document.createElement('div'); right.className='small muted'; right.textContent='Last: '+fmtDay(it.c.lastTouch)+' ('+it.bd+'bd)'; div.appendChild(left); div.appendChild(right); els.nextList.appendChild(div); }); }
 
   /* Today + Tomorrow + Scheduled */
@@ -1393,7 +1553,7 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     });
     restoreSelection();
   }
-  function render(){ var activeAll=state.clients.filter(function(c){return !c.archived;}); var scheduled = activeAll.filter(isFutureFollowUp); var mainActive = activeAll.filter(function(c){ return !isFutureFollowUp(c) && !c.queueToday; }); var archived=state.clients.filter(function(c){return c.archived;}); renderKPIs(); renderPipeline(); renderTrendRibbons(); renderDailyOutreach(); renderList(els.list, mainActive); if(els.scheduledBlock && els.scheduledList){ if(scheduled.length){ els.scheduledBlock.classList.remove('hidden'); els.scheduledList.innerHTML=''; sortClients(scheduled).forEach(function(c){ var whenLabel=(new Date(c.followUp)).toLocaleString([], {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}); var row=buildRow(c, {whenLabel: whenLabel}); els.scheduledList.appendChild(row); }); } else { els.scheduledBlock.classList.add('hidden'); els.scheduledList.innerHTML=''; } } if(els.showArchived && els.showArchived.checked){ els.archivedBlock.classList.remove('hidden'); renderList(els.archivedList, archived); } else { els.archivedBlock.classList.add('hidden'); els.archivedList && (els.archivedList.innerHTML=''); } els.todayDate && (els.todayDate.textContent=new Date().toLocaleDateString([], {weekday:'long',month:'long',day:'numeric',year:'numeric'})); renderActivity(); renderChart(); renderHeatmap(); renderNextToTouch(); renderFollowUps(); renderTodayHit(); renderTomorrowList(); renderQuote(false); }
+  function render(){ var activeAll=state.clients.filter(function(c){return !c.archived;}); var scheduled = activeAll.filter(isFutureFollowUp); var mainActive = activeAll.filter(function(c){ return !isFutureFollowUp(c) && !c.queueToday; }); var archived=state.clients.filter(function(c){return c.archived;}); renderKPIs(); renderPipeline(); renderTrendRibbons(); renderDailyOutreach(); renderList(els.list, mainActive); if(els.scheduledBlock && els.scheduledList){ if(scheduled.length){ els.scheduledBlock.classList.remove('hidden'); els.scheduledList.innerHTML=''; sortClients(scheduled).forEach(function(c){ var whenLabel=(new Date(c.followUp)).toLocaleString([], {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}); var row=buildRow(c, {whenLabel: whenLabel}); els.scheduledList.appendChild(row); }); } else { els.scheduledBlock.classList.add('hidden'); els.scheduledList.innerHTML=''; } } if(els.showArchived && els.showArchived.checked){ els.archivedBlock.classList.remove('hidden'); renderList(els.archivedList, archived); } else { els.archivedBlock.classList.add('hidden'); els.archivedList && (els.archivedList.innerHTML=''); } els.todayDate && (els.todayDate.textContent=new Date().toLocaleDateString([], {weekday:'long',month:'long',day:'numeric',year:'numeric'})); renderActivity(); renderChart(); renderHeatmap(); renderNextToTouch(); renderFollowUps(); renderTodayHit(); renderQuote(false); }
 
   /* Quotes (light) */
   var quoteTimer=null; function pickQuote(){ var list=(state.quotes && state.quotes.list)||[]; if(!list.length) return ''; var qs=state.quotesSettings||{interval:15, random:true, norepeat:true, recent:[]}; if(!qs.random){ var idx=Number(qs.lastIndex||0); idx=(idx+1)%list.length; qs.lastIndex=idx; return list[idx]; } var recent=Array.isArray(qs.recent)?qs.recent:[]; var tries=0, idx2=0; do{ idx2=Math.floor(Math.random()*list.length); tries++; } while(qs.norepeat && recent.indexOf(idx2)!==-1 && tries<25); recent.push(idx2); while(recent.length>Math.min(20, Math.ceil(list.length/3))) recent.shift(); qs.recent=recent; qs.lastIndex=idx2; state.quotesSettings=qs; save(state); return list[idx2]; }
@@ -1496,6 +1656,55 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   window.showShortcutsModal = showShortcutsModal;
   window.closeShortcutsModal = closeShortcutsModal;
 
+  /* Flame animation when marking hot */
+  function showFlameAnimation(event){
+    var flame = document.createElement('div');
+    flame.className = 'flame-burst';
+    flame.innerHTML = '🔥';
+
+    // Find the selected row or use click position
+    var selectedRow = document.querySelector('.row.selected');
+
+    if(selectedRow){
+      var rect = selectedRow.getBoundingClientRect();
+      flame.style.left = (rect.left + rect.width / 2 - 48) + 'px';
+      flame.style.top = (rect.top + rect.height / 2 - 48) + 'px';
+    } else if(event && event.clientX){
+      flame.style.left = (event.clientX - 48) + 'px';
+      flame.style.top = (event.clientY - 48) + 'px';
+    } else {
+      flame.style.left = (window.innerWidth / 2 - 48) + 'px';
+      flame.style.top = (window.innerHeight / 2 - 48) + 'px';
+    }
+
+    document.body.appendChild(flame);
+
+    // Apply animation
+    flame.style.animation = 'flameTravel 0.6s ease-out';
+
+    // Remove after animation completes
+    setTimeout(function(){
+      flame.remove();
+    }, 600);
+
+    // Make the title pulse briefly
+    title.style.animation = 'pulse 0.3s ease-out';
+  }
+
+  /* Click handler for unscheduling */
+  document.addEventListener('click', function(e){
+    if(e.target.classList.contains('unschedule-x')){
+      e.stopPropagation();
+      var clientId = e.target.getAttribute('data-client-id');
+      var client = state.clients.find(function(c){ return c.id === clientId; });
+      if(client){
+        client.followUp = '';
+        save(state);
+        render();
+      }
+    }
+  });
+
   /* Keyboard shortcuts */
   document.addEventListener('keydown', function(e){
     var tag=(document.activeElement && document.activeElement.tagName)||'';
@@ -1543,7 +1752,18 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
       } 
     }
     if(key==='n' || key==='N'){ var rows2=allRows(); var row=rows2[selectionIndex]; if(!row) return; var ta=row.querySelector('textarea'); var wrap=row.querySelector('.notes'); if(wrap){ wrap.classList.toggle('hidden'); if(!wrap.classList.contains('hidden') && ta) ta.focus(); } e.preventDefault(); }
-    if(key==='h' || key==='H'){ var cHot=getSelectedClient(); if(cHot){ preserveUIAndRender(function(){ cHot.hot = !cHot.hot; }); e.preventDefault(); } }
+    if(key==='h' || key==='H'){
+      var cHot=getSelectedClient();
+      if(cHot){
+        var wasHot = cHot.hot;
+        preserveUIAndRender(function(){ cHot.hot = !cHot.hot; });
+        // Show flame animation if marking as hot
+        if(!wasHot && cHot.hot){
+          showFlameAnimation(e);
+        }
+        e.preventDefault();
+      }
+    }
 
     if(key==='F' || key==='f'){ 
       var c4=getSelectedClient() || state.clients.find(function(c){return !c.archived && !isFutureFollowUp(c) && !c.queueToday && !c.queueTomorrow;}); 
@@ -1581,8 +1801,8 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     if(Array.isArray(ui.widgetOrder) && ui.widgetOrder.length > 0) {
       return ui.widgetOrder;
     }
-    // Default order: Today's Activity, Power Hour, Motivation, Heatmap, Tomorrow's List, then others
-    var defaultOrder = ['todayActivity', 'powerHour', 'motivation', 'heatmap', 'tomorrowListWidget'];
+    // Default order: Today's Activity, Power Hour, Motivation, Heatmap, then others
+    var defaultOrder = ['todayActivity', 'powerHour', 'motivation', 'heatmap'];
     var allWidgets = $all('#sidebarWidgets .widget').map(function(w){return w.dataset.key;});
     var otherWidgets = allWidgets.filter(function(key){ return !defaultOrder.includes(key); });
     return defaultOrder.concat(otherWidgets);
@@ -1811,7 +2031,20 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   applyDualSidebarLayout();
 
   enableDrag(); enableCollapse();
+
+  // Check for daily queue rotation on load
+  rotateDailyQueues();
+
   renderQuote(false); scheduleQuoteTimer(); renderDailyOutreach();
+
+  // Check for queue rotation every minute (in case app stays open overnight)
+  setInterval(function(){
+    var today = new Date().toDateString();
+    if(ui.lastQueueRotation !== today){
+      rotateDailyQueues();
+      render();
+    }
+  }, 60000);
 
   /* Email functionality with KPI data */
   if(els.emailTodayDetailBtn){
