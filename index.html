@@ -774,28 +774,38 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
 /* Medium screens - better layout for 1400x900 */
 @media (min-width:1151px) and (max-width:1450px){
   .controls{
-    margin-top:-8px;
-    padding-left:20px;
+    margin-top:4px;
+    padding:0;
     justify-content:flex-start;
+    width:100%;
   }
   .controls .stack{
     flex-wrap:nowrap;
-    gap:8px;
+    gap:6px;
+    width:auto;
   }
   .controls input{
-    max-width:240px !important;
-    min-width:200px !important;
+    width:200px !important;
+    min-width:180px !important;
   }
   .controls select{
     width:auto;
-    min-width:90px;
-  }
-  .sidebar-controls{
-    gap:6px;
-  }
-  .sidebar-controls button{
-    padding:4px 10px;
+    min-width:75px;
     font-size:12px;
+  }
+  .controls label{
+    font-size:11px;
+    white-space:nowrap;
+  }
+  .controls label.small{
+    display:flex;
+    align-items:center;
+    gap:4px;
+  }
+  /* Ensure buttons stay visible */
+  .btn-min{
+    padding:3px 6px !important;
+    font-size:11px !important;
   }
 }
 
