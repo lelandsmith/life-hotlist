@@ -1900,7 +1900,13 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     }, 600);
 
     // Make the title pulse briefly
-    title.style.animation = 'pulse 0.3s ease-out';
+    var title = document.getElementById('hotlistTitle');
+    if(title){
+      title.style.animation = 'pulse 0.3s ease-out';
+      setTimeout(function(){
+        title.style.animation = '';
+      }, 300);
+    }
   }
 
   /* Click handler for unscheduling */
