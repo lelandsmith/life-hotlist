@@ -776,36 +776,46 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   .controls{
     margin-top:4px;
     padding:0;
-    justify-content:flex-start;
     width:100%;
   }
   .controls .stack{
-    flex-wrap:nowrap;
+    display:flex;
+    flex-wrap:nowrap !important;
     gap:6px;
-    width:auto;
+    width:100%;
+    align-items:center;
+    justify-content:flex-start;
   }
-  .controls input{
-    width:200px !important;
-    min-width:180px !important;
+  .controls input#globalSearch{
+    flex:0 0 auto;
+    width:180px !important;
+    min-width:160px !important;
+    max-width:180px !important;
   }
   .controls select{
     width:auto;
-    min-width:75px;
-    font-size:12px;
+    min-width:70px;
+    max-width:100px;
+    font-size:11px;
   }
   .controls label{
     font-size:11px;
     white-space:nowrap;
-  }
-  .controls label.small{
     display:flex;
     align-items:center;
     gap:4px;
   }
-  /* Ensure buttons stay visible */
-  .btn-min{
-    padding:3px 6px !important;
-    font-size:11px !important;
+  .controls label.small{
+    flex:0 0 auto;
+  }
+  /* Ensure sidebar control buttons stay visible and compact */
+  .controls .btn-min{
+    padding:2px 5px !important;
+    font-size:10px !important;
+    white-space:nowrap;
+  }
+  #sidebar-controls{
+    flex:0 0 auto;
   }
 }
 
