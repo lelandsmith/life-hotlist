@@ -760,8 +760,13 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
               <option value="ultra-compact">Ultra Compact</option>
             </select>
           </label>
-          <!-- Move left/right stays in JS; new hide/show button below -->
-          <button id="toggleSidebarBtn" class="btn-min gray" title="Hide or Show the Sidebar Widgets">◧</button>
+          <!-- Sidebar controls in one line -->
+          <div style="display:flex; gap:4px; align-items:center;">
+            <button id="toggleSidebarBtn" class="btn-min gray" title="Toggle Sidebar" style="padding:4px 8px;">◧</button>
+            <div id="sidebar-controls" style="display:flex; gap:2px;"></div>
+            <button id="importBtn" class="btn-min gray" title="Import Clients" style="padding:4px 8px;">⬇</button>
+            <button id="exportBtn" class="btn-min gray" title="Export Clients" style="padding:4px 8px;">⬆</button>
+          </div>
         </div>
       </div>
     </header>
@@ -933,7 +938,9 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     celebration:$('#celebration'), confettiContainer:$('#confettiContainer'),
     scheduledBlock:$('#scheduledBlock'), scheduledList:$('#scheduledList'),
     densitySelect:$('#densitySelect'),
-    toggleSidebarBtn:$('#toggleSidebarBtn')
+    toggleSidebarBtn:$('#toggleSidebarBtn'),
+    importBtn:$('#importBtn'), exportBtn:$('#exportBtn'),
+    sidebarControls:$('#sidebar-controls')
   };
 
   /* UI state */
@@ -1633,16 +1640,17 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     }
 
     applySidebarVisibility();
-    // Add the move-left/right helper in the controls stack
-    var controls=document.querySelector('.controls .stack');
+    // Add the move-left/right helper in the sidebar-controls container
+    var controls=els.sidebarControls;
     if(controls){
       var moveBtn=document.createElement('button');
       moveBtn.className='btn-min gray';
+      moveBtn.style.padding='4px 8px';
       moveBtn.title = 'Move sidebar to the other side';
       function label(){
         moveBtn.textContent = ui.sidebarLeft ? '→' : '←';
       }
-      label(); 
+      label();
       moveBtn.addEventListener('click', function(){
         // Toggle sidebar position
         ui.sidebarLeft = !ui.sidebarLeft;
@@ -1666,6 +1674,74 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
       });
     }
   })();
+
+  /* Import/Export functionality */
+  if(els.importBtn){
+    els.importBtn.addEventListener('click', function(){
+      var textarea = document.createElement('textarea');
+      textarea.style.cssText = 'position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); width:400px; height:300px; padding:10px; z-index:10000; border:2px solid var(--green); border-radius:8px; font-size:14px;';
+      textarea.placeholder = 'Paste client names here, one per line.\nExample:\nJohn Smith\nJane Doe\nBob Johnson';
+      document.body.appendChild(textarea);
+
+      var importDiv = document.createElement('div');
+      importDiv.style.cssText = 'position:fixed; left:50%; top:calc(50% + 170px); transform:translateX(-50%); z-index:10000; display:flex; gap:8px;';
+      importDiv.innerHTML = '<button id="confirmImport" class="btn-primary">Import</button><button id="cancelImport" class="btn-min gray">Cancel</button>';
+      document.body.appendChild(importDiv);
+
+      var backdrop = document.createElement('div');
+      backdrop.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999;';
+      document.body.appendChild(backdrop);
+
+      textarea.focus();
+
+      function cleanup(){
+        textarea.remove();
+        importDiv.remove();
+        backdrop.remove();
+      }
+
+      document.getElementById('confirmImport').addEventListener('click', function(){
+        var lines = textarea.value.split('\n').map(function(line){ return line.trim(); }).filter(Boolean);
+        if(lines.length){
+          lines.forEach(function(name){
+            state.clients.push({
+              id:uid(), name:name, notes:'', status:'', lastTouch:nowISO(),
+              createdAt:nowISO(), archived:false, followUp:'', callCount:0,
+              msgCount:0, queueToday:false, queueTomorrow:false, hot:false, history:[]
+            });
+          });
+          save(state);
+          render();
+          showNotification('Import Complete', 'Imported ' + lines.length + ' clients successfully');
+        }
+        cleanup();
+      });
+
+      document.getElementById('cancelImport').addEventListener('click', cleanup);
+      backdrop.addEventListener('click', cleanup);
+    });
+  }
+
+  if(els.exportBtn){
+    els.exportBtn.addEventListener('click', function(){
+      var data = {
+        clients: state.clients,
+        quotes: state.quotes,
+        quotesSettings: state.quotesSettings
+      };
+      var json = JSON.stringify(data, null, 2);
+      var blob = new Blob([json], {type: 'application/json'});
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'hotlist-export-' + new Date().toISOString().split('T')[0] + '.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showNotification('Export Complete', 'Your data has been exported successfully');
+    });
+  }
 
   /* Notification helper */
   function showNotification(title, body){
