@@ -810,21 +810,6 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
 
   <!-- ===== SIDEBAR WIDGETS ===== -->
   <aside class="card sidebar" id="sidebarWidgets">
-    <!-- Today's Queue - Movable widget -->
-    <div class="widget" data-key="todayQueue" draggable="true">
-      <div class="widget-head"><h2 class="widget-title">Today's Queue</h2><div class="widget-actions"><button class="btn-min gray collapse-btn" data-collapse title="Collapse"></button></div></div>
-      <div class="widget-body">
-        <div class="small muted" style="margin-bottom:8px">Queued for today. Items drop out automatically after contact.</div>
-        <div id="todayHitList"></div>
-
-        <!-- 7-Day Outreach History -->
-        <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--line);">
-          <div style="font-weight:600; color:var(--muted); margin-bottom:8px; font-size:12px;">LAST 7 DAYS</div>
-          <div class="history-days" id="historyDays" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
-        </div>
-      </div>
-    </div>
-
     <div class="widget" data-key="powerHour" draggable="true">
       <div class="widget-head"><h2 class="widget-title">Power Hour</h2><div class="widget-actions"><button class="btn-min gray" id="hopReset">Reset</button></div></div>
       <div class="widget-body"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div><span id="hopClock" class="small muted">01:00:00</span></div><div class="small muted">Calls this session: <b id="hopCalls">0</b></div></div><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><button class="btn-primary" id="hopStart">Start</button><button class="btn-min gray" id="hopPause">Pause</button></div></div>
@@ -850,8 +835,10 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     </div>
 
     <div class="widget" data-key="summaryReport" draggable="true">
-      <div class="widget-head"><h2 class="widget-title">Summary Report</h2><div class="widget-actions"><button class="btn-min gray" id="emailSummaryBtn">Email Summary</button><button class="btn-min gray collapse-btn" data-collapse title="Collapse"></button></div></div>
-      <div class="widget-body"><div style="display:flex;justify-content:space-between;align-items:center"><div><select id="reportRange"><option value="1">1d</option><option value="7" selected>7d</option><option value="14">14d</option><option value="30">30d</option><option value="60">60d</option><option value="90">90d</option></select></div></div></div>
+      <div class="widget-head"><h2 class="widget-title">Activity Chart</h2><div class="widget-actions"><select id="chartRangeSel" style="font-size:12px; padding:2px 4px; margin-right:8px;"><option value="7" selected>7d</option><option value="14">14d</option><option value="30">30d</option><option value="60">60d</option><option value="90">90d</option></select><button class="btn-min gray" id="emailSummaryBtn">Email</button><button class="btn-min gray collapse-btn" data-collapse title="Collapse"></button></div></div>
+      <div class="widget-body">
+        <div id="chart" style="display:flex; align-items:flex-end; height:120px; gap:4px; padding:10px 0;"></div>
+      </div>
     </div>
 
     <!-- Activity Chart widget removed but data preserved -->
@@ -896,13 +883,13 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   /* =========================
    *  Version & Changelog
    * ========================= */
-  var VERSION = '1.2.0';
+  var VERSION = '1.3.1';
   var CHANGELOG = [
+    { version: '1.3.1', date: '2025-01-15', changes: 'Converted Summary Report widget to Activity Chart with visual graph' },
+    { version: '1.3.0', date: '2025-01-15', changes: 'Removed Today\'s Queue widget from sidebar for cleaner interface' },
     { version: '1.2.0', date: '2025-01-15', changes: 'Added version display, changelog modal, and suggestion feature' },
     { version: '1.1.0', date: '2025-01-15', changes: 'Fixed keyboard navigation between Today\'s list and Main list' },
-    { version: '1.0.5', date: '2025-01-14', changes: 'Moved Today\'s section to top of main content area' },
-    { version: '1.0.4', date: '2025-01-14', changes: 'Fixed flame animation errors and improved variable naming' },
-    { version: '1.0.3', date: '2025-01-13', changes: 'Added import/export functionality and streamlined sidebar controls' }
+    { version: '1.0.5', date: '2025-01-14', changes: 'Moved Today\'s section to top of main content area' }
   ];
 
   /* =========================
@@ -942,8 +929,8 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     globalSearch:$('#globalSearch'), sortBy:$('#sortBy'),
     statusFilter:$('#statusFilter'), showArchived:$('#showArchived'),
     ageDays:$('#ageDays'), groupToggle:$('#groupToggle'),
-    emailSummaryBtn:$('#emailSummaryBtn'), reportRangeSel:$('#reportRange'),
-    chart:$('#chart'), chartRangeSel:$('#chartRange'), heatmap:$('#heatmap'),
+    emailSummaryBtn:$('#emailSummaryBtn'),
+    chart:$('#chart'), chartRangeSel:$('#chartRangeSel'), heatmap:$('#heatmap'),
     todayDate:$('#todayDate'), activity:$('#activity'), emailTodayDetailBtn:$('#emailTodayDetailBtn'),
     hopStart:$('#hopStart'), hopPause:$('#hopPause'), hopReset:$('#hopReset'), hopClock:$('#hopClock'), hopCalls:$('#hopCalls'),
     pipeline:$('#pipeline'), nextList:$('#nextList'), followList:$('#followList'),
@@ -953,13 +940,11 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     quotesSaveBtn:$('#quotesSaveBtn'), quotesCancelBtn:$('#quotesCancelBtn'),
     sidebar:$('#sidebarWidgets'), leftSidebar:$('#leftSidebar'),
     leftDragZone:$('#leftDragZone'), rightDragZone:$('#rightDragZone'),
-    todayHitList:$('#todayHitList'),
     tomorrowList:$('#tomorrowList'),
     ribbonPurchased:$('#ribbonPurchased'), ribbonWeeklyCalls:$('#ribbonWeeklyCalls'), ribbonStreak:$('#ribbonStreak'),
     dailyOutreachGoal:$('#dailyOutreachGoal'), dailyOutreachBar:$('#dailyOutreachBar'), 
     dailyOutreachFill:$('#dailyOutreachFill'), dailyOutreachLabel:$('#dailyOutreachLabel'),
     dailyCalls:$('#dailyCalls'), dailyMessages:$('#dailyMessages'), saveDailyGoal:$('#saveDailyGoal'),
-    historyDays:$('#historyDays'),
     celebration:$('#celebration'), confettiContainer:$('#confettiContainer'),
     todayBlock:$('#todayBlock'), todayList:$('#todayList'),
     scheduledBlock:$('#scheduledBlock'), scheduledList:$('#scheduledList'),
@@ -1197,36 +1182,6 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     // Update goal input if it exists
     if(els.dailyOutreachGoal && document.activeElement !== els.dailyOutreachGoal) {
       els.dailyOutreachGoal.value = String(goal);
-    }
-    
-    // Render 7-day history
-    if(els.historyDays){
-      els.historyDays.innerHTML = '';
-      var today = new Date();
-      var dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      
-      for(var i = 6; i >= 0; i--){
-        var date = new Date(today);
-        date.setDate(date.getDate() - i);
-        var dayCount = getOutreachCountForDate(date);
-        
-        var dayDiv = document.createElement('div');
-        dayDiv.className = 'history-day';
-        if(i === 0) dayDiv.classList.add('today');
-        if(dayCount >= goal) dayDiv.classList.add('goal-met');
-        
-        var dayName = document.createElement('div');
-        dayName.className = 'history-day-name';
-        dayName.textContent = dayNames[date.getDay()];
-        
-        var countDiv = document.createElement('div');
-        countDiv.className = 'history-day-count';
-        countDiv.textContent = String(dayCount);
-        
-        dayDiv.appendChild(dayName);
-        dayDiv.appendChild(countDiv);
-        els.historyDays.appendChild(dayDiv);
-      }
     }
     
     // Trigger celebration if goal just achieved
@@ -1544,30 +1499,7 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   }
   function renderNextToTouch(){ if(!els.nextList) return; var thr=getAgeThreshold(); var list=state.clients.filter(function(c){return !c.archived;}).map(function(c){return {c:c, bd:businessDaysSince(c.lastTouch)};}).filter(function(x){return x.bd>thr;}).sort(function(a,b){return b.bd-a.bd;}).slice(0,25); els.nextList.innerHTML=''; if(!list.length){ els.nextList.innerHTML='<div class="small muted">All caught up '+CLAP+'</div>'; return; } list.forEach(function(it){ var div=document.createElement('div'); div.className='nextitem'; var left=document.createElement('div'); var b=agingBadge(it.bd, thr); b.classList.add('sm'); b.style.marginRight='6px'; b.style.display='inline-flex'; var nameSpan=document.createElement('span'); nameSpan.textContent=it.c.name; left.appendChild(b); left.appendChild(nameSpan); var right=document.createElement('div'); right.className='small muted'; right.textContent='Last: '+fmtDay(it.c.lastTouch)+' ('+it.bd+'bd)'; div.appendChild(left); div.appendChild(right); els.nextList.appendChild(div); }); }
 
-  /* Today + Tomorrow + Scheduled */
-  function renderTodayHit(){
-    var today = startOfDay(new Date());
-    var tomorrow = addDays(today,1);
-    var list = state.clients.filter(function(c){
-      if(c.archived) return false;
-      if(c.queueToday) return true;
-      if(c.followUp){ var t=new Date(c.followUp); if(!isNaN(+t) && isWithin(t,today,tomorrow)) return true; }
-      return false;
-    });
-    var target=els.todayHitList;
-    if(!target) return;
-    if(!list.length){
-      target.innerHTML='<div class="small muted">No items queued for today.</div>';
-      return;
-    }
-    target.innerHTML='';
-    sortClients(list).forEach(function(c){
-      var item = document.createElement('div');
-      item.className = 'nextitem';
-      item.innerHTML = '<div>' + escapeHtml(c.name) + '</div><div class="small muted">last ' + fmtDay(c.lastTouch) + '</div>';
-      target.appendChild(item);
-    });
-  }
+  /* Tomorrow + Scheduled */
   function renderTomorrowList(){ if(!els.tomorrowList) return; var list = state.clients.filter(function(c){ return !c.archived && c.queueTomorrow; }); els.tomorrowList.innerHTML=''; if(!list.length){ els.tomorrowList.innerHTML='<div class="small muted">Nothing queued.</div>'; return; } sortClients(list).forEach(function(c){ var div=document.createElement('div'); div.className='nextitem'; div.innerHTML='<div>'+escapeHtml(c.name)+'</div><div class="small muted">last '+fmtDay(c.lastTouch)+'</div>'; els.tomorrowList.appendChild(div); }); }
   function isFutureFollowUp(c){ if(!c.followUp) return false; var t=new Date(c.followUp); return !isNaN(+t) && t>new Date(); }
 
@@ -1663,7 +1595,7 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     }
 
     els.todayDate && (els.todayDate.textContent=new Date().toLocaleDateString([], {weekday:'long',month:'long',day:'numeric',year:'numeric'}));
-    renderActivity(); renderChart(); renderHeatmap(); renderNextToTouch(); renderFollowUps(); renderTodayHit(); renderQuote(false);
+    renderActivity(); renderChart(); renderHeatmap(); renderNextToTouch(); renderFollowUps(); renderQuote(false);
   }
 
   /* Quotes (light) */
@@ -2121,8 +2053,8 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     if(Array.isArray(ui.widgetOrder) && ui.widgetOrder.length > 0) {
       return ui.widgetOrder;
     }
-    // Default order: Today's Queue, Today's Activity, Power Hour, Motivation, Heatmap, then others
-    var defaultOrder = ['todayQueue', 'todayActivity', 'powerHour', 'motivation', 'heatmap'];
+    // Default order: Today's Activity, Power Hour, Motivation, Heatmap, then others
+    var defaultOrder = ['todayActivity', 'powerHour', 'motivation', 'heatmap'];
     var allWidgets = $all('#sidebarWidgets .widget').map(function(w){return w.dataset.key;});
     var otherWidgets = allWidgets.filter(function(key){ return !defaultOrder.includes(key); });
     return defaultOrder.concat(otherWidgets);
@@ -2399,7 +2331,7 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   if(els.emailSummaryBtn){
     els.emailSummaryBtn.addEventListener('click', function(){
       var kpis = getKPIData();
-      var range = els.reportRangeSel ? els.reportRangeSel.value : '7';
+      var range = els.chartRangeSel ? els.chartRangeSel.value : '7';
       var rangeDays = parseInt(range);
 
       var subject = 'Life Hotlist - ' + rangeDays + ' Day Summary Report';
