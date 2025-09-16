@@ -1458,10 +1458,10 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   }
 
   /* Selection */
-  function allRows(){ return $all('#todayHitList .row, #list .row'); }
+  function allRows(){ return $all('#todayList .row, #list .row'); }
   var selectionIndex=0;
   function setSelectedRowById(id){ var rows=allRows(); var idx=rows.findIndex(function(r){return r.dataset.id===id;}); if(idx>=0){ selectionIndex=idx; restoreSelection(); } }
-  function restoreSelection(){ var rows=allRows(); rows.forEach(function(r){ r.classList.remove('selected'); }); if(!rows.length) return; if(selectionIndex<0) selectionIndex=0; if(selectionIndex>=rows.length) selectionIndex=rows.length-1; rows[selectionIndex].classList.add('selected'); rows[selectionIndex].scrollIntoView({block:'nearest'}); }
+  function restoreSelection(){ var rows=allRows(); rows.forEach(function(r){ r.classList.remove('selected'); }); if(!rows.length) return; if(selectionIndex<0) selectionIndex=rows.length-1; if(selectionIndex>=rows.length) selectionIndex=0; rows[selectionIndex].classList.add('selected'); rows[selectionIndex].scrollIntoView({block:'nearest'}); }
   function getSelectedClient(){ var rows=allRows(); if(!rows.length) return null; var id=rows[selectionIndex] && rows[selectionIndex].dataset.id; return state.clients.find(function(c){return c.id===id;}); }
 
   /* Activity / chart / heatmap */
