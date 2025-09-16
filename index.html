@@ -2416,11 +2416,14 @@ if ('serviceWorker' in navigator) {
     });
 
     // Request notification permission if we have scheduled items
-    var hasScheduled = state.clients.some(function(c){
-      return !c.archived && c.followUp;
-    });
-    if(hasScheduled){
-      requestNotificationPermission();
+    // Check if state exists (it's defined in the main app IIFE)
+    if(typeof state !== 'undefined' && state.clients){
+      var hasScheduled = state.clients.some(function(c){
+        return !c.archived && c.followUp;
+      });
+      if(hasScheduled && typeof requestNotificationPermission === 'function'){
+        requestNotificationPermission();
+      }
     }
   });
 }
