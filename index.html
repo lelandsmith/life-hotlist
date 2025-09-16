@@ -550,6 +550,89 @@ button:focus-visible{outline:none; box-shadow:var(--ring)}
   100%{transform:translateY(100vh) rotate(720deg); opacity:0;}
 }
 
+/* Purchase Celebration - EPIC! */
+.purchase-celebration{
+  position:fixed; top:0; left:0; width:100%; height:100%;
+  z-index:10000; overflow:hidden;
+}
+.purchase-celebration.hidden{
+  display:none;
+}
+.purchase-overlay{
+  position:absolute; top:0; left:0; width:100%; height:100%;
+  background:radial-gradient(circle at center, rgba(255,215,0,0.3), rgba(255,140,0,0.5));
+  animation:pulseGold 2s ease-in-out infinite;
+}
+.purchase-banner{
+  position:absolute; top:50%; left:50%; transform:translate(-50%, -50%);
+  z-index:10001;
+}
+.purchase-content{
+  background:linear-gradient(135deg, #FFD700, #FFA500, #FF6347);
+  background-size:200% 200%;
+  animation:goldShimmer 2s ease-in-out infinite;
+  padding:40px 80px;
+  border-radius:30px;
+  text-align:center;
+  box-shadow:0 20px 60px rgba(255,215,0,0.6), 0 0 100px rgba(255,215,0,0.4);
+  animation:purchaseBounce 0.8s ease-out, goldShimmer 2s ease-in-out infinite;
+}
+.purchase-icon{
+  font-size:80px;
+  animation:coinFlip 1s ease-in-out infinite;
+}
+.purchase-text{
+  font-size:48px;
+  font-weight:900;
+  color:#fff;
+  text-shadow:3px 3px 6px rgba(0,0,0,0.3);
+  margin:20px 0;
+  letter-spacing:2px;
+}
+.purchase-subtext{
+  font-size:28px;
+  color:#fff;
+  font-weight:bold;
+}
+.money-rain{
+  position:absolute;
+  top:-100px;
+  left:0;
+  width:100%;
+  height:calc(100% + 200px);
+  pointer-events:none;
+}
+.money{
+  position:absolute;
+  font-size:40px;
+  animation:moneyFall 3s linear infinite;
+}
+@keyframes purchaseBounce{
+  0%{transform:translate(-50%, -50%) scale(0) rotate(-360deg); opacity:0;}
+  50%{transform:translate(-50%, -50%) scale(1.3) rotate(10deg); opacity:1;}
+  70%{transform:translate(-50%, -50%) scale(0.9) rotate(-5deg); opacity:1;}
+  100%{transform:translate(-50%, -50%) scale(1) rotate(0deg); opacity:1;}
+}
+@keyframes goldShimmer{
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
+@keyframes pulseGold{
+  0%{opacity:0.3; transform:scale(1);}
+  50%{opacity:0.6; transform:scale(1.05);}
+  100%{opacity:0.3; transform:scale(1);}
+}
+@keyframes coinFlip{
+  0%{transform:rotateY(0deg);}
+  50%{transform:rotateY(180deg);}
+  100%{transform:rotateY(360deg);}
+}
+@keyframes moneyFall{
+  from{transform:translateY(-100px) rotate(0deg); opacity:1;}
+  to{transform:translateY(calc(100vh + 100px)) rotate(360deg); opacity:0;}
+}
+
 /* Activity */
 .activity{max-height:30vh;overflow:auto}
 .activity .item{
@@ -603,6 +686,12 @@ button:focus-visible{outline:none; box-shadow:var(--ring)}
 }
 .tag-chip.scheduled{
   padding-right:8px;
+}
+.tag-chip.purchased-chip{
+  background:#e9f5ee;
+  color:#0e7a5a;
+  border-color:#0e7a5a;
+  font-weight:600;
 }
 .tag-chip.scheduled .unschedule-x{
   display:none;
@@ -704,6 +793,22 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     </div>
     <div class="confetti-container" id="confettiContainer"></div>
   </div>
+
+  <!-- Purchase Celebration -->
+  <div id="purchaseCelebration" class="purchase-celebration hidden">
+    <div class="purchase-overlay"></div>
+    <div class="purchase-banner">
+      <div class="money-rain" id="moneyRain"></div>
+      <div class="purchase-content">
+        <div class="purchase-icon">💰</div>
+        <h1 class="purchase-text">LIFE APP SOLD!</h1>
+        <div class="purchase-subtext">Cha-Ching! 🎊</div>
+      </div>
+    </div>
+    <audio id="chachingSound" preload="auto">
+      <source src="data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAARAAANpAAYGBgYGBgYJiYmJiYmJjU1NTU1NTVERERERERSUlJSUlJSYGBgYGBgYG5ubm5ubm59fX19fX19i4uLi4uLi5mamZmZmZmop6enp6ent7e3t7e3t8XFxcXFxcXT09PT09PT////////////AAAAAExhdmY1OC43Ni4xMDAAAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAADaQXC2hRAAAAAP/7UMQAA8AAAGkAAAAgAAA0gAAABExBTUUzLjEwMFUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPw==" type="audio/mpeg">
+    </audio>
+  </div>
   
   <!-- ===== LEFT SIDEBAR (for drag and drop dual sidebar only) ===== -->
   <aside class="card sidebar left-sidebar" id="leftSidebar" style="display:none;">
@@ -741,6 +846,11 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
             <strong>Goal:</strong>
             <input type="number" class="goal-input" id="dailyOutreachGoal" value="10" min="1" max="100">
             <button class="btn-save" id="saveDailyGoal">Save</button>
+          </div>
+          <div class="stat-separator">|</div>
+          <div class="stat-group" style="background:#e9f5ee; padding:4px 8px; border-radius:6px;">
+            <strong style="color:#0e7a5a;">Life Apps This Month:</strong>
+            <span id="monthlyPurchases" style="color:#0e7a5a; font-weight:700;">0</span>
           </div>
         </div>
       </div>
@@ -884,14 +994,14 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   /* =========================
    *  Version & Changelog
    * ========================= */
-  var VERSION = '1.4.0';
+  var VERSION = '1.7.0';
   // Recent commits from git log
   var CHANGELOG = [
+    { version: '1.7.0', date: '2025-01-15', changes: 'Add epic purchase celebration with money rain and cha-ching sound' },
+    { version: '1.6.0', date: '2025-01-15', changes: 'Fix purchase tracking with unique purchase dates and cancelable purchase chips' },
+    { version: '1.5.0', date: '2025-01-15', changes: 'Fix blank changelog modal and add monthly Life apps purchased counter' },
     { version: '1.4.0', date: '2025-01-15', changes: 'Update PWA icon to flame emoji with reddish-orange theme' },
-    { version: '1.3.1', date: '2025-01-15', changes: 'Convert Summary Report to Activity Chart and remove Today\'s Queue widget' },
-    { version: '1.3.0', date: '2025-01-15', changes: 'Add version tracking system with changelog and feedback feature' },
-    { version: '1.2.0', date: '2025-01-15', changes: 'Fix keyboard navigation between Today\'s list and Main list' },
-    { version: '1.1.0', date: '2025-01-15', changes: 'Move Today\'s section to top of main content area' }
+    { version: '1.3.1', date: '2025-01-15', changes: 'Convert Summary Report to Activity Chart and remove Today\'s Queue widget' }
   ];
 
   /* =========================
@@ -947,7 +1057,9 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     dailyOutreachGoal:$('#dailyOutreachGoal'), dailyOutreachBar:$('#dailyOutreachBar'), 
     dailyOutreachFill:$('#dailyOutreachFill'), dailyOutreachLabel:$('#dailyOutreachLabel'),
     dailyCalls:$('#dailyCalls'), dailyMessages:$('#dailyMessages'), saveDailyGoal:$('#saveDailyGoal'),
+    monthlyPurchases:$('#monthlyPurchases'),
     celebration:$('#celebration'), confettiContainer:$('#confettiContainer'),
+    purchaseCelebration:$('#purchaseCelebration'), moneyRain:$('#moneyRain'), chachingSound:$('#chachingSound'),
     todayBlock:$('#todayBlock'), todayList:$('#todayList'),
     scheduledBlock:$('#scheduledBlock'), scheduledList:$('#scheduledList'),
     densitySelect:$('#densitySelect'),
@@ -1017,8 +1129,28 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
 
   /* CRUD / actions */
   function addClient(name){ preserveUIAndRender(function(){ state.clients.push({id:uid(), name:name, notes:'', status:'', lastTouch:nowISO(), createdAt:nowISO(), archived:false, followUp:'', callCount:0, msgCount:0, queueToday:false, queueTomorrow:false, hot:false, history:[]}); }); }
-  function setStatus(c,newStatus){ preserveUIAndRender(function(){ var when=nowISO(); c.status=newStatus; c.lastTouch=when; c.history.push({id:uid(), ts:when, action:'status', to:newStatus}); if(c.queueToday) c.queueToday=false; }); }
-  function clearStatus(c){ preserveUIAndRender(function(){ c.status=''; }); }
+  function setStatus(c,newStatus){
+    var wasPurchased = c.status === 'Purchased';
+    preserveUIAndRender(function(){
+      var when=nowISO();
+      c.status=newStatus;
+      c.lastTouch=when;
+      c.history.push({id:uid(), ts:when, action:'status', to:newStatus});
+      if(c.queueToday) c.queueToday=false;
+      // Set purchase date when status becomes Purchased
+      if(newStatus === 'Purchased' && !c.purchaseDate){
+        c.purchaseDate = when;
+      }
+    });
+    // Trigger epic purchase celebration!
+    if(newStatus === 'Purchased' && !wasPurchased){
+      setTimeout(function(){
+        startPurchaseCelebration();
+      }, 100);
+    }
+  }
+  function clearStatus(c){ preserveUIAndRender(function(){ c.status=''; if(c.purchaseDate) delete c.purchaseDate; }); }
+  function clearPurchase(c){ preserveUIAndRender(function(){ if(c.status === 'Purchased') c.status=''; if(c.purchaseDate) delete c.purchaseDate; }); }
   function incrementCall(c){
     preserveUIAndRender(function(){
       c.callCount=(c.callCount||0)+1;
@@ -1123,12 +1255,124 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   function stopCelebration(){
     if(!celebrationActive || !els.celebration) return;
     celebrationActive = false;
-    
+
     // Hide celebration
     els.celebration.classList.add('hidden');
-    
+
     // Clean up confetti
     if(els.confettiContainer) els.confettiContainer.innerHTML = '';
+  }
+
+  /* Purchase Celebration - EPIC VERSION! */
+  var purchaseCelebrationActive = false;
+
+  function createMoneyRain(){
+    if(!els.moneyRain) return;
+    var emojis = ['💵', '💴', '💶', '💷', '💰', '💸', '🤑', '💎', '🏆'];
+    for(var i = 0; i < 60; i++){
+      var money = document.createElement('div');
+      money.className = 'money';
+      money.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      money.style.left = Math.random() * 100 + '%';
+      money.style.animationDelay = Math.random() * 3 + 's';
+      money.style.animationDuration = (2 + Math.random() * 2) + 's';
+      els.moneyRain.appendChild(money);
+    }
+  }
+
+  function startPurchaseCelebration(){
+    if(purchaseCelebrationActive || !els.purchaseCelebration) return;
+    purchaseCelebrationActive = true;
+
+    // Show celebration
+    els.purchaseCelebration.classList.remove('hidden');
+
+    // Play cha-ching sound - Classic cash register sound
+    try {
+      var audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+      // First bell (lower pitch)
+      var osc1 = audioContext.createOscillator();
+      var gain1 = audioContext.createGain();
+      osc1.frequency.setValueAtTime(1400, audioContext.currentTime); // G6
+      gain1.gain.setValueAtTime(0.5, audioContext.currentTime);
+      gain1.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      osc1.connect(gain1);
+      gain1.connect(audioContext.destination);
+      osc1.start(audioContext.currentTime);
+      osc1.stop(audioContext.currentTime + 0.3);
+
+      // Second bell (higher pitch) - the "ching"
+      setTimeout(function(){
+        var osc2 = audioContext.createOscillator();
+        var gain2 = audioContext.createGain();
+        osc2.frequency.setValueAtTime(1865, audioContext.currentTime); // A#6
+        gain2.gain.setValueAtTime(0.6, audioContext.currentTime);
+        gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+        osc2.connect(gain2);
+        gain2.connect(audioContext.destination);
+        osc2.start(audioContext.currentTime);
+        osc2.stop(audioContext.currentTime + 0.4);
+      }, 100);
+
+      // Add metallic overtones for realism
+      var osc3 = audioContext.createOscillator();
+      var gain3 = audioContext.createGain();
+      osc3.frequency.setValueAtTime(2800, audioContext.currentTime);
+      gain3.gain.setValueAtTime(0.15, audioContext.currentTime);
+      gain3.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+      osc3.connect(gain3);
+      gain3.connect(audioContext.destination);
+      osc3.start(audioContext.currentTime);
+      osc3.stop(audioContext.currentTime + 0.2);
+
+      // Drawer sliding sound effect
+      setTimeout(function(){
+        var noise = audioContext.createBufferSource();
+        var noiseBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.1, audioContext.sampleRate);
+        var noiseData = noiseBuffer.getChannelData(0);
+        for (var i = 0; i < noiseData.length; i++) {
+          noiseData[i] = Math.random() * 0.1 - 0.05;
+        }
+        noise.buffer = noiseBuffer;
+
+        var noiseFilter = audioContext.createBiquadFilter();
+        noiseFilter.type = 'lowpass';
+        noiseFilter.frequency.setValueAtTime(800, audioContext.currentTime);
+
+        var noiseGain = audioContext.createGain();
+        noiseGain.gain.setValueAtTime(0.2, audioContext.currentTime);
+        noiseGain.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.1);
+
+        noise.connect(noiseFilter);
+        noiseFilter.connect(noiseGain);
+        noiseGain.connect(audioContext.destination);
+        noise.start(audioContext.currentTime);
+      }, 300);
+
+    } catch(e) {
+      // Fallback if Web Audio API is not supported
+      console.log('Audio not supported');
+    }
+
+    // Create money rain effect
+    createMoneyRain();
+
+    // Auto-hide after 5 seconds
+    setTimeout(function(){
+      stopPurchaseCelebration();
+    }, 5000);
+  }
+
+  function stopPurchaseCelebration(){
+    if(!purchaseCelebrationActive || !els.purchaseCelebration) return;
+    purchaseCelebrationActive = false;
+
+    // Hide celebration
+    els.purchaseCelebration.classList.add('hidden');
+
+    // Clean up money rain
+    if(els.moneyRain) els.moneyRain.innerHTML = '';
   }
   
   /* Daily Outreach Goal */
@@ -1169,17 +1413,39 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     return count;
   }
 
+  function getMonthlyPurchases(){
+    var now = new Date();
+    var startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    var endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    var count = 0;
+
+    state.clients.forEach(function(c){
+      if(c.status === 'Purchased' && c.purchaseDate){
+        var purchaseDate = new Date(c.purchaseDate);
+        if(purchaseDate >= startOfMonth && purchaseDate < endOfMonth){
+          count++;
+        }
+      }
+    });
+    return count;
+  }
+
   function renderDailyOutreach(){
     if(!els.dailyOutreachGoal || !els.dailyOutreachBar) return;
     var goal = Number(ui.dailyOutreachGoal || 10);
     var counts = getDailyOutreachCounts();
     var progress = Math.min(100, (counts.total / goal) * 100);
     var goalAchieved = counts.total >= goal && goal > 0;
-    
+
     if(els.dailyOutreachFill) els.dailyOutreachFill.style.width = progress + '%';
     if(els.dailyOutreachLabel) els.dailyOutreachLabel.textContent = counts.total + ' / ' + goal;
     if(els.dailyCalls) els.dailyCalls.textContent = String(counts.calls);
     if(els.dailyMessages) els.dailyMessages.textContent = String(counts.messages);
+
+    // Update monthly purchases
+    if(els.monthlyPurchases){
+      els.monthlyPurchases.textContent = String(getMonthlyPurchases());
+    }
     
     // Update goal input if it exists
     if(els.dailyOutreachGoal && document.activeElement !== els.dailyOutreachGoal) {
@@ -1310,6 +1576,13 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
         whenChip.innerHTML = opts.whenLabel + '<span class="unschedule-x" data-client-id="' + c.id + '">×</span>';
         head.appendChild(whenChip);
       }
+      if(c.purchaseDate){
+        var purchaseChip=document.createElement('span');
+        purchaseChip.className='tag-chip scheduled purchased-chip';
+        var purchaseLabel = 'Purchased: ' + new Date(c.purchaseDate).toLocaleDateString('en-US', {month:'numeric', day:'numeric', year:'2-digit'});
+        purchaseChip.innerHTML = purchaseLabel + '<span class="unschedule-x clear-purchase" data-client-id="' + c.id + '">×</span>';
+        head.appendChild(purchaseChip);
+      }
       if(c.queueToday){ var chip1=document.createElement('span'); chip1.className='tag-chip'; chip1.textContent='Today'; head.appendChild(chip1); }
       if(c.queueTomorrow){ var chip2=document.createElement('span'); chip2.className='tag-chip'; chip2.textContent='Tomorrow'; head.appendChild(chip2); }
       mid.appendChild(head);
@@ -1373,6 +1646,13 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
         whenChip.className='tag-chip scheduled';
         whenChip.innerHTML = opts.whenLabel + '<span class="unschedule-x" data-client-id="' + c.id + '">×</span>';
         tagsSection.appendChild(whenChip);
+      }
+      if(c.purchaseDate){
+        var purchaseChip=document.createElement('span');
+        purchaseChip.className='tag-chip scheduled purchased-chip';
+        var purchaseLabel = 'Purchased: ' + new Date(c.purchaseDate).toLocaleDateString('en-US', {month:'numeric', day:'numeric', year:'2-digit'});
+        purchaseChip.innerHTML = purchaseLabel + '<span class="unschedule-x clear-purchase" data-client-id="' + c.id + '">×</span>';
+        tagsSection.appendChild(purchaseChip);
       }
       if(c.queueToday){ var chip1=document.createElement('span'); chip1.className='tag-chip'; chip1.textContent='Today'; tagsSection.appendChild(chip1); }
       if(c.queueTomorrow){ var chip2=document.createElement('span'); chip2.className='tag-chip'; chip2.textContent='Tomorrow'; tagsSection.appendChild(chip2); }
@@ -1877,6 +2157,21 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     document.getElementById('shortcutsModal').style.display = 'none';
   }
   function showChangelogModal(){
+    // Populate changelog content when modal is shown
+    var changelogEl = document.getElementById('changelogContent');
+    if(changelogEl) {
+      changelogEl.innerHTML = '';
+      CHANGELOG.forEach(function(entry) {
+        var item = document.createElement('div');
+        item.style.cssText = 'border-left:3px solid #3b82f6; padding-left:12px; margin-bottom:12px;';
+        item.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">' +
+          '<strong style="color:#1e293b; font-size:14px;">v' + entry.version + '</strong>' +
+          '<span style="color:#94a3b8; font-size:12px;">' + entry.date + '</span>' +
+          '</div>' +
+          '<div style="color:#475569; font-size:13px;">' + entry.changes + '</div>';
+        changelogEl.appendChild(item);
+      });
+    }
     document.getElementById('changelogModal').style.display = 'block';
   }
   function closeChangelogModal(){
@@ -1938,16 +2233,22 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   // Make showFlameAnimation available globally for keyboard shortcuts
   window.showFlameAnimation = showFlameAnimation;
 
-  /* Click handler for unscheduling */
+  /* Click handler for unscheduling and clearing purchases */
   document.addEventListener('click', function(e){
     if(e.target.classList.contains('unschedule-x')){
       e.stopPropagation();
       var clientId = e.target.getAttribute('data-client-id');
       var client = state.clients.find(function(c){ return c.id === clientId; });
       if(client){
-        client.followUp = '';
-        save(state);
-        render();
+        if(e.target.classList.contains('clear-purchase')){
+          // Clear purchase date and status
+          clearPurchase(client);
+        } else {
+          // Clear follow-up date
+          client.followUp = '';
+          save(state);
+          render();
+        }
       }
     }
   });
@@ -2387,24 +2688,9 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     return pipeline;
   }
 
-  // Initialize version and changelog
+  // Initialize version
   var versionEl = document.getElementById('versionNumber');
   if(versionEl) versionEl.textContent = VERSION;
-
-  var changelogEl = document.getElementById('changelogContent');
-  if(changelogEl) {
-    changelogEl.innerHTML = '';
-    CHANGELOG.forEach(function(entry) {
-      var item = document.createElement('div');
-      item.style.cssText = 'border-left:3px solid #3b82f6; padding-left:12px;';
-      item.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">' +
-        '<strong style="color:#1e293b; font-size:14px;">v' + entry.version + '</strong>' +
-        '<span style="color:#94a3b8; font-size:12px;">' + entry.date + '</span>' +
-        '</div>' +
-        '<div style="color:#475569; font-size:13px;">' + entry.changes + '</div>';
-      changelogEl.appendChild(item);
-    });
-  }
 
   render();
 })();
