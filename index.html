@@ -4,8 +4,11 @@
 <meta charset="utf-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
 <title>Life Hotlist</title>
-<link rel="manifest" href="/manifest.json">
+<link rel="manifest" href="/manifest.json?v=1.7.2">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='28'%3E🔥%3C/text%3E%3C/svg%3E">
 <meta name="theme-color" content="#ff5722">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -238,8 +241,8 @@ button:focus-visible{outline:none; box-shadow:var(--ring)}
 .pill b{margin-right:6px}
 
 /* Controls */
-.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:4px}
-.controls .stack{display:flex;gap:10px;align-items:center;flex-wrap:wrap;width:100%}
+.controls{display:flex;gap:10px;align-items:center;width:100%}
+.controls .stack{display:flex;gap:8px;align-items:center;flex-wrap:nowrap;width:100%}
 
 /* Table head & rows */
 .table-head{
@@ -550,87 +553,32 @@ button:focus-visible{outline:none; box-shadow:var(--ring)}
   100%{transform:translateY(100vh) rotate(720deg); opacity:0;}
 }
 
-/* Purchase Celebration - EPIC! */
-.purchase-celebration{
-  position:fixed; top:0; left:0; width:100%; height:100%;
-  z-index:10000; overflow:hidden;
-}
-.purchase-celebration.hidden{
-  display:none;
-}
-.purchase-overlay{
-  position:absolute; top:0; left:0; width:100%; height:100%;
-  background:radial-gradient(circle at center, rgba(255,215,0,0.3), rgba(255,140,0,0.5));
-  animation:pulseGold 2s ease-in-out infinite;
-}
-.purchase-banner{
-  position:absolute; top:50%; left:50%; transform:translate(-50%, -50%);
-  z-index:10001;
-}
-.purchase-content{
-  background:linear-gradient(135deg, #FFD700, #FFA500, #FF6347);
-  background-size:200% 200%;
-  animation:goldShimmer 2s ease-in-out infinite;
-  padding:40px 80px;
-  border-radius:30px;
-  text-align:center;
-  box-shadow:0 20px 60px rgba(255,215,0,0.6), 0 0 100px rgba(255,215,0,0.4);
-  animation:purchaseBounce 0.8s ease-out, goldShimmer 2s ease-in-out infinite;
-}
-.purchase-icon{
-  font-size:80px;
-  animation:coinFlip 1s ease-in-out infinite;
-}
-.purchase-text{
-  font-size:48px;
-  font-weight:900;
-  color:#fff;
-  text-shadow:3px 3px 6px rgba(0,0,0,0.3);
-  margin:20px 0;
-  letter-spacing:2px;
-}
-.purchase-subtext{
-  font-size:28px;
-  color:#fff;
-  font-weight:bold;
-}
-.money-rain{
-  position:absolute;
-  top:-100px;
-  left:0;
-  width:100%;
-  height:calc(100% + 200px);
+/* Purchase Celebration - Dollar Explosion */
+.dollar-explosion{
+  position:fixed;
   pointer-events:none;
+  z-index:10000;
 }
-.money{
+.dollar-particle{
   position:absolute;
-  font-size:40px;
-  animation:moneyFall 3s linear infinite;
+  font-size:24px;
+  font-weight:bold;
+  color:#10b981;
+  animation:explode 1.5s ease-out forwards;
+  transform-origin:center;
 }
-@keyframes purchaseBounce{
-  0%{transform:translate(-50%, -50%) scale(0) rotate(-360deg); opacity:0;}
-  50%{transform:translate(-50%, -50%) scale(1.3) rotate(10deg); opacity:1;}
-  70%{transform:translate(-50%, -50%) scale(0.9) rotate(-5deg); opacity:1;}
-  100%{transform:translate(-50%, -50%) scale(1) rotate(0deg); opacity:1;}
-}
-@keyframes goldShimmer{
-  0%{background-position:0% 50%;}
-  50%{background-position:100% 50%;}
-  100%{background-position:0% 50%;}
-}
-@keyframes pulseGold{
-  0%{opacity:0.3; transform:scale(1);}
-  50%{opacity:0.6; transform:scale(1.05);}
-  100%{opacity:0.3; transform:scale(1);}
-}
-@keyframes coinFlip{
-  0%{transform:rotateY(0deg);}
-  50%{transform:rotateY(180deg);}
-  100%{transform:rotateY(360deg);}
-}
-@keyframes moneyFall{
-  from{transform:translateY(-100px) rotate(0deg); opacity:1;}
-  to{transform:translateY(calc(100vh + 100px)) rotate(360deg); opacity:0;}
+@keyframes explode{
+  0%{
+    transform:translate(0, 0) scale(0) rotate(0deg);
+    opacity:1;
+  }
+  50%{
+    opacity:1;
+  }
+  100%{
+    transform:translate(var(--dx), var(--dy)) scale(1) rotate(720deg);
+    opacity:0;
+  }
 }
 
 /* Activity */
@@ -773,47 +721,6 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
 /* Responsive */
 /* Medium screens - better layout for 1400x900 */
 @media (min-width:1151px) and (max-width:1450px){
-  .controls{
-    margin-top:4px;
-    padding:0;
-    width:100%;
-  }
-  .controls .stack{
-    display:flex;
-    flex-wrap:nowrap !important;
-    gap:6px;
-    width:100%;
-    align-items:center;
-    justify-content:flex-start;
-  }
-  .controls input#globalSearch{
-    flex:0 0 auto;
-    width:180px !important;
-    min-width:160px !important;
-    max-width:180px !important;
-  }
-  .controls select{
-    width:auto;
-    min-width:70px;
-    max-width:100px;
-    font-size:11px;
-  }
-  .controls label{
-    font-size:11px;
-    white-space:nowrap;
-    display:flex;
-    align-items:center;
-    gap:4px;
-  }
-  .controls label.small{
-    flex:0 0 auto;
-  }
-  /* Ensure sidebar control buttons stay visible and compact */
-  .controls .btn-min{
-    padding:2px 5px !important;
-    font-size:10px !important;
-    white-space:nowrap;
-  }
   #sidebar-controls{
     flex:0 0 auto;
   }
@@ -842,21 +749,10 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     <div class="confetti-container" id="confettiContainer"></div>
   </div>
 
-  <!-- Purchase Celebration -->
-  <div id="purchaseCelebration" class="purchase-celebration hidden">
-    <div class="purchase-overlay"></div>
-    <div class="purchase-banner">
-      <div class="money-rain" id="moneyRain"></div>
-      <div class="purchase-content">
-        <div class="purchase-icon">💰</div>
-        <h1 class="purchase-text">LIFE APP SOLD!</h1>
-        <div class="purchase-subtext">Cha-Ching! 🎊</div>
-      </div>
-    </div>
-    <audio id="chachingSound" preload="auto">
-      <source src="data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAARAAANpAAYGBgYGBgYJiYmJiYmJjU1NTU1NTVERERERERSUlJSUlJSYGBgYGBgYG5ubm5ubm59fX19fX19i4uLi4uLi5mamZmZmZmop6enp6ent7e3t7e3t8XFxcXFxcXT09PT09PT////////////AAAAAExhdmY1OC43Ni4xMDAAAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAADaQXC2hRAAAAAP/7UMQAA8AAAGkAAAAgAAA0gAAABExBTUUzLjEwMFUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPw==" type="audio/mpeg">
-    </audio>
-  </div>
+  <!-- Purchase Celebration Audio -->
+  <audio id="chachingSound" preload="auto">
+    <source src="sounds/cash-register-kaching-376867.wav" type="audio/wav">
+  </audio>
   
   <!-- ===== LEFT SIDEBAR (for drag and drop dual sidebar only) ===== -->
   <aside class="card sidebar left-sidebar" id="leftSidebar" style="display:none;">
@@ -866,10 +762,10 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   <!-- ===== MAIN LIST ===== -->
   <section class="card">
     <header>
-      <div style="display:flex;flex-direction:column;gap:4px">
+      <div style="display:flex;flex-direction:column;gap:8px">
         <h1 id="hotlistTitle" class="flame-title">Life Hotlist 🔥</h1>
         <div id="errorBanner" class="error-banner"></div>
-        
+
         <!-- Daily Outreach Progress Bar -->
         <div class="progress-stats">
           <div class="stat-group">
@@ -901,26 +797,25 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
             <span id="monthlyPurchases" style="color:#0e7a5a; font-weight:700;">0</span>
           </div>
         </div>
-      </div>
-      <div class="controls">
-        <div class="stack">
-          <input id="globalSearch" type="text" placeholder="Search clients or add new (press Enter)" style="min-width:280px" />
-          <label class="small">Sort
-            <select id="sortBy">
-              <option value="lastTouch">Last touched</option>
-              <option value="createdAt">Date added</option>
-              <option value="name">Name</option>
-            </select>
-          </label>
-          <label class="small">Density
-            <select id="densitySelect">
-              <option value="comfortable">Comfortable</option>
-              <option value="compact">Compact</option>
-              <option value="ultra-compact">Ultra Compact</option>
-            </select>
-          </label>
-          <!-- Sidebar controls in one line -->
-          <div style="display:flex; gap:4px; align-items:center;">
+
+        <!-- All controls in single row below daily outreach -->
+        <div class="controls" style="margin:0;padding:0;">
+          <div class="stack" style="flex-wrap:nowrap;align-items:center;">
+            <input id="globalSearch" type="text" placeholder="Search clients or add new (press Enter)" style="min-width:200px;flex:1;" />
+            <label class="small">Sort
+              <select id="sortBy">
+                <option value="lastTouch">Last touched</option>
+                <option value="createdAt">Date added</option>
+                <option value="name">Name</option>
+              </select>
+            </label>
+            <label class="small">Density
+              <select id="densitySelect">
+                <option value="comfortable">Comfortable</option>
+                <option value="compact">Compact</option>
+                <option value="ultra-compact">Ultra Compact</option>
+              </select>
+            </label>
             <button id="toggleSidebarBtn" class="btn-min gray" title="Toggle Sidebar" style="padding:4px 8px;">◧</button>
             <div id="sidebar-controls" style="display:flex; gap:2px;"></div>
             <button id="importBtn" class="btn-min gray" title="Import Clients" style="padding:4px 8px;">⬇</button>
@@ -1042,9 +937,11 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   /* =========================
    *  Version & Changelog
    * ========================= */
-  var VERSION = '1.7.0';
+  var VERSION = '1.7.2';
   // Recent commits from git log
   var CHANGELOG = [
+    { version: '1.7.2', date: '2025-01-16', changes: 'Redesign celebrations, fix header layout, and prevent duplicate goal celebrations' },
+    { version: '1.7.1', date: '2025-01-16', changes: 'Fix service worker caching strategy and force cache refresh' },
     { version: '1.7.0', date: '2025-01-15', changes: 'Add epic purchase celebration with money rain and cha-ching sound' },
     { version: '1.6.0', date: '2025-01-15', changes: 'Fix purchase tracking with unique purchase dates and cancelable purchase chips' },
     { version: '1.5.0', date: '2025-01-15', changes: 'Fix blank changelog modal and add monthly Life apps purchased counter' },
@@ -1107,7 +1004,7 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     dailyCalls:$('#dailyCalls'), dailyMessages:$('#dailyMessages'), saveDailyGoal:$('#saveDailyGoal'),
     monthlyPurchases:$('#monthlyPurchases'),
     celebration:$('#celebration'), confettiContainer:$('#confettiContainer'),
-    purchaseCelebration:$('#purchaseCelebration'), moneyRain:$('#moneyRain'), chachingSound:$('#chachingSound'),
+    chachingSound:$('#chachingSound'),
     todayBlock:$('#todayBlock'), todayList:$('#todayList'),
     scheduledBlock:$('#scheduledBlock'), scheduledList:$('#scheduledList'),
     densitySelect:$('#densitySelect'),
@@ -1116,13 +1013,202 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     sidebarControls:$('#sidebar-controls')
   };
 
-  /* UI state */
-  function loadUI(){ try{ return JSON.parse(localStorage.getItem(UI_KEY)||'{}'); }catch(e){ return {}; } }
-  function saveUI(u){ localStorage.setItem(UI_KEY, JSON.stringify(u)); }
-  var ui = loadUI();
+  /* IndexedDB Storage Module */
+  var storageDB = null;
+  var DB_NAME = 'HotlistDB';
+  var DB_VERSION = 1;
+  var STORE_NAME = 'appData';
+
+  function initDB() {
+    return new Promise(function(resolve, reject) {
+      if (!window.indexedDB) {
+        console.log('IndexedDB not supported, falling back to localStorage');
+        resolve(null);
+        return;
+      }
+
+      var request = indexedDB.open(DB_NAME, DB_VERSION);
+
+      request.onerror = function() {
+        console.error('Failed to open IndexedDB:', request.error);
+        resolve(null);
+      };
+
+      request.onsuccess = function() {
+        storageDB = request.result;
+        console.log('IndexedDB initialized successfully');
+
+        // Handle database closing unexpectedly
+        storageDB.onclose = function() {
+          console.warn('IndexedDB connection closed unexpectedly');
+          storageDB = null;
+        };
+
+        storageDB.onerror = function(event) {
+          console.error('IndexedDB error:', event);
+        };
+
+        storageDB.onabort = function(event) {
+          console.error('IndexedDB transaction aborted:', event);
+        };
+
+        resolve(storageDB);
+      };
+
+      request.onupgradeneeded = function(event) {
+        var db = event.target.result;
+        if (!db.objectStoreNames.contains(STORE_NAME)) {
+          db.createObjectStore(STORE_NAME);
+        }
+      };
+    });
+  }
+
+  function saveToIndexedDB(key, data) {
+    return new Promise(function(resolve, reject) {
+      // Re-open database if needed
+      if (!storageDB) {
+        initDB().then(function(db) {
+          if (!db) {
+            reject(new Error('IndexedDB not available'));
+            return;
+          }
+          performSave();
+        });
+      } else {
+        performSave();
+      }
+
+      function performSave() {
+        try {
+          var transaction = storageDB.transaction([STORE_NAME], 'readwrite');
+          var store = transaction.objectStore(STORE_NAME);
+          var request = store.put(data, key);
+
+          request.onsuccess = function() {
+            console.log('Data saved to IndexedDB successfully');
+            resolve();
+          };
+
+          request.onerror = function() {
+            console.error('Failed to save to IndexedDB:', request.error);
+            reject(request.error);
+          };
+
+          transaction.oncomplete = function() {
+            console.log('IndexedDB transaction completed');
+          };
+
+          transaction.onerror = function() {
+            console.error('IndexedDB transaction error:', transaction.error);
+            reject(transaction.error);
+          };
+        } catch (e) {
+          console.error('Error during IndexedDB save:', e);
+          reject(e);
+        }
+      }
+    });
+  }
+
+  function loadFromIndexedDB(key) {
+    return new Promise(function(resolve, reject) {
+      // Re-open database if needed
+      if (!storageDB) {
+        initDB().then(function(db) {
+          if (!db) {
+            reject(new Error('IndexedDB not available'));
+            return;
+          }
+          performLoad();
+        });
+      } else {
+        performLoad();
+      }
+
+      function performLoad() {
+        try {
+          var transaction = storageDB.transaction([STORE_NAME], 'readonly');
+          var store = transaction.objectStore(STORE_NAME);
+          var request = store.get(key);
+
+          request.onsuccess = function() {
+            console.log('Data loaded from IndexedDB:', key, request.result ? 'found' : 'not found');
+            resolve(request.result);
+          };
+
+          request.onerror = function() {
+            console.error('Failed to load from IndexedDB:', request.error);
+            reject(request.error);
+          };
+        } catch (e) {
+          console.error('Error during IndexedDB load:', e);
+          reject(e);
+        }
+      }
+    });
+  }
+
+  /* UI state with IndexedDB support */
+  function loadUI() {
+    if (storageDB) {
+      return loadFromIndexedDB(UI_KEY).then(function(data) {
+        if (data) {
+          try {
+            return JSON.parse(data);
+          } catch(e) {
+            console.error('Failed to parse IndexedDB UI data:', e);
+          }
+        }
+        return loadUIFromLocalStorage();
+      }).catch(function(e) {
+        console.error('IndexedDB UI load failed:', e);
+        return loadUIFromLocalStorage();
+      });
+    }
+    return loadUIFromLocalStorage();
+  }
+
+  function loadUIFromLocalStorage() {
+    try {
+      return JSON.parse(localStorage.getItem(UI_KEY) || '{}');
+    } catch(e) {
+      return {};
+    }
+  }
+
+  function saveUI(u) {
+    var dataStr = JSON.stringify(u);
+
+    // Always save to localStorage first (synchronous, immediate)
+    localStorage.setItem(UI_KEY, dataStr);
+
+    // Then attempt to save to IndexedDB (asynchronous)
+    saveToIndexedDB(UI_KEY, dataStr).then(function() {
+      console.log('Successfully saved UI to IndexedDB');
+    }).catch(function(e) {
+      console.error('Failed to save UI to IndexedDB, but localStorage save succeeded:', e);
+      // Try to reinitialize DB for next save
+      storageDB = null;
+    });
+  }
+  var ui = {};
+  var uiReady = Promise.resolve().then(function() {
+    var result = loadUI();
+    if (result && result.then) {
+      return result.then(function(loadedUI) {
+        ui = loadedUI || {};
+        return ui;
+      });
+    }
+    ui = result || {};
+    return ui;
+  });
 
   /* Daily queue rotation */
   function rotateDailyQueues(){
+    if(!state || !state.clients) return;
+
     var today = new Date().toDateString();
     var lastRotation = ui.lastQueueRotation || '';
 
@@ -1152,12 +1238,104 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     return isFinite(v) ? v : 4;
   }
 
+  /* Migrate existing localStorage data to IndexedDB */
+  function migrateData() {
+    if (!storageDB) return Promise.resolve();
+
+    return new Promise(function(resolve) {
+      var promises = [];
+
+      var mainData = localStorage.getItem(STABLE_KEY);
+      if (mainData) {
+        promises.push(saveToIndexedDB(STABLE_KEY, mainData).catch(function(e) {
+          console.error('Failed to migrate main data:', e);
+        }));
+      }
+
+      var uiData = localStorage.getItem(UI_KEY);
+      if (uiData) {
+        promises.push(saveToIndexedDB(UI_KEY, uiData).catch(function(e) {
+          console.error('Failed to migrate UI data:', e);
+        }));
+      }
+
+      Promise.all(promises).then(function() {
+        console.log('Data migration completed');
+        resolve();
+      });
+    });
+  }
+
   /* Stable state */
   function coerceState(x){ var out={clients:[], quotes:{raw:'', list:[]}, quotesSettings:{interval:15, random:true, norepeat:true, recent:[]} }; if(!x) return out; if(Array.isArray(x)){ out.clients=x; return normalize(out); } if(typeof x==='object'){ if(Array.isArray(x.clients)) out.clients=x.clients; if(x.quotes) out.quotes=x.quotes; if(x.quotesSettings) out.quotesSettings=x.quotesSettings; return normalize(out);} return out; }
   function normalize(state){ state.clients=(state.clients||[]).map(function(c){ return { id:c.id||uid(), name:c.name||'(Unnamed)', notes:(typeof c.notes==='string'?c.notes:''), status:c.status||'', purchaseDate:(typeof c.purchaseDate==='string'?c.purchaseDate:''), lastTouch:c.lastTouch||nowISO(), createdAt:c.createdAt||c.lastTouch||nowISO(), archived:!!c.archived, followUp:(typeof c.followUp==='string'?c.followUp:''), callCount:(isFinite(c.callCount)?c.callCount:0), msgCount:(isFinite(c.msgCount)?c.msgCount:0), queueToday:!!c.queueToday, queueTomorrow:!!c.queueTomorrow, hot:!!c.hot, history:Array.isArray(c.history)? c.history.filter(Boolean).map(function(h){ return {id:(h.id||uid()), ts:(h.ts||nowISO()), action:(h.action||'status'), to:(h.to!=null?h.to:''), kind:(h.kind!=null?h.kind:'')}; }) : [] }; }); state.quotes = state.quotes || {raw:'', list:[]}; if(!Array.isArray(state.quotes.list)) state.quotes.list=[]; state.quotesSettings = state.quotesSettings || {interval:15, random:true, norepeat:true, recent:[]}; if(!Array.isArray(state.quotesSettings.recent)) state.quotesSettings.recent=[]; return state; }
-  function load(){ try{ var cur=JSON.parse(localStorage.getItem(STABLE_KEY)||'null'); if(cur) return coerceState(cur);}catch(e){} var fresh={clients:[], quotes:{raw:'', list:[]}, quotesSettings:{interval:15, random:true, norepeat:true, recent:[]}}; localStorage.setItem(STABLE_KEY, JSON.stringify(fresh)); return fresh; }
-  function save(data){ localStorage.setItem(STABLE_KEY, JSON.stringify(data)); }
-  var state = load();
+
+  /* Enhanced load/save with IndexedDB and localStorage fallback */
+  function load() {
+    if (storageDB) {
+      return loadFromIndexedDB(STABLE_KEY).then(function(data) {
+        if (data) {
+          try {
+            return coerceState(JSON.parse(data));
+          } catch(e) {
+            console.error('Failed to parse IndexedDB data:', e);
+          }
+        }
+        return loadFromLocalStorage();
+      }).catch(function(e) {
+        console.error('IndexedDB load failed, using localStorage:', e);
+        return loadFromLocalStorage();
+      });
+    }
+    return loadFromLocalStorage();
+  }
+
+  function loadFromLocalStorage() {
+    try {
+      var cur = JSON.parse(localStorage.getItem(STABLE_KEY) || 'null');
+      if (cur) return coerceState(cur);
+    } catch(e) {
+      console.error('Failed to load from localStorage:', e);
+    }
+    var fresh = {clients:[], quotes:{raw:'', list:[]}, quotesSettings:{interval:15, random:true, norepeat:true, recent:[]}};
+    localStorage.setItem(STABLE_KEY, JSON.stringify(fresh));
+    return fresh;
+  }
+
+  function save(data) {
+    var dataStr = JSON.stringify(data);
+
+    // Always save to localStorage first (synchronous, immediate)
+    localStorage.setItem(STABLE_KEY, dataStr);
+
+    // Then attempt to save to IndexedDB (asynchronous)
+    saveToIndexedDB(STABLE_KEY, dataStr).then(function() {
+      console.log('Successfully saved to IndexedDB');
+    }).catch(function(e) {
+      console.error('Failed to save to IndexedDB, but localStorage save succeeded:', e);
+      // Try to reinitialize DB for next save
+      storageDB = null;
+    });
+  }
+  /* Initialize storage and load state */
+  var state = {clients:[], quotes:{raw:'', list:[]}, quotesSettings:{interval:15, random:true, norepeat:true, recent:[]}}; // Default state to prevent null errors
+  var storageReady = initDB().then(function() {
+    return migrateData();
+  }).then(function() {
+    var result = load();
+    if (result && result.then) {
+      return result.then(function(loadedState) {
+        state = loadedState || state;
+        return state;
+      });
+    }
+    state = result || state;
+    return state;
+  }).catch(function(e) {
+    console.error('Storage initialization failed:', e);
+    state = loadFromLocalStorage() || state;
+    return state;
+  });
 
   /* Error banner */
   window.addEventListener('error', function(e){ var b=$('#errorBanner'); if(!b) return; b.style.display='block'; var msg=(e && e.error && e.error.message) ? e.error.message : (e && e.message ? e.message : 'unknown error'); b.textContent='Script error: '+msg; });
@@ -1177,7 +1355,7 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
 
   /* CRUD / actions */
   function addClient(name){ preserveUIAndRender(function(){ state.clients.push({id:uid(), name:name, notes:'', status:'', lastTouch:nowISO(), createdAt:nowISO(), archived:false, followUp:'', callCount:0, msgCount:0, queueToday:false, queueTomorrow:false, hot:false, history:[]}); }); }
-  function setStatus(c,newStatus){
+  function setStatus(c,newStatus,buttonElement){
     var wasPurchased = c.status === 'Purchased';
     preserveUIAndRender(function(){
       var when=nowISO();
@@ -1193,7 +1371,7 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     // Trigger epic purchase celebration!
     if(newStatus === 'Purchased' && !wasPurchased){
       setTimeout(function(){
-        startPurchaseCelebration();
+        startPurchaseCelebration(buttonElement);
       }, 100);
     }
   }
@@ -1236,7 +1414,7 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   hiddenFollowPicker.addEventListener('change', function(){ if(!followTargetClient) return; var iso=fromLocalInputValue(hiddenFollowPicker.value); followTargetClient.followUp=iso; save(state); render(); followTargetClient=null; });
 
   /* KPIs / ribbons / pipeline / goals */
-  function computeKPIs(){ var active=state.clients.filter(function(c){return !c.archived;}); var touchedToday=active.filter(function(c){return isToday(c.lastTouch);}); var purchased=state.clients.filter(function(c){return c.status==='Purchased';}); var contacted=state.clients.filter(function(c){return (c.history||[]).length>0 && c.status!=='Purchased';}); var perClient=state.clients.map(function(c){ var fp=(c.history||[]).find(function(h){return h.action==='status' && h.to==='Purchased';}); var firstPur = fp ? fp.ts : null; if(!firstPur) return null; var calls=(c.history||[]).filter(function(h){ return h.action==='status' && h.to==='Called' && new Date(h.ts)<=new Date(firstPur); }).length; return calls; }).filter(function(v){return v!==null;}); var avgCalls = perClient.length ? (perClient.reduce(function(a,b){return a+b;},0)/perClient.length).toFixed(1) : '—'; return {total:active.length, touchedToday:touchedToday.length, purchased:purchased.length, contacted:contacted.length, convRate:(contacted.length? Math.round((purchased.length/Math.max(contacted.length,1))*100) : 0), avgCalls:avgCalls}; }
+  function computeKPIs(){ if(!state || !state.clients) return {total:0, touchedToday:0, purchased:0, contacted:0, convRate:0, avgCalls:'—'}; var active=state.clients.filter(function(c){return !c.archived;}); var touchedToday=active.filter(function(c){return isToday(c.lastTouch);}); var purchased=state.clients.filter(function(c){return c.status==='Purchased';}); var contacted=state.clients.filter(function(c){return (c.history||[]).length>0 && c.status!=='Purchased';}); var perClient=state.clients.map(function(c){ var fp=(c.history||[]).find(function(h){return h.action==='status' && h.to==='Purchased';}); var firstPur = fp ? fp.ts : null; if(!firstPur) return null; var calls=(c.history||[]).filter(function(h){ return h.action==='status' && h.to==='Called' && new Date(h.ts)<=new Date(firstPur); }).length; return calls; }).filter(function(v){return v!==null;}); var avgCalls = perClient.length ? (perClient.reduce(function(a,b){return a+b;},0)/perClient.length).toFixed(1) : '—'; return {total:active.length, touchedToday:touchedToday.length, purchased:purchased.length, contacted:contacted.length, convRate:(contacted.length? Math.round((purchased.length/Math.max(contacted.length,1))*100) : 0), avgCalls:avgCalls}; }
   function renderKPIs(){ 
     var k=computeKPIs(); 
     if(!els.kpis) return;
@@ -1248,17 +1426,17 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
       els.kpis.appendChild(row); 
     }); 
   }
-  function pipelineStats(){ var counts={Calls:0,Emails:0,Quotes:0,Apps:0,Purchased:0}; state.clients.forEach(function(c){ (c.history||[]).forEach(function(h){ if(h.action!=='status') return; if(h.to==='Called') counts.Calls++; else if(h.to==='Emailed') counts.Emails++; else if(h.to==='Sent Quote') counts.Quotes++; else if(h.to==='Sent Application') counts.Apps++; else if(h.to==='Purchased') counts.Purchased++; }); }); function conv(a,b){ return a? Math.round((b/a)*100) : 0; } return {counts:counts, convCE:conv(counts.Calls,counts.Emails), convEQ:conv(counts.Emails,counts.Quotes), convQA:conv(counts.Quotes,counts.Apps), convAP:conv(counts.Apps,counts.Purchased)}; }
+  function pipelineStats(){ var counts={Calls:0,Emails:0,Quotes:0,Apps:0,Purchased:0}; if(state && state.clients) state.clients.forEach(function(c){ (c.history||[]).forEach(function(h){ if(h.action!=='status') return; if(h.to==='Called') counts.Calls++; else if(h.to==='Emailed') counts.Emails++; else if(h.to==='Sent Quote') counts.Quotes++; else if(h.to==='Sent Application') counts.Apps++; else if(h.to==='Purchased') counts.Purchased++; }); }); function conv(a,b){ return a? Math.round((b/a)*100) : 0; } return {counts:counts, convCE:conv(counts.Calls,counts.Emails), convEQ:conv(counts.Emails,counts.Quotes), convQA:conv(counts.Quotes,counts.Apps), convAP:conv(counts.Apps,counts.Purchased)}; }
   function renderPipeline(){ var p=pipelineStats(); els.pipeline.innerHTML = '' +'<div>Calls: <b>'+p.counts.Calls+'</b> → Emails: <b>'+p.counts.Emails+'</b> (<b>'+p.convCE+'%</b>)</div>' +'<div>Emails: <b>'+p.counts.Emails+'</b> → Quotes: <b>'+p.counts.Quotes+'</b> (<b>'+p.convEQ+'%</b>)</div>' +'<div>Quotes: <b>'+p.counts.Quotes+'</b> → Apps: <b>'+p.counts.Apps+'</b> (<b>'+p.convQA+'%</b>)</div>' +'<div>Apps: <b>'+p.counts.Apps+'</b> → Purchased: <b>'+p.counts.Purchased+'</b> (<b>'+p.convAP+'%</b>)</div>'; }
   function weekRange(){ var end=startOfDay(new Date()), start=addDays(end,-6); return {start:start, end:addDays(end,1)}; }
-  function weeklyCalls(){ var r=weekRange(), cnt=0; state.clients.forEach(function(c){ (c.history||[]).forEach(function(h){ if(h.action==='status' && h.to==='Called' && isWithin(h.ts,r.start,r.end)) cnt++; }); }); return cnt; }
+  function weeklyCalls(){ var r=weekRange(), cnt=0; if(state && state.clients) state.clients.forEach(function(c){ (c.history||[]).forEach(function(h){ if(h.action==='status' && h.to==='Called' && isWithin(h.ts,r.start,r.end)) cnt++; }); }); return cnt; }
   /* Goals widget removed - functionality now in daily outreach bar */
-  function touchesOnDay(day){ var start=startOfDay(day), end=addDays(start,1), cnt=0; state.clients.forEach(function(c){ (c.history||[]).forEach(function(h){ if(h.action==='status'){ var t=new Date(h.ts); if(t>=start && t<end) cnt++; }}); }); return cnt; }
+  function touchesOnDay(day){ var start=startOfDay(day), end=addDays(start,1), cnt=0; if(state && state.clients) state.clients.forEach(function(c){ (c.history||[]).forEach(function(h){ if(h.action==='status'){ var t=new Date(h.ts); if(t>=start && t<end) cnt++; }}); }); return cnt; }
   function calcStreak(minPerDay){ var min=(typeof minPerDay==='number'?minPerDay:1), streak=0; for(var i=0;i<365;i++){ var day=addDays(new Date(), -i); if(touchesOnDay(day) >= min) streak++; else break; } return streak; }
   // Keep collecting KPI data for email summaries
   function getKPIData(){
     return {
-      purchased: state.clients.filter(function(c){return c.status==='Purchased';}).length,
+      purchased: (state && state.clients) ? state.clients.filter(function(c){return c.status==='Purchased';}).length : 0,
       weeklyCalls: weeklyCalls(),
       streak: calcStreak(1)
     };
@@ -1311,80 +1489,62 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     if(els.confettiContainer) els.confettiContainer.innerHTML = '';
   }
 
-  /* Purchase Celebration - EPIC VERSION! */
-  var purchaseCelebrationActive = false;
-
-  function createMoneyRain(){
-    if(!els.moneyRain) return;
-    var emojis = ['💵', '💴', '💶', '💷', '💰', '💸', '🤑', '💎', '🏆'];
-    for(var i = 0; i < 60; i++){
-      var money = document.createElement('div');
-      money.className = 'money';
-      money.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-      money.style.left = Math.random() * 100 + '%';
-      money.style.animationDelay = Math.random() * 3 + 's';
-      money.style.animationDuration = (2 + Math.random() * 2) + 's';
-      els.moneyRain.appendChild(money);
-    }
-  }
-
-  function startPurchaseCelebration(){
-    if(purchaseCelebrationActive || !els.purchaseCelebration) return;
-    purchaseCelebrationActive = true;
-
-    // Show celebration
-    els.purchaseCelebration.classList.remove('hidden');
-
-    // Play simple single bell cha-ching sound
-    try {
-      var audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
-      // Single bell sound
-      var oscillator = audioContext.createOscillator();
-      var gainNode = audioContext.createGain();
-
-      oscillator.frequency.setValueAtTime(1568, audioContext.currentTime); // G6 note
-      oscillator.type = 'sine';
-
-      gainNode.gain.setValueAtTime(0.7, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.5);
-
-    } catch(e) {
-      // Fallback if Web Audio API is not supported
-      console.log('Audio not supported');
+  /* Purchase Celebration - Dollar Explosion */
+  function startPurchaseCelebration(buttonElement){
+    // Play cash register sound
+    if(els.chachingSound) {
+      try {
+        els.chachingSound.play();
+      } catch(e) {
+        console.log('Audio playback failed:', e);
+      }
     }
 
-    // Create money rain effect
-    createMoneyRain();
+    // Create dollar explosion from button
+    if(!buttonElement) return;
 
-    // Auto-hide after 5 seconds
+    var rect = buttonElement.getBoundingClientRect();
+    var centerX = rect.left + rect.width / 2;
+    var centerY = rect.top + rect.height / 2;
+
+    // Create container for particles
+    var container = document.createElement('div');
+    container.className = 'dollar-explosion';
+    container.style.left = centerX + 'px';
+    container.style.top = centerY + 'px';
+    document.body.appendChild(container);
+
+    // Create dollar particles
+    var dollarSymbols = ['$', '💵', '💰', '💸', '💲'];
+    for(var i = 0; i < 12; i++){
+      var particle = document.createElement('div');
+      particle.className = 'dollar-particle';
+      particle.textContent = dollarSymbols[Math.floor(Math.random() * dollarSymbols.length)];
+
+      // Random explosion direction
+      var angle = (Math.PI * 2 * i) / 12 + (Math.random() - 0.5) * 0.5;
+      var distance = 80 + Math.random() * 120;
+      var dx = Math.cos(angle) * distance;
+      var dy = Math.sin(angle) * distance - 50; // Bias upward
+
+      particle.style.setProperty('--dx', dx + 'px');
+      particle.style.setProperty('--dy', dy + 'px');
+      particle.style.animationDelay = Math.random() * 0.2 + 's';
+
+      container.appendChild(particle);
+    }
+
+    // Clean up after animation
     setTimeout(function(){
-      stopPurchaseCelebration();
-    }, 5000);
-  }
-
-  function stopPurchaseCelebration(){
-    if(!purchaseCelebrationActive || !els.purchaseCelebration) return;
-    purchaseCelebrationActive = false;
-
-    // Hide celebration
-    els.purchaseCelebration.classList.add('hidden');
-
-    // Clean up money rain
-    if(els.moneyRain) els.moneyRain.innerHTML = '';
+      container.remove();
+    }, 2000);
   }
   
   /* Daily Outreach Goal */
   function getDailyOutreachCounts(){
     var today = new Date().toISOString().slice(0,10);
     var calls = 0, messages = 0;
-    state.clients.forEach(function(c){
+    if(state && state.clients) state.clients.forEach(function(c){
       if(c.history){
         c.history.forEach(function(h){
           var hDate = (h.ts || '').slice(0,10);
@@ -1424,7 +1584,7 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     var endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
     var count = 0;
 
-    state.clients.forEach(function(c){
+    if(state && state.clients) state.clients.forEach(function(c){
       if(c.status === 'Purchased' && c.purchaseDate){
         var purchaseDate = new Date(c.purchaseDate);
         if(purchaseDate >= startOfMonth && purchaseDate < endOfMonth){
@@ -1441,6 +1601,7 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     var counts = getDailyOutreachCounts();
     var progress = Math.min(100, (counts.total / goal) * 100);
     var goalAchieved = counts.total >= goal && goal > 0;
+    var today = new Date().toDateString();
 
     if(els.dailyOutreachFill) els.dailyOutreachFill.style.width = progress + '%';
     if(els.dailyOutreachLabel) els.dailyOutreachLabel.textContent = counts.total + ' / ' + goal;
@@ -1451,23 +1612,78 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     if(els.monthlyPurchases){
       els.monthlyPurchases.textContent = String(getMonthlyPurchases());
     }
-    
+
     // Update goal input if it exists
     if(els.dailyOutreachGoal && document.activeElement !== els.dailyOutreachGoal) {
       els.dailyOutreachGoal.value = String(goal);
     }
-    
-    // Trigger celebration if goal just achieved
-    if(goalAchieved && !lastGoalState && counts.total > 0) {
-      startCelebration();
+
+    // Check if it's a new day - reset celebration tracking
+    var isNewDay = ui.lastCelebrationDate !== today;
+    if(isNewDay){
+      ui.lastCelebrationGoal = 0; // Reset the celebrated goal level
+      ui.lastCelebrationDate = today;
+      ui.lastOutreachCount = counts.total;
+      // For a new day, if the goal is already achieved, mark it as celebrated at this level
+      if(goalAchieved){
+        ui.lastCelebrationGoal = goal;
+      }
+      saveUI(ui);
     }
+
+    // Check if goal has been increased since last celebration
+    var lastCelebratedGoal = ui.lastCelebrationGoal || 0;
+    var goalIncreased = goal > lastCelebratedGoal;
+
+    // Only trigger celebration when:
+    // 1. Goal is achieved
+    // 2. Either:
+    //    a) Haven't celebrated at this goal level yet (goal was increased), OR
+    //    b) Count dropped below goal and came back up (undo scenario)
+    // 3. Count has actually changed (not just page refresh)
+    // 4. We just crossed the threshold
+    var previousCount = ui.lastOutreachCount || 0;
+    var countChanged = counts.total !== previousCount;
+    var justCrossedThreshold = previousCount < goal && counts.total >= goal;
+    var shouldCelebrate = false;
+
+    if(goalAchieved && countChanged){
+      // Celebrate if we crossed the threshold (either from below or goal was raised)
+      if(justCrossedThreshold){
+        shouldCelebrate = true;
+      }
+      // Also celebrate if goal was increased and we're already past the new goal
+      else if(goalIncreased && counts.total >= goal){
+        shouldCelebrate = true;
+      }
+    }
+
+    if(shouldCelebrate){
+      startCelebration();
+      ui.lastCelebrationGoal = goal; // Remember the goal level we celebrated at
+      saveUI(ui);
+    }
+
+    // Update stored count
+    if(counts.total !== previousCount){
+      ui.lastOutreachCount = counts.total;
+      saveUI(ui);
+    }
+
     lastGoalState = goalAchieved;
   }
   
   if(els.saveDailyGoal){
     els.saveDailyGoal.addEventListener('click', function(){
+      var oldGoal = ui.dailyOutreachGoal || 10;
       var newGoal = Number(els.dailyOutreachGoal.value || 10);
       ui.dailyOutreachGoal = newGoal;
+
+      // If goal was decreased below the celebration level, reset celebration tracker
+      if(newGoal < oldGoal && ui.lastCelebrationGoal > newGoal){
+        ui.lastCelebrationGoal = Math.min(ui.lastCelebrationGoal, newGoal);
+      }
+
       saveUI(ui);
       renderDailyOutreach();
     });
@@ -1622,7 +1838,7 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
         if(c.status===st) btn.classList.add('active');
         var ico=document.createElement('span'); ico.className='ico status-icon'; ico.textContent=STATUS_ICON[st] || '•';
         btn.appendChild(ico); // No label in ultra-compact
-        btn.addEventListener('click', function(){ setStatus(c,st); });
+        btn.addEventListener('click', function(){ setStatus(c,st,btn); });
         actionsSection.appendChild(btn);
       });
       
@@ -1684,7 +1900,7 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
         var ico=document.createElement('span'); ico.className='ico status-icon'; ico.textContent=STATUS_ICON[st] || '•';
         var cap=document.createElement('span'); cap.className='label'; cap.textContent=STATUS_ABBR[st] || st;
         btn.appendChild(ico); btn.appendChild(cap);
-        btn.addEventListener('click', function(){ setStatus(c,st); });
+        btn.addEventListener('click', function(){ setStatus(c,st,btn); });
         bar.appendChild(btn);
       });
 
@@ -1723,21 +1939,22 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   var selectionIndex=0;
   function setSelectedRowById(id){ var rows=allRows(); var idx=rows.findIndex(function(r){return r.dataset.id===id;}); if(idx>=0){ selectionIndex=idx; restoreSelection(); } }
   function restoreSelection(){ var rows=allRows(); rows.forEach(function(r){ r.classList.remove('selected'); }); if(!rows.length) return; if(selectionIndex<0) selectionIndex=rows.length-1; if(selectionIndex>=rows.length) selectionIndex=0; rows[selectionIndex].classList.add('selected'); rows[selectionIndex].scrollIntoView({block:'nearest'}); }
-  function getSelectedClient(){ var rows=allRows(); if(!rows.length) return null; var id=rows[selectionIndex] && rows[selectionIndex].dataset.id; return state.clients.find(function(c){return c.id===id;}); }
+  function getSelectedClient(){ var rows=allRows(); if(!rows.length) return null; var id=rows[selectionIndex] && rows[selectionIndex].dataset.id; return (state && state.clients) ? state.clients.find(function(c){return c.id===id;}) : null; }
 
   /* Activity / chart / heatmap */
-  function todaysItems(){ var start=startOfDay(new Date()), end=addDays(start,1), items=[]; state.clients.forEach(function(c){ (c.history||[]).forEach(function(h){ if(h.action!=='status') return; if(isWithin(h.ts,start,end)) items.push({ts:h.ts,name:c.name,label:(STATUS_ABBR[h.to]||h.to),clientId:c.id,histId:h.id}); }); }); return items.sort(function(a,b){return new Date(b.ts)-new Date(a.ts);}); }
-  function todaysGrouped(){ var start=startOfDay(new Date()), end=addDays(start,1), map={}; state.clients.forEach(function(c){ (c.history||[]).forEach(function(h){ if(h.action!=='status') return; if(!isWithin(h.ts,start,end)) return; var label=(STATUS_ABBR[h.to]||h.to); var g=map[c.id] || {id:c.id,name:c.name,items:[]}; g.items.push({ts:h.ts,label:label,histId:h.id}); map[c.id]=g; }); }); var groups=Object.keys(map).map(function(k){ var g=map[k]; g.items=g.items.sort(function(a,b){return new Date(a.ts)-new Date(b.ts);}); g.latest=Math.max.apply(null, g.items.map(function(i){return +new Date(i.ts);})); return g; }).sort(function(a,b){return b.latest-a.latest;}); return groups; }
+  function todaysItems(){ var start=startOfDay(new Date()), end=addDays(start,1), items=[]; if(state && state.clients) state.clients.forEach(function(c){ (c.history||[]).forEach(function(h){ if(h.action!=='status') return; if(isWithin(h.ts,start,end)) items.push({ts:h.ts,name:c.name,label:(STATUS_ABBR[h.to]||h.to),clientId:c.id,histId:h.id}); }); }); return items.sort(function(a,b){return new Date(b.ts)-new Date(a.ts);}); }
+  function todaysGrouped(){ var start=startOfDay(new Date()), end=addDays(start,1), map={}; if(state && state.clients) state.clients.forEach(function(c){ (c.history||[]).forEach(function(h){ if(h.action!=='status') return; if(!isWithin(h.ts,start,end)) return; var label=(STATUS_ABBR[h.to]||h.to); var g=map[c.id] || {id:c.id,name:c.name,items:[]}; g.items.push({ts:h.ts,label:label,histId:h.id}); map[c.id]=g; }); }); var groups=Object.keys(map).map(function(k){ var g=map[k]; g.items=g.items.sort(function(a,b){return new Date(a.ts)-new Date(b.ts);}); g.latest=Math.max.apply(null, g.items.map(function(i){return +new Date(i.ts);})); return g; }).sort(function(a,b){return b.latest-a.latest;}); return groups; }
   function renderActivity(){ if(els.todayDate) els.todayDate.textContent=new Date().toLocaleDateString([], {weekday:'long',month:'long',day:'numeric',year:'numeric'}); var grouped= !!ui.groupTodayByClient; els.groupToggle && (els.groupToggle.checked = grouped); if(!els.activity) return; els.activity.innerHTML=''; if(!grouped){ var items=todaysItems(); if(!items.length){ els.activity.innerHTML='<div class="muted small">No activity yet today.</div>'; return; } items.forEach(function(it){ var div=document.createElement('div'); div.className='item'; div.innerHTML='<div class="small muted">'+fmtTime(it.ts)+'</div><div><b>'+escapeHtml(it.name)+'</b> — '+escapeHtml(it.label)+'</div>'+'<button class="undo" data-undo data-client="'+it.clientId+'" data-hist="'+it.histId+'">Undo</button>'; els.activity.appendChild(div); }); } else { var groups=todaysGrouped(); if(!groups.length){ els.activity.innerHTML='<div class="muted small">No activity yet today.</div>'; return; } groups.forEach(function(g){ var who=document.createElement('div'); who.style.fontWeight='700'; who.textContent=g.name; who.style.margin='6px 0 4px'; els.activity.appendChild(who); g.items.forEach(function(it){ var div=document.createElement('div'); div.className='item'; div.innerHTML='<div class="small muted">'+fmtTime(it.ts)+'</div><div>— '+escapeHtml(it.label)+'</div>'+'<button class="undo" data-undo data-client="'+g.id+'" data-hist="'+it.histId+'">Undo</button>'; els.activity.appendChild(div); }); }); } }
-  if(els.activity) els.activity.addEventListener('click', function(e){ var btn=e.target.closest('[data-undo]'); if(!btn) return; var cid=btn.getAttribute('data-client'), hid=btn.getAttribute('data-hist'); var c=state.clients.find(function(x){return String(x.id)===String(cid);}); if(!c) return; var i=c.history.findIndex(function(h){ return String(h.id)===String(hid); }); if(i!==-1){ preserveUIAndRender(function(){ c.history.splice(i,1); var onlyStatus=c.history.filter(function(h){return h.action==='status' && STATUS.indexOf(h.to)!==-1;}).sort(function(a,b){return new Date(a.ts)-new Date(b.ts);}); var lastStatus=last(onlyStatus); c.status = lastStatus ? (lastStatus.to||'') : ''; var anyLast=last(c.history.sort(function(a,b){return new Date(a.ts)-new Date(b.ts);})); if(anyLast) c.lastTouch=anyLast.ts; }); } });
+  if(els.activity) els.activity.addEventListener('click', function(e){ var btn=e.target.closest('[data-undo]'); if(!btn) return; var cid=btn.getAttribute('data-client'), hid=btn.getAttribute('data-hist'); var c=(state && state.clients) ? state.clients.find(function(x){return String(x.id)===String(cid);}) : null; if(!c) return; var i=c.history.findIndex(function(h){ return String(h.id)===String(hid); }); if(i!==-1){ preserveUIAndRender(function(){ c.history.splice(i,1); var onlyStatus=c.history.filter(function(h){return h.action==='status' && STATUS.indexOf(h.to)!==-1;}).sort(function(a,b){return new Date(a.ts)-new Date(b.ts);}); var lastStatus=last(onlyStatus); c.status = lastStatus ? (lastStatus.to||'') : ''; var anyLast=last(c.history.sort(function(a,b){return new Date(a.ts)-new Date(b.ts);})); if(anyLast) c.lastTouch=anyLast.ts; }); } });
 
-  function lastNDays(n){ var out=[], i, day, next, count; for(i=n-1;i>=0;i--){ day=startOfDay(addDays(new Date(), -i)); next=addDays(day,1); count=0; state.clients.forEach(function(c){ (c.history||[]).forEach(function(h){ if(h.action==='status'){ var t=new Date(h.ts); if(t>=day && t<next) count++; }}); }); out.push({label:(day.getMonth()+1)+'/'+day.getDate(), count:count}); } return out; }
+  function lastNDays(n){ var out=[], i, day, next, count; for(i=n-1;i>=0;i--){ day=startOfDay(addDays(new Date(), -i)); next=addDays(day,1); count=0; if(state && state.clients) state.clients.forEach(function(c){ (c.history||[]).forEach(function(h){ if(h.action==='status'){ var t=new Date(h.ts); if(t>=day && t<next) count++; }}); }); out.push({label:(day.getMonth()+1)+'/'+day.getDate(), count:count}); } return out; }
   function renderChart(){ if(!els.chart) return; var days=parseInt((els.chartRangeSel && els.chartRangeSel.value) || '7',10); var data=lastNDays(days), max=1, i; for(i=0;i<data.length;i++){ if(data[i].count>max) max=data[i].count; } els.chart.innerHTML=''; data.forEach(function(d){ var wrap=document.createElement('div'); wrap.style.flex='1'; wrap.style.display='flex'; wrap.style.flexDirection='column'; wrap.style.alignItems='stretch'; var bar=document.createElement('div'); bar.className='bar'; bar.style.height=(Math.max(6, (d.count/max*100)))+'%'; var lab=document.createElement('div'); lab.className='barlab'; lab.textContent=d.label; wrap.appendChild(bar); wrap.appendChild(lab); els.chart.appendChild(wrap); }); }
   function renderHeatmap(){ if(!els.heatmap) return; var days=90, data=lastNDays(days); function lvl(c){ return c===0?'': c<=1?'l1': c<=3?'l2': c<=6?'l3':'l4'; } els.heatmap.innerHTML=''; data.forEach(function(d){ var cell=document.createElement('div'); cell.className='cell '+lvl(d.count); cell.title=d.label+': '+d.count; els.heatmap.appendChild(cell); }); }
 
   /* Followups & Next to Touch */
   function renderFollowUps(){
     if(!els.followList) return;
+    if(!state || !state.clients) return;
     var now = new Date();
     var items = state.clients.filter(function(c){
       // Exclude archived and tomorrow-queued clients
@@ -1833,6 +2050,8 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     restoreSelection();
   }
   function render(){
+    if(!state || !state.clients) return;
+
     var activeAll=state.clients.filter(function(c){return !c.archived;});
     var todayClients = activeAll.filter(function(c){ return c.queueToday; });
     var scheduled = activeAll.filter(isFutureFollowUp);
@@ -2592,10 +2811,7 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
 
   enableDrag(); enableCollapse();
 
-  // Check for daily queue rotation on load
-  rotateDailyQueues();
-
-  renderQuote(false); scheduleQuoteTimer(); renderDailyOutreach();
+  // Check for daily queue rotation on load (will be done after storage is ready)
 
   // Check for queue rotation every minute (in case app stays open overnight)
   setInterval(function(){
@@ -2685,7 +2901,7 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   // Helper to get pipeline data
   function getPipelineData(){
     var pipeline = {};
-    state.clients.forEach(function(c){
+    if(state && state.clients) state.clients.forEach(function(c){
       if(!c.archived && c.status){
         pipeline[c.status] = (pipeline[c.status] || 0) + 1;
       }
@@ -2697,7 +2913,27 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   var versionEl = document.getElementById('versionNumber');
   if(versionEl) versionEl.textContent = VERSION;
 
-  render();
+  /* Wait for storage initialization then render */
+  Promise.all([storageReady, uiReady]).then(function() {
+    // Now that storage is ready, perform initial setup
+    rotateDailyQueues();
+    renderQuote(false);
+    scheduleQuoteTimer();
+    renderDailyOutreach();
+    render();
+  }).catch(function(e) {
+    console.error('Failed to initialize storage:', e);
+    if (!state) {
+      state = {clients:[], quotes:{raw:'', list:[]}, quotesSettings:{interval:15, random:true, norepeat:true, recent:[]}};
+    }
+    if (!ui) {
+      ui = {};
+    }
+    renderQuote(false);
+    scheduleQuoteTimer();
+    renderDailyOutreach();
+    render();
+  });
 })();
 </script>
 

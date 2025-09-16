@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Reset Storage - Hotlist</title>
+    <style>
+        body { font-family: system-ui; padding: 20px; max-width: 600px; margin: 0 auto; }
+        button { padding: 10px 20px; margin: 10px; cursor: pointer; }
+        .warning { background: #fee; padding: 20px; border: 2px solid #f88; border-radius: 5px; margin: 20px 0; }
+        pre { background: #f4f4f4; padding: 10px; overflow-x: auto; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Hotlist Storage Manager</h1>
+
+    <div class="warning">
+        <strong>⚠️ Warning:</strong> These actions will affect your Hotlist data. Make sure to backup first!
+    </div>
+
+    <h2>Current Storage Status</h2>
+    <div id="status"></div>
+
+    <h2>Actions</h2>
+    <button onclick="showData()">Show Current Data</button>
+    <button onclick="clearIndexedDB()">Clear IndexedDB Only</button>
+    <button onclick="clearLocalStorage()">Clear localStorage Only</button>
+    <button onclick="clearAll()">Clear All Storage (Reset App)</button>
+    <button onclick="forceMigration()">Force Re-Migration from localStorage</button>
+
+    <h2>Log</h2>
+    <pre id="log"></pre>
+
+    <script>
+        const DB_NAME = 'HotlistDB';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'appData';
+        const STABLE_KEY = 'hotlistStable';
+        const UI_KEY = 'hotlistUI';
+
+        function log(msg, type = '') {
+            const logEl = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            const className = type ? ` class="${type}"` : '';
+            logEl.innerHTML += `<div${className}>${time}: ${msg}</div>`;
+        }
+
+        async function checkStatus() {
+            const statusEl = document.getElementById('status');
+            let html = '<ul>';
+
+            // Check localStorage
+            const lsData = localStorage.getItem(STABLE_KEY);
+            const lsUI = localStorage.getItem(UI_KEY);
+            html += `<li>localStorage (main): ${lsData ? lsData.length + ' bytes' : 'empty'}</li>`;
+            html += `<li>localStorage (UI): ${lsUI ? lsUI.length + ' bytes' : 'empty'}</li>`;
+
+            // Check IndexedDB
+            try {
+                const db = await openDB();
+                const tx = db.transaction([STORE_NAME], 'readonly');
+                const store = tx.objectStore(STORE_NAME);
+
+                const idbData = await new Promise((resolve) => {
+                    const req = store.get(STABLE_KEY);
+                    req.onsuccess = () => resolve(req.result);
+                });
+
+                const idbUI = await new Promise((resolve) => {
+                    const req = store.get(UI_KEY);
+                    req.onsuccess = () => resolve(req.result);
+                });
+
+                html += `<li>IndexedDB (main): ${idbData ? idbData.length + ' bytes' : 'empty'}</li>`;
+                html += `<li>IndexedDB (UI): ${idbUI ? idbUI.length + ' bytes' : 'empty'}</li>`;
+
+                db.close();
+            } catch (e) {
+                html += `<li>IndexedDB: Error - ${e.message}</li>`;
+            }
+
+            html += '</ul>';
+            statusEl.innerHTML = html;
+        }
+
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => resolve(request.result);
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        db.createObjectStore(STORE_NAME);
+                    }
+                };
+            });
+        }
+
+        async function showData() {
+            try {
+                const lsData = localStorage.getItem(STABLE_KEY);
+                if (lsData) {
+                    const parsed = JSON.parse(lsData);
+                    log('localStorage data: ' + JSON.stringify(parsed, null, 2).substring(0, 500) + '...', 'success');
+                } else {
+                    log('No data in localStorage', 'error');
+                }
+
+                const db = await openDB();
+                const tx = db.transaction([STORE_NAME], 'readonly');
+                const store = tx.objectStore(STORE_NAME);
+
+                const idbData = await new Promise((resolve) => {
+                    const req = store.get(STABLE_KEY);
+                    req.onsuccess = () => resolve(req.result);
+                });
+
+                if (idbData) {
+                    const parsed = JSON.parse(idbData);
+                    log('IndexedDB data: ' + JSON.stringify(parsed, null, 2).substring(0, 500) + '...', 'success');
+                } else {
+                    log('No data in IndexedDB', 'error');
+                }
+
+                db.close();
+            } catch (e) {
+                log('Error showing data: ' + e.message, 'error');
+            }
+            checkStatus();
+        }
+
+        async function clearIndexedDB() {
+            if (!confirm('Clear IndexedDB data?')) return;
+
+            try {
+                await indexedDB.deleteDatabase(DB_NAME);
+                log('IndexedDB cleared successfully', 'success');
+            } catch (e) {
+                log('Error clearing IndexedDB: ' + e.message, 'error');
+            }
+            checkStatus();
+        }
+
+        function clearLocalStorage() {
+            if (!confirm('Clear localStorage data?')) return;
+
+            localStorage.removeItem(STABLE_KEY);
+            localStorage.removeItem(UI_KEY);
+            log('localStorage cleared successfully', 'success');
+            checkStatus();
+        }
+
+        async function clearAll() {
+            if (!confirm('This will completely reset the app. Are you sure?')) return;
+
+            try {
+                // Clear IndexedDB
+                await indexedDB.deleteDatabase(DB_NAME);
+
+                // Clear localStorage
+                localStorage.removeItem(STABLE_KEY);
+                localStorage.removeItem(UI_KEY);
+
+                log('All storage cleared successfully. Refresh the app to start fresh.', 'success');
+            } catch (e) {
+                log('Error clearing storage: ' + e.message, 'error');
+            }
+            checkStatus();
+        }
+
+        async function forceMigration() {
+            if (!confirm('Force re-migration from localStorage to IndexedDB?')) return;
+
+            try {
+                const lsData = localStorage.getItem(STABLE_KEY);
+                const lsUI = localStorage.getItem(UI_KEY);
+
+                if (!lsData && !lsUI) {
+                    log('No data in localStorage to migrate', 'error');
+                    return;
+                }
+
+                const db = await openDB();
+                const tx = db.transaction([STORE_NAME], 'readwrite');
+                const store = tx.objectStore(STORE_NAME);
+
+                if (lsData) {
+                    await new Promise((resolve, reject) => {
+                        const req = store.put(lsData, STABLE_KEY);
+                        req.onsuccess = resolve;
+                        req.onerror = () => reject(req.error);
+                    });
+                    log('Main data migrated to IndexedDB', 'success');
+                }
+
+                if (lsUI) {
+                    await new Promise((resolve, reject) => {
+                        const req = store.put(lsUI, UI_KEY);
+                        req.onsuccess = resolve;
+                        req.onerror = () => reject(req.error);
+                    });
+                    log('UI data migrated to IndexedDB', 'success');
+                }
+
+                db.close();
+                log('Migration completed. Refresh the app.', 'success');
+            } catch (e) {
+                log('Error during migration: ' + e.message, 'error');
+            }
+            checkStatus();
+        }
+
+        // Check status on load
+        checkStatus();
+    </script>
+</body>
+</html>

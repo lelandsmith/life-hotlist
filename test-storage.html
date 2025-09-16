@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Storage Test - Hotlist</title>
+    <style>
+        body { font-family: system-ui; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .test { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .pass { background: #d4edda; border-color: #c3e6cb; }
+        .fail { background: #f8d7da; border-color: #f5c6cb; }
+        .info { background: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f4f4f4; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Hotlist Storage Persistence Test</h1>
+
+    <div class="test info">
+        <h2>Storage Status</h2>
+        <p><strong>IndexedDB Support:</strong> <span id="idb-support">Checking...</span></p>
+        <p><strong>LocalStorage Support:</strong> <span id="ls-support">Checking...</span></p>
+        <p><strong>Current Storage Used:</strong> <span id="storage-type">Checking...</span></p>
+    </div>
+
+    <div class="test">
+        <h2>Test Actions</h2>
+        <button onclick="testWrite()">1. Write Test Data</button>
+        <button onclick="testRead()">2. Read Test Data</button>
+        <button onclick="clearCache()">3. Clear Browser Cache (Simulate)</button>
+        <button onclick="testPersistence()">4. Verify Data Persists</button>
+        <button onclick="showStorageInfo()">5. Show Storage Info</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        // Check storage support
+        document.getElementById('idb-support').textContent = 'indexedDB' in window ? 'Yes' : 'No';
+        document.getElementById('ls-support').textContent = 'localStorage' in window ? 'Yes' : 'No';
+
+        const DB_NAME = 'HotlistDB';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'appData';
+        const TEST_KEY = 'testData';
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = 'test ' + type;
+            div.innerHTML = `<p>${new Date().toLocaleTimeString()}: ${message}</p>`;
+            results.insertBefore(div, results.firstChild);
+        }
+
+        async function openDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => resolve(request.result);
+
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        db.createObjectStore(STORE_NAME);
+                    }
+                };
+            });
+        }
+
+        async function testWrite() {
+            try {
+                const testData = {
+                    timestamp: new Date().toISOString(),
+                    random: Math.random(),
+                    message: "This is persistent test data"
+                };
+
+                // Write to IndexedDB
+                const db = await openDB();
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                await new Promise((resolve, reject) => {
+                    const request = store.put(JSON.stringify(testData), TEST_KEY);
+                    request.onsuccess = resolve;
+                    request.onerror = () => reject(request.error);
+                });
+
+                // Also write to localStorage as backup
+                localStorage.setItem(TEST_KEY, JSON.stringify(testData));
+
+                log('✅ Test data written successfully: ' + JSON.stringify(testData), 'pass');
+                document.getElementById('storage-type').textContent = 'IndexedDB (primary) + localStorage (backup)';
+            } catch (error) {
+                log('❌ Failed to write test data: ' + error.message, 'fail');
+            }
+        }
+
+        async function testRead() {
+            try {
+                // Try IndexedDB first
+                const db = await openDB();
+                const transaction = db.transaction([STORE_NAME], 'readonly');
+                const store = transaction.objectStore(STORE_NAME);
+
+                const idbData = await new Promise((resolve, reject) => {
+                    const request = store.get(TEST_KEY);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+
+                // Also check localStorage
+                const lsData = localStorage.getItem(TEST_KEY);
+
+                if (idbData) {
+                    log('✅ Data found in IndexedDB: ' + idbData, 'pass');
+                } else {
+                    log('⚠️ No data in IndexedDB', 'info');
+                }
+
+                if (lsData) {
+                    log('✅ Data found in localStorage: ' + lsData, 'pass');
+                } else {
+                    log('⚠️ No data in localStorage', 'info');
+                }
+
+                if (!idbData && !lsData) {
+                    log('❌ No test data found in any storage', 'fail');
+                }
+            } catch (error) {
+                log('❌ Failed to read test data: ' + error.message, 'fail');
+            }
+        }
+
+        function clearCache() {
+            // Simulate cache clearing by removing localStorage only
+            // IndexedDB should persist
+            localStorage.clear();
+            log('⚠️ localStorage cleared (simulating cache clear). IndexedDB should remain intact.', 'info');
+        }
+
+        async function testPersistence() {
+            try {
+                // Check if data still exists in IndexedDB after "cache clear"
+                const db = await openDB();
+                const transaction = db.transaction([STORE_NAME], 'readonly');
+                const store = transaction.objectStore(STORE_NAME);
+
+                const idbData = await new Promise((resolve, reject) => {
+                    const request = store.get(TEST_KEY);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+
+                if (idbData) {
+                    log('✅ SUCCESS! Data persisted in IndexedDB after cache clear: ' + idbData, 'pass');
+                    log('Your app data is protected from browser cache clearing!', 'pass');
+                } else {
+                    log('❌ Data was lost from IndexedDB', 'fail');
+                }
+
+                // Check localStorage (should be gone)
+                const lsData = localStorage.getItem(TEST_KEY);
+                if (!lsData) {
+                    log('✅ localStorage was cleared as expected', 'info');
+                } else {
+                    log('⚠️ localStorage data unexpectedly survived', 'info');
+                }
+            } catch (error) {
+                log('❌ Failed to verify persistence: ' + error.message, 'fail');
+            }
+        }
+
+        async function showStorageInfo() {
+            try {
+                // Get storage estimate
+                if ('storage' in navigator && 'estimate' in navigator.storage) {
+                    const estimate = await navigator.storage.estimate();
+                    const percentUsed = ((estimate.usage / estimate.quota) * 100).toFixed(2);
+                    log(`Storage Info: Using ${(estimate.usage / 1024 / 1024).toFixed(2)} MB of ${(estimate.quota / 1024 / 1024).toFixed(2)} MB (${percentUsed}%)`, 'info');
+                }
+
+                // Check if storage is persistent
+                if ('storage' in navigator && 'persist' in navigator.storage) {
+                    const isPersisted = await navigator.storage.persisted();
+                    log(`Storage persistence: ${isPersisted ? 'Persistent' : 'Best effort (may be cleared under pressure)'}`, 'info');
+
+                    if (!isPersisted) {
+                        log('Tip: You can request persistent storage for even better protection', 'info');
+                    }
+                }
+
+                // List IndexedDB databases
+                if ('databases' in indexedDB) {
+                    const databases = await indexedDB.databases();
+                    log(`IndexedDB databases: ${databases.map(db => db.name).join(', ')}`, 'info');
+                }
+            } catch (error) {
+                log('Could not retrieve storage info: ' + error.message, 'info');
+            }
+        }
+
+        // Auto-check on load
+        window.addEventListener('load', async () => {
+            try {
+                const db = await openDB();
+                document.getElementById('storage-type').textContent = 'IndexedDB available';
+                db.close();
+            } catch (error) {
+                document.getElementById('storage-type').textContent = 'localStorage only';
+            }
+        });
+    </script>
+</body>
+</html>
