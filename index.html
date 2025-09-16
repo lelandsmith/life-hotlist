@@ -238,8 +238,8 @@ button:focus-visible{outline:none; box-shadow:var(--ring)}
 .pill b{margin-right:6px}
 
 /* Controls */
-.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.controls .stack{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:4px}
+.controls .stack{display:flex;gap:10px;align-items:center;flex-wrap:wrap;width:100%}
 
 /* Table head & rows */
 .table-head{
@@ -771,6 +771,34 @@ body[data-density="ultra-compact"] .status-icons{gap:3px}
 body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size:8px}
 
 /* Responsive */
+/* Medium screens - better layout for 1400x900 */
+@media (min-width:1151px) and (max-width:1450px){
+  .controls{
+    margin-top:-8px;
+    padding-left:20px;
+    justify-content:flex-start;
+  }
+  .controls .stack{
+    flex-wrap:nowrap;
+    gap:8px;
+  }
+  .controls input{
+    max-width:240px !important;
+    min-width:200px !important;
+  }
+  .controls select{
+    width:auto;
+    min-width:90px;
+  }
+  .sidebar-controls{
+    gap:6px;
+  }
+  .sidebar-controls button{
+    padding:4px 10px;
+    font-size:12px;
+  }
+}
+
 @media (max-width:1150px){
   .app{grid-template-columns:1fr;grid-template-areas:"main" "side";padding:10px}
   .table-head,.row{grid-template-columns:1fr}
