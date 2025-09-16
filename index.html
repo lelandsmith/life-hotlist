@@ -772,6 +772,12 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     </header>
 
 
+    <div id="todayBlock" class="section hidden">
+      <h2>Today</h2>
+      <div class="table-head"><div>Client • Notes</div><div>Actions</div></div>
+      <div id="todayList"></div>
+    </div>
+
     <div class="table-head">
       <div>Client • Notes</div>
       <div>Actions</div>
@@ -936,6 +942,7 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     dailyCalls:$('#dailyCalls'), dailyMessages:$('#dailyMessages'), saveDailyGoal:$('#saveDailyGoal'),
     historyDays:$('#historyDays'),
     celebration:$('#celebration'), confettiContainer:$('#confettiContainer'),
+    todayBlock:$('#todayBlock'), todayList:$('#todayList'),
     scheduledBlock:$('#scheduledBlock'), scheduledList:$('#scheduledList'),
     densitySelect:$('#densitySelect'),
     toggleSidebarBtn:$('#toggleSidebarBtn'),
@@ -1587,7 +1594,58 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     });
     restoreSelection();
   }
-  function render(){ var activeAll=state.clients.filter(function(c){return !c.archived;}); var scheduled = activeAll.filter(isFutureFollowUp); var mainActive = activeAll.filter(function(c){ return !isFutureFollowUp(c) && !c.queueToday; }); var archived=state.clients.filter(function(c){return c.archived;}); renderKPIs(); renderPipeline(); renderTrendRibbons(); renderDailyOutreach(); renderList(els.list, mainActive); if(els.scheduledBlock && els.scheduledList){ if(scheduled.length){ els.scheduledBlock.classList.remove('hidden'); els.scheduledList.innerHTML=''; sortClients(scheduled).forEach(function(c){ var whenLabel=(new Date(c.followUp)).toLocaleString([], {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}); var row=buildRow(c, {whenLabel: whenLabel}); els.scheduledList.appendChild(row); }); } else { els.scheduledBlock.classList.add('hidden'); els.scheduledList.innerHTML=''; } } if(els.showArchived && els.showArchived.checked){ els.archivedBlock.classList.remove('hidden'); renderList(els.archivedList, archived); } else { els.archivedBlock.classList.add('hidden'); els.archivedList && (els.archivedList.innerHTML=''); } els.todayDate && (els.todayDate.textContent=new Date().toLocaleDateString([], {weekday:'long',month:'long',day:'numeric',year:'numeric'})); renderActivity(); renderChart(); renderHeatmap(); renderNextToTouch(); renderFollowUps(); renderTodayHit(); renderQuote(false); }
+  function render(){
+    var activeAll=state.clients.filter(function(c){return !c.archived;});
+    var todayClients = activeAll.filter(function(c){ return c.queueToday; });
+    var scheduled = activeAll.filter(isFutureFollowUp);
+    var mainActive = activeAll.filter(function(c){ return !isFutureFollowUp(c) && !c.queueToday; });
+    var archived=state.clients.filter(function(c){return c.archived;});
+
+    renderKPIs(); renderPipeline(); renderTrendRibbons(); renderDailyOutreach();
+    renderList(els.list, mainActive);
+
+    // Today section
+    if(els.todayBlock && els.todayList){
+      if(todayClients.length){
+        els.todayBlock.classList.remove('hidden');
+        els.todayList.innerHTML='';
+        sortClients(todayClients).forEach(function(c){
+          var row=buildRow(c, {});
+          els.todayList.appendChild(row);
+        });
+      } else {
+        els.todayBlock.classList.add('hidden');
+        els.todayList.innerHTML='';
+      }
+    }
+
+    // Scheduled section
+    if(els.scheduledBlock && els.scheduledList){
+      if(scheduled.length){
+        els.scheduledBlock.classList.remove('hidden');
+        els.scheduledList.innerHTML='';
+        sortClients(scheduled).forEach(function(c){
+          var whenLabel=(new Date(c.followUp)).toLocaleString([], {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+          var row=buildRow(c, {whenLabel: whenLabel});
+          els.scheduledList.appendChild(row);
+        });
+      } else {
+        els.scheduledBlock.classList.add('hidden');
+        els.scheduledList.innerHTML='';
+      }
+    }
+
+    if(els.showArchived && els.showArchived.checked){
+      els.archivedBlock.classList.remove('hidden');
+      renderList(els.archivedList, archived);
+    } else {
+      els.archivedBlock.classList.add('hidden');
+      els.archivedList && (els.archivedList.innerHTML='');
+    }
+
+    els.todayDate && (els.todayDate.textContent=new Date().toLocaleDateString([], {weekday:'long',month:'long',day:'numeric',year:'numeric'}));
+    renderActivity(); renderChart(); renderHeatmap(); renderNextToTouch(); renderFollowUps(); renderTodayHit(); renderQuote(false);
+  }
 
   /* Quotes (light) */
   var quoteTimer=null; function pickQuote(){ var list=(state.quotes && state.quotes.list)||[]; if(!list.length) return ''; var qs=state.quotesSettings||{interval:15, random:true, norepeat:true, recent:[]}; if(!qs.random){ var idx=Number(qs.lastIndex||0); idx=(idx+1)%list.length; qs.lastIndex=idx; return list[idx]; } var recent=Array.isArray(qs.recent)?qs.recent:[]; var tries=0, idx2=0; do{ idx2=Math.floor(Math.random()*list.length); tries++; } while(qs.norepeat && recent.indexOf(idx2)!==-1 && tries<25); recent.push(idx2); while(recent.length>Math.min(20, Math.ceil(list.length/3))) recent.shift(); qs.recent=recent; qs.lastIndex=idx2; state.quotesSettings=qs; save(state); return list[idx2]; }
