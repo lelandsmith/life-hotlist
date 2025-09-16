@@ -796,8 +796,15 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     </div>
 
     <!-- Shortcuts section at bottom of main content -->
-    <div class="shortcuts-section" id="shortcutsSection">
-      <strong style="color:#475569">Shortcuts:</strong> ↑/↓ or J/K navigate • 1–5 status • <b>0</b> clear • N notes • A call • L message • <b>Shift+A/L</b> remove • <b>H</b> hot • <b>F</b> today • <b>D</b> tomorrow • <span style="opacity:0.7; font-weight:600">⌘/ for help</span>
+    <div class="shortcuts-section" id="shortcutsSection" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+      <div>
+        <strong style="color:#475569">Shortcuts:</strong> ↑/↓ or J/K navigate • 1–5 status • <b>0</b> clear • N notes • A call • L message • <b>Shift+A/L</b> remove • <b>H</b> hot • <b>F</b> today • <b>D</b> tomorrow • <span style="opacity:0.7; font-weight:600">⌘/ for help</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:16px; font-size:12px; color:#64748b;">
+        <a href="#" onclick="showChangelogModal(); return false;" style="color:#3b82f6; text-decoration:none; hover:text-decoration:underline;">v<span id="versionNumber">1.0.0</span></a>
+        <span style="color:#cbd5e1;">|</span>
+        <a href="#" onclick="openSuggestEmail(); return false;" style="color:#3b82f6; text-decoration:none; hover:text-decoration:underline;">Suggest a change</a>
+      </div>
     </div>
   </section>
 
@@ -886,6 +893,18 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
 <!-- Part B — JS logic (save as part-b.js or inline under Part A) -->
 <script>
 (function(){
+  /* =========================
+   *  Version & Changelog
+   * ========================= */
+  var VERSION = '1.2.0';
+  var CHANGELOG = [
+    { version: '1.2.0', date: '2025-01-15', changes: 'Added version display, changelog modal, and suggestion feature' },
+    { version: '1.1.0', date: '2025-01-15', changes: 'Fixed keyboard navigation between Today\'s list and Main list' },
+    { version: '1.0.5', date: '2025-01-14', changes: 'Moved Today\'s section to top of main content area' },
+    { version: '1.0.4', date: '2025-01-14', changes: 'Fixed flame animation errors and improved variable naming' },
+    { version: '1.0.3', date: '2025-01-13', changes: 'Added import/export functionality and streamlined sidebar controls' }
+  ];
+
   /* =========================
    *  Constants & helpers
    * ========================= */
@@ -1916,15 +1935,30 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     document.title = originalTitle; // Reset title
   });
 
-  /* Shortcuts modal functions */
+  /* Modal functions */
   function showShortcutsModal(){
     document.getElementById('shortcutsModal').style.display = 'block';
   }
   function closeShortcutsModal(){
     document.getElementById('shortcutsModal').style.display = 'none';
   }
+  function showChangelogModal(){
+    document.getElementById('changelogModal').style.display = 'block';
+  }
+  function closeChangelogModal(){
+    document.getElementById('changelogModal').style.display = 'none';
+  }
+  function openSuggestEmail(){
+    var email = 'leland' + '.' + 'smith' + '@' + 'country' + 'financial' + '.com';
+    var subject = encodeURIComponent('Hotlist Suggestion');
+    var body = encodeURIComponent('I have a suggestion for the Hotlist app:\n\n');
+    window.location.href = 'mailto:' + email + '?subject=' + subject + '&body=' + body;
+  }
   window.showShortcutsModal = showShortcutsModal;
   window.closeShortcutsModal = closeShortcutsModal;
+  window.showChangelogModal = showChangelogModal;
+  window.closeChangelogModal = closeChangelogModal;
+  window.openSuggestEmail = openSuggestEmail;
 
   /* Flame animation when marking hot */
   function showFlameAnimation(event){
@@ -1995,11 +2029,18 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
       return;
     }
 
-    // Handle Escape to close modal
-    if(e.key === 'Escape' && document.getElementById('shortcutsModal').style.display === 'block'){
-      closeShortcutsModal();
-      e.preventDefault();
-      return;
+    // Handle Escape to close modals
+    if(e.key === 'Escape'){
+      if(document.getElementById('shortcutsModal').style.display === 'block'){
+        closeShortcutsModal();
+        e.preventDefault();
+        return;
+      }
+      if(document.getElementById('changelogModal') && document.getElementById('changelogModal').style.display === 'block'){
+        closeChangelogModal();
+        e.preventDefault();
+        return;
+      }
     }
 
     if(e.ctrlKey || e.metaKey) return;            // <-- Let browser handle other Ctrl/Cmd shortcuts
@@ -2412,6 +2453,25 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     return pipeline;
   }
 
+  // Initialize version and changelog
+  var versionEl = document.getElementById('versionNumber');
+  if(versionEl) versionEl.textContent = VERSION;
+
+  var changelogEl = document.getElementById('changelogContent');
+  if(changelogEl) {
+    changelogEl.innerHTML = '';
+    CHANGELOG.forEach(function(entry) {
+      var item = document.createElement('div');
+      item.style.cssText = 'border-left:3px solid #3b82f6; padding-left:12px;';
+      item.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">' +
+        '<strong style="color:#1e293b; font-size:14px;">v' + entry.version + '</strong>' +
+        '<span style="color:#94a3b8; font-size:12px;">' + entry.date + '</span>' +
+        '</div>' +
+        '<div style="color:#475569; font-size:13px;">' + entry.changes + '</div>';
+      changelogEl.appendChild(item);
+    });
+  }
+
   render();
 })();
 </script>
@@ -2468,6 +2528,18 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
           <div><kbd>Esc</kbd> - Close this dialog</div>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+<!-- Changelog Modal -->
+<div id="changelogModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:9999;">
+  <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:var(--card); border-radius:var(--radius); padding:24px; max-width:500px; width:90%; max-height:70vh; overflow-y:auto; box-shadow:var(--shadow);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <h2 style="margin:0; color:var(--ink);">Changelog</h2>
+      <button onclick="closeChangelogModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:var(--muted);">×</button>
+    </div>
+    <div id="changelogContent" style="display:flex; flex-direction:column; gap:16px;">
+      <!-- Changelog items will be inserted here by JavaScript -->
     </div>
   </div>
 </div>
