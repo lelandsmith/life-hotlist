@@ -1,0 +1,41 @@
+# Changelog
+
+All notable changes to Life Hotlist will be documented in this file.
+
+## [1.8.0] - 2024-01-16
+
+### Added
+- **Persistent Storage with IndexedDB**: Data now persists even when browser cache is cleared
+- **Dual Storage Strategy**: IndexedDB as primary storage with localStorage as automatic backup
+- **Storage Manager Tool**: New diagnostic page (`reset-storage.html`) for managing and debugging storage
+- **Storage Test Tool**: Test page (`test-storage.html`) to verify persistence functionality
+- **Re-celebration Support**: Can celebrate multiple times per day when goals are increased
+- **Smart Celebration Tracking**: Tracks goal level achieved to prevent duplicate celebrations
+
+### Fixed
+- **Celebration Bug**: Fixed issue where celebration would trigger on every page refresh
+- **Data Persistence**: Fixed clients disappearing after page refresh
+- **Null Reference Errors**: Fixed "Cannot read properties of null" errors during initialization
+- **Asynchronous Storage**: Improved handling of async storage operations
+- **Database Reconnection**: Added automatic reconnection when IndexedDB connection is lost
+
+### Changed
+- **Storage Architecture**: Migrated from localStorage-only to IndexedDB + localStorage
+- **Celebration Logic**: Now tracks the goal level celebrated at, not just whether celebrated
+- **Error Handling**: Improved error handling with automatic fallbacks
+- **Initialization**: Better initialization sequence to prevent race conditions
+
+## [1.7.2] - Previous Release
+
+### Features
+- Daily outreach tracking with celebration animations
+- Queue management (Today/Tomorrow)
+- Hot client marking
+- Follow-up scheduling
+- Activity tracking and history
+- Pipeline visualization
+- Quote rotation system
+- Power Hour timer
+- Keyboard shortcuts
+- Import/Export functionality
+- PWA support with offline capabilities
