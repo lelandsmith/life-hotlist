@@ -1899,15 +1899,18 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
       flame.remove();
     }, 600);
 
-    // Make the title pulse briefly
-    var title = document.getElementById('hotlistTitle');
-    if(title){
-      title.style.animation = 'pulse 0.3s ease-out';
+    // Make the title pulse briefly - only if title exists
+    var titleElement = document.getElementById('hotlistTitle');
+    if(titleElement){
+      titleElement.style.animation = 'pulse 0.3s ease-out';
       setTimeout(function(){
-        title.style.animation = '';
+        titleElement.style.animation = '';
       }, 300);
     }
   }
+
+  // Make showFlameAnimation available globally for keyboard shortcuts
+  window.showFlameAnimation = showFlameAnimation;
 
   /* Click handler for unscheduling */
   document.addEventListener('click', function(e){
