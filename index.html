@@ -999,8 +999,29 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   function addClient(name){ preserveUIAndRender(function(){ state.clients.push({id:uid(), name:name, notes:'', status:'', lastTouch:nowISO(), createdAt:nowISO(), archived:false, followUp:'', callCount:0, msgCount:0, queueToday:false, queueTomorrow:false, hot:false, history:[]}); }); }
   function setStatus(c,newStatus){ preserveUIAndRender(function(){ var when=nowISO(); c.status=newStatus; c.lastTouch=when; c.history.push({id:uid(), ts:when, action:'status', to:newStatus}); if(c.queueToday) c.queueToday=false; }); }
   function clearStatus(c){ preserveUIAndRender(function(){ c.status=''; }); }
-  function incrementCall(c){ preserveUIAndRender(function(){ c.callCount=(c.callCount||0)+1; c.lastTouch=nowISO(); c.history.push({id:uid(), ts:nowISO(), action:'status', to:'Called'}); if(c.queueToday) c.queueToday=false; }); }
-  function decrementCall(c){ preserveUIAndRender(function(){ c.callCount=Math.max(0,(c.callCount||0)-1); }); }
+  function incrementCall(c){
+    preserveUIAndRender(function(){
+      c.callCount=(c.callCount||0)+1;
+      c.lastTouch=nowISO();
+      c.history.push({id:uid(), ts:nowISO(), action:'status', to:'Called'});
+      if(c.queueToday) c.queueToday=false;
+    });
+    // Update Power Hour call counter if timer is running
+    if(hopRunning){
+      hopCallCount++;
+      updateHopCalls(hopCallCount);
+    }
+  }
+  function decrementCall(c){
+    preserveUIAndRender(function(){
+      c.callCount=Math.max(0,(c.callCount||0)-1);
+    });
+    // Update Power Hour call counter if timer is running
+    if(hopRunning && hopCallCount > 0){
+      hopCallCount--;
+      updateHopCalls(hopCallCount);
+    }
+  }
   function incrementMsg(c){ preserveUIAndRender(function(){ c.msgCount=(c.msgCount||0)+1; c.lastTouch=nowISO(); c.history.push({id:uid(), ts:nowISO(), action:'status', to:'Emailed'}); if(c.queueToday) c.queueToday=false; }); }
   function decrementMsg(c){ preserveUIAndRender(function(){ c.msgCount=Math.max(0,(c.msgCount||0)-1); }); }
   function updateNotes(c,notes){ c.notes=notes; save(state); }
@@ -1646,11 +1667,120 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     }
   })();
 
+  /* Notification helper */
+  function showNotification(title, body){
+    if(!('Notification' in window)) return;
+    if(Notification.permission === 'granted'){
+      new Notification(title, { body: body, icon: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"%3E%3Crect width="192" height="192" fill="%23ff8c00"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-size="96" fill="white"%3E🔥%3C/text%3E%3C/svg%3E' });
+    }
+  }
+
+  function requestNotificationPermission(){
+    if('Notification' in window && Notification.permission === 'default'){
+      Notification.requestPermission();
+    }
+  }
+
+  /* Check for scheduled follow-ups */
+  var notifiedFollowUps = {}; // Track which followups we've notified about
+  function checkScheduledNotifications(){
+    var now = new Date();
+    var scheduled = state.clients.filter(function(c){
+      if(c.archived || !c.followUp) return false;
+      var followUpTime = new Date(c.followUp);
+      if(isNaN(+followUpTime)) return false;
+
+      // Check if this follow-up is due (within 5 minutes)
+      var timeDiff = followUpTime - now;
+      var isDue = timeDiff <= 5 * 60 * 1000 && timeDiff > -60 * 1000; // 5 min before to 1 min after
+
+      // Only notify once per follow-up
+      var notifKey = c.id + ':' + c.followUp;
+      if(isDue && !notifiedFollowUps[notifKey]){
+        notifiedFollowUps[notifKey] = true;
+        return true;
+      }
+      return false;
+    });
+
+    scheduled.forEach(function(c){
+      var followUpTime = new Date(c.followUp);
+      var timeStr = followUpTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      showNotification('Follow-up Due: ' + c.name, 'Scheduled for ' + timeStr);
+    });
+
+    // Clean up old notifications older than 1 hour
+    var oneHourAgo = now.getTime() - 60 * 60 * 1000;
+    Object.keys(notifiedFollowUps).forEach(function(key){
+      var parts = key.split(':');
+      if(parts[1]){
+        var notifTime = new Date(parts[1]).getTime();
+        if(notifTime < oneHourAgo){
+          delete notifiedFollowUps[key];
+        }
+      }
+    });
+  }
+
+  // Check for scheduled notifications every minute
+  setInterval(checkScheduledNotifications, 60 * 1000);
+
   /* Power Hour */
-  var hopTimer=null, hopRemaining=60*60, hopRunning=false; function renderHOP(){ if(!els.hopClock) return; var h=Math.floor(hopRemaining/3600), m=Math.floor((hopRemaining%3600)/60), s=hopRemaining%60; els.hopClock.textContent=[h,m,s].map(function(v){return String(v).padStart(2,'0');}).join(':'); }
-  if(els.hopStart) els.hopStart.addEventListener('click', function(){ if(hopRunning) return; hopRunning=true; hopTimer=setInterval(function(){ hopRemaining=Math.max(0, hopRemaining-1); renderHOP(); if(hopRemaining===0){ clearInterval(hopTimer); hopRunning=false; } },1000); });
-  if(els.hopPause) els.hopPause.addEventListener('click', function(){ hopRunning=false; clearInterval(hopTimer); });
-  if(els.hopReset) els.hopReset.addEventListener('click', function(){ hopRunning=false; clearInterval(hopTimer); hopRemaining=60*60; els.hopCalls && (els.hopCalls.textContent='0'); renderHOP(); });
+  var hopTimer=null, hopRemaining=60*60, hopRunning=false, hopCallCount=0, originalTitle = document.title;
+
+  function renderHOP(){
+    if(!els.hopClock) return;
+    var h=Math.floor(hopRemaining/3600), m=Math.floor((hopRemaining%3600)/60), s=hopRemaining%60;
+    var timeStr = [h,m,s].map(function(v){return String(v).padStart(2,'0');}).join(':');
+    els.hopClock.textContent=timeStr;
+
+    // Update tab title when timer is running
+    if(hopRunning){
+      document.title = timeStr + ' | ' + hopCallCount + ' calls | ' + originalTitle;
+    }
+
+    // Show notification when timer completes
+    if(hopRemaining === 0 && hopRunning){
+      showNotification('Power Hour Complete!', 'Great job! You completed ' + hopCallCount + ' calls in this session.');
+    }
+  }
+
+  function updateHopCalls(count){
+    hopCallCount = count;
+    if(els.hopCalls) els.hopCalls.textContent = count;
+    if(hopRunning) renderHOP(); // Update tab title
+  }
+
+  if(els.hopStart) els.hopStart.addEventListener('click', function(){
+    if(hopRunning) return;
+    hopRunning=true;
+    requestNotificationPermission(); // Request permission when starting timer
+    hopTimer=setInterval(function(){
+      hopRemaining=Math.max(0, hopRemaining-1);
+      renderHOP();
+      if(hopRemaining===0){
+        clearInterval(hopTimer);
+        hopRunning=false;
+        document.title = originalTitle; // Reset title
+      }
+    },1000);
+  });
+
+  if(els.hopPause) els.hopPause.addEventListener('click', function(){
+    hopRunning=false;
+    clearInterval(hopTimer);
+    document.title = originalTitle; // Reset title
+  });
+
+  if(els.hopReset) els.hopReset.addEventListener('click', function(){
+    hopRunning=false;
+    clearInterval(hopTimer);
+    hopRemaining=60*60;
+    hopCallCount = 0;
+    updateHopCalls(0);
+    renderHOP();
+    document.title = originalTitle; // Reset title
+  });
 
   /* Shortcuts modal functions */
   function showShortcutsModal(){
@@ -2208,6 +2338,14 @@ if ('serviceWorker' in navigator) {
     }, function(err) {
       console.log('ServiceWorker registration failed:', err);
     });
+
+    // Request notification permission if we have scheduled items
+    var hasScheduled = state.clients.some(function(c){
+      return !c.archived && c.followUp;
+    });
+    if(hasScheduled){
+      requestNotificationPermission();
+    }
   });
 }
 
