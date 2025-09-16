@@ -1106,7 +1106,7 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
 
   /* Stable state */
   function coerceState(x){ var out={clients:[], quotes:{raw:'', list:[]}, quotesSettings:{interval:15, random:true, norepeat:true, recent:[]} }; if(!x) return out; if(Array.isArray(x)){ out.clients=x; return normalize(out); } if(typeof x==='object'){ if(Array.isArray(x.clients)) out.clients=x.clients; if(x.quotes) out.quotes=x.quotes; if(x.quotesSettings) out.quotesSettings=x.quotesSettings; return normalize(out);} return out; }
-  function normalize(state){ state.clients=(state.clients||[]).map(function(c){ return { id:c.id||uid(), name:c.name||'(Unnamed)', notes:(typeof c.notes==='string'?c.notes:''), status:c.status||'', lastTouch:c.lastTouch||nowISO(), createdAt:c.createdAt||c.lastTouch||nowISO(), archived:!!c.archived, followUp:(typeof c.followUp==='string'?c.followUp:''), callCount:(isFinite(c.callCount)?c.callCount:0), msgCount:(isFinite(c.msgCount)?c.msgCount:0), queueToday:!!c.queueToday, queueTomorrow:!!c.queueTomorrow, hot:!!c.hot, history:Array.isArray(c.history)? c.history.filter(Boolean).map(function(h){ return {id:(h.id||uid()), ts:(h.ts||nowISO()), action:(h.action||'status'), to:(h.to!=null?h.to:''), kind:(h.kind!=null?h.kind:'')}; }) : [] }; }); state.quotes = state.quotes || {raw:'', list:[]}; if(!Array.isArray(state.quotes.list)) state.quotes.list=[]; state.quotesSettings = state.quotesSettings || {interval:15, random:true, norepeat:true, recent:[]}; if(!Array.isArray(state.quotesSettings.recent)) state.quotesSettings.recent=[]; return state; }
+  function normalize(state){ state.clients=(state.clients||[]).map(function(c){ return { id:c.id||uid(), name:c.name||'(Unnamed)', notes:(typeof c.notes==='string'?c.notes:''), status:c.status||'', purchaseDate:(typeof c.purchaseDate==='string'?c.purchaseDate:''), lastTouch:c.lastTouch||nowISO(), createdAt:c.createdAt||c.lastTouch||nowISO(), archived:!!c.archived, followUp:(typeof c.followUp==='string'?c.followUp:''), callCount:(isFinite(c.callCount)?c.callCount:0), msgCount:(isFinite(c.msgCount)?c.msgCount:0), queueToday:!!c.queueToday, queueTomorrow:!!c.queueTomorrow, hot:!!c.hot, history:Array.isArray(c.history)? c.history.filter(Boolean).map(function(h){ return {id:(h.id||uid()), ts:(h.ts||nowISO()), action:(h.action||'status'), to:(h.to!=null?h.to:''), kind:(h.kind!=null?h.kind:'')}; }) : [] }; }); state.quotes = state.quotes || {raw:'', list:[]}; if(!Array.isArray(state.quotes.list)) state.quotes.list=[]; state.quotesSettings = state.quotesSettings || {interval:15, random:true, norepeat:true, recent:[]}; if(!Array.isArray(state.quotesSettings.recent)) state.quotesSettings.recent=[]; return state; }
   function load(){ try{ var cur=JSON.parse(localStorage.getItem(STABLE_KEY)||'null'); if(cur) return coerceState(cur);}catch(e){} var fresh={clients:[], quotes:{raw:'', list:[]}, quotesSettings:{interval:15, random:true, norepeat:true, recent:[]}}; localStorage.setItem(STABLE_KEY, JSON.stringify(fresh)); return fresh; }
   function save(data){ localStorage.setItem(STABLE_KEY, JSON.stringify(data)); }
   var state = load();
@@ -1287,68 +1287,25 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     // Show celebration
     els.purchaseCelebration.classList.remove('hidden');
 
-    // Play cha-ching sound - Classic cash register sound
+    // Play simple single bell cha-ching sound
     try {
       var audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
-      // First bell (lower pitch)
-      var osc1 = audioContext.createOscillator();
-      var gain1 = audioContext.createGain();
-      osc1.frequency.setValueAtTime(1400, audioContext.currentTime); // G6
-      gain1.gain.setValueAtTime(0.5, audioContext.currentTime);
-      gain1.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-      osc1.connect(gain1);
-      gain1.connect(audioContext.destination);
-      osc1.start(audioContext.currentTime);
-      osc1.stop(audioContext.currentTime + 0.3);
+      // Single bell sound
+      var oscillator = audioContext.createOscillator();
+      var gainNode = audioContext.createGain();
 
-      // Second bell (higher pitch) - the "ching"
-      setTimeout(function(){
-        var osc2 = audioContext.createOscillator();
-        var gain2 = audioContext.createGain();
-        osc2.frequency.setValueAtTime(1865, audioContext.currentTime); // A#6
-        gain2.gain.setValueAtTime(0.6, audioContext.currentTime);
-        gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
-        osc2.connect(gain2);
-        gain2.connect(audioContext.destination);
-        osc2.start(audioContext.currentTime);
-        osc2.stop(audioContext.currentTime + 0.4);
-      }, 100);
+      oscillator.frequency.setValueAtTime(1568, audioContext.currentTime); // G6 note
+      oscillator.type = 'sine';
 
-      // Add metallic overtones for realism
-      var osc3 = audioContext.createOscillator();
-      var gain3 = audioContext.createGain();
-      osc3.frequency.setValueAtTime(2800, audioContext.currentTime);
-      gain3.gain.setValueAtTime(0.15, audioContext.currentTime);
-      gain3.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-      osc3.connect(gain3);
-      gain3.connect(audioContext.destination);
-      osc3.start(audioContext.currentTime);
-      osc3.stop(audioContext.currentTime + 0.2);
+      gainNode.gain.setValueAtTime(0.7, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
 
-      // Drawer sliding sound effect
-      setTimeout(function(){
-        var noise = audioContext.createBufferSource();
-        var noiseBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.1, audioContext.sampleRate);
-        var noiseData = noiseBuffer.getChannelData(0);
-        for (var i = 0; i < noiseData.length; i++) {
-          noiseData[i] = Math.random() * 0.1 - 0.05;
-        }
-        noise.buffer = noiseBuffer;
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
 
-        var noiseFilter = audioContext.createBiquadFilter();
-        noiseFilter.type = 'lowpass';
-        noiseFilter.frequency.setValueAtTime(800, audioContext.currentTime);
-
-        var noiseGain = audioContext.createGain();
-        noiseGain.gain.setValueAtTime(0.2, audioContext.currentTime);
-        noiseGain.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.1);
-
-        noise.connect(noiseFilter);
-        noiseFilter.connect(noiseGain);
-        noiseGain.connect(audioContext.destination);
-        noise.start(audioContext.currentTime);
-      }, 300);
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.5);
 
     } catch(e) {
       // Fallback if Web Audio API is not supported
