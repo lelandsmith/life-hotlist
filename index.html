@@ -5,6 +5,12 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Life Hotlist</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#ff8c00">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Hotlist">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%23ff8c00'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='96' fill='white'%3E🔥%3C/text%3E%3C/svg%3E">
 <style>
   :root{
   /* Brand & neutrals */
@@ -786,8 +792,8 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
 
   <!-- ===== SIDEBAR WIDGETS ===== -->
   <aside class="card sidebar" id="sidebarWidgets">
-    <!-- Today's Queue - Permanent widget at top -->
-    <div class="widget" data-key="todayQueue" draggable="false">
+    <!-- Today's Queue - Movable widget -->
+    <div class="widget" data-key="todayQueue" draggable="true">
       <div class="widget-head"><h2 class="widget-title">Today's Queue</h2><div class="widget-actions"><button class="btn-min gray collapse-btn" data-collapse title="Collapse"></button></div></div>
       <div class="widget-body">
         <div class="small muted" style="margin-bottom:8px">Queued for today. Items drop out automatically after contact.</div>
@@ -1801,8 +1807,8 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     if(Array.isArray(ui.widgetOrder) && ui.widgetOrder.length > 0) {
       return ui.widgetOrder;
     }
-    // Default order: Today's Activity, Power Hour, Motivation, Heatmap, then others
-    var defaultOrder = ['todayActivity', 'powerHour', 'motivation', 'heatmap'];
+    // Default order: Today's Queue, Today's Activity, Power Hour, Motivation, Heatmap, then others
+    var defaultOrder = ['todayQueue', 'todayActivity', 'powerHour', 'motivation', 'heatmap'];
     var allWidgets = $all('#sidebarWidgets .widget').map(function(w){return w.dataset.key;});
     var otherWidgets = allWidgets.filter(function(key){ return !defaultOrder.includes(key); });
     return defaultOrder.concat(otherWidgets);
@@ -2192,6 +2198,27 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     </div>
   </div>
 </div>
+
+<script>
+// Register service worker for PWA functionality
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/sw.js').then(function(registration) {
+      console.log('ServiceWorker registration successful:', registration.scope);
+    }, function(err) {
+      console.log('ServiceWorker registration failed:', err);
+    });
+  });
+}
+
+// PWA install prompt
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Could show install button here if desired
+});
+</script>
 
 </body>
 </html>
