@@ -799,10 +799,10 @@ button:focus-visible{outline:none; box-shadow:var(--ring)}
 }
 
 /* Density switch */
-body[data-density="comfortable"] .row{padding:12px 12px}
+body[data-density="comfortable"] .row{padding:8px 12px}
 body[data-density="comfortable"] .name{font-size:16px}
 
-body[data-density="compact"] .row{padding:5px 8px}
+body[data-density="compact"] .row{padding:2px 8px}
 body[data-density="compact"] .name{font-size:14px}
 body[data-density="compact"] .notes-preview{font-size:11px}
 body[data-density="compact"] .group--quick{gap:6px; margin-right:6px}
@@ -1045,9 +1045,10 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
   /* =========================
    *  Version & Changelog
    * ========================= */
-  var VERSION = '1.8.3';
+  var VERSION = '1.8.4';
   // Recent commits from git log
   var CHANGELOG = [
+    { version: '1.8.4', date: '2025-01-17', changes: 'Adjust row padding for comfortable (8px 12px) and compact (2px 8px) modes' },
     { version: '1.8.3', date: '2025-01-17', changes: 'Remove ultra-compact mode, simplify to 2 density options, fix density select display' },
     { version: '1.8.2', date: '2025-01-17', changes: 'Switch to cookie-based density persistence for cache-resistant settings' },
     { version: '1.8.1', date: '2025-01-17', changes: 'Add demo data system with Load Demo button for first-time users' },

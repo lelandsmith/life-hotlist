@@ -2,6 +2,13 @@
 
 All notable changes to Life Hotlist will be documented in this file.
 
+## [1.8.4] - 2025-01-17
+
+### Changed
+- **Row Padding Adjustments**: Optimized spacing for both density modes
+  - Comfortable mode: 8px 12px padding for better readability
+  - Compact mode: 2px 8px padding for maximum space efficiency
+
 ## [1.8.3] - 2025-01-17
 
 ### Changed
