@@ -953,7 +953,7 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
             <div id="sidebar-controls" style="display:flex; gap:2px;"></div>
             <button id="importBtn" class="btn-min gray" title="Import Clients" style="padding:4px 8px;">📥</button>
             <button id="exportBtn" class="btn-min gray" title="Export Clients" style="padding:4px 8px;">📤</button>
-            <button id="clearDemoBtn" class="btn-min gray" title="Clear Demo Data" style="padding:4px 8px; display:none;">🗑️</button>
+            <button id="loadDemoBtn" class="btn-min gray" title="Load Demo Data" style="padding:4px 8px;">📋</button>
           </div>
         </div>
       </div>
@@ -967,6 +967,16 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     </div>
 
     <div id="emptyState" style="display:none;"></div>
+
+    <div id="clearDemoSection" style="display:none; text-align:center; margin:20px 0;">
+      <button id="clearDemoBtn" class="btn-min orange" onclick="clearDemoData()" style="padding:8px 16px;">
+        🗑️ Clear Demo Data
+      </button>
+      <p style="margin:8px 0 0 0; font-size:0.9em; color:var(--muted);">
+        Remove the 3 demo clients to start fresh
+      </p>
+    </div>
+
     <div class="table-head" id="mainTableHead">
       <div>Client • Notes</div>
       <div>Actions</div>
@@ -1145,9 +1155,9 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     scheduledBlock:$('#scheduledBlock'), scheduledList:$('#scheduledList'),
     densitySelect:$('#densitySelect'),
     toggleSidebarBtn:$('#toggleSidebarBtn'),
-    importBtn:$('#importBtn'), exportBtn:$('#exportBtn'), clearDemoBtn:$('#clearDemoBtn'),
+    importBtn:$('#importBtn'), exportBtn:$('#exportBtn'), loadDemoBtn:$('#loadDemoBtn'),
     sidebarControls:$('#sidebar-controls'),
-    emptyState:$('#emptyState'), mainTableHead:$('#mainTableHead')
+    emptyState:$('#emptyState'), mainTableHead:$('#mainTableHead'), clearDemoSection:$('#clearDemoSection')
   };
 
   /* IndexedDB Storage Module */
@@ -2344,7 +2354,7 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     var mainActive = activeAll.filter(function(c){ return !isFutureFollowUp(c) && !c.queueToday; });
     var archived=state.clients.filter(function(c){return c.archived;});
 
-    renderKPIs(); renderPipeline(); renderTrendRibbons(); renderDailyOutreach(); updateClearDemoButton();
+    renderKPIs(); renderPipeline(); renderTrendRibbons(); renderDailyOutreach(); updateDemoButtons();
 
     // Handle empty state for main list
     var totalActiveClients = mainActive.length + todayClients.length + scheduled.length;
@@ -2552,28 +2562,36 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     });
   }
 
-  /* Clear Demo Data Button */
-  if(els.clearDemoBtn){
-    els.clearDemoBtn.addEventListener('click', function(){
-      clearDemoData();
+  /* Load Demo Data Button */
+  if(els.loadDemoBtn){
+    els.loadDemoBtn.addEventListener('click', function(){
+      loadDemoData();
     });
   }
 
-  /* Show/hide clear demo button based on presence of demo data */
-  function updateClearDemoButton(){
-    if(!els.clearDemoBtn) {
-      console.log('Clear demo button element not found');
-      return;
-    }
-    var hasDemoData = state.clients && state.clients.some(function(client){
-      return client.id.startsWith('demo-');
-    });
-    console.log('=== updateClearDemoButton Debug ===');
-    console.log('state.clients:', state.clients);
-    console.log('hasDemoData:', hasDemoData);
-    console.log('Setting clear button display to:', hasDemoData ? 'block' : 'none');
 
-    els.clearDemoBtn.style.display = hasDemoData ? 'block' : 'none';
+  /* Show/hide demo buttons based on presence of demo data */
+  function updateDemoButtons(){
+    // Check if there are any demo clients
+    var hasDemoClients = state.clients && state.clients.some(function(client){
+      return client.id && client.id.startsWith('demo-');
+    });
+
+    console.log('=== updateDemoButtons Debug ===');
+    console.log('state.clients:', state.clients);
+    console.log('hasDemoClients:', hasDemoClients);
+
+    // Show/hide load demo button (show when no demo clients exist)
+    if(els.loadDemoBtn){
+      els.loadDemoBtn.style.display = hasDemoClients ? 'none' : 'block';
+      console.log('Setting load demo button display to:', hasDemoClients ? 'none' : 'block');
+    }
+
+    // Show/hide clear demo section (show when demo clients exist)
+    if(els.clearDemoSection){
+      els.clearDemoSection.style.display = hasDemoClients ? 'block' : 'none';
+      console.log('Setting clear demo section display to:', hasDemoClients ? 'block' : 'none');
+    }
   }
 
   /* Empty State Management */
@@ -2872,6 +2890,9 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
 
     // Add demo clients to state
     state.clients = state.clients.concat(demoClients);
+
+    // Mark that user has demo data
+    localStorage.setItem('hotlist_ever_had_data', 'demo');
     save(state);
     render();
 
@@ -2906,11 +2927,12 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     console.log('state.clients:', state.clients);
     console.log('clients length:', state.clients ? state.clients.length : 'undefined');
 
+    // Check if we should auto-load demo data
+    var hasEverHadData = localStorage.getItem('hotlist_ever_had_data');
+    console.log('hasEverHadData localStorage value:', hasEverHadData);
+
     // Check if this is a first-time user (no clients and no previous data)
     if(!state.clients || state.clients.length === 0){
-      var hasEverHadData = localStorage.getItem('hotlist_ever_had_data');
-      console.log('hasEverHadData localStorage value:', hasEverHadData);
-
       if(!hasEverHadData){
         console.log('Loading demo data for first-time user...');
         // First-time user - load demo data automatically
@@ -2927,7 +2949,17 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
         console.log('User has had data before (flag:', hasEverHadData, '), not loading demo data');
       }
     } else {
-      console.log('User already has', state.clients.length, 'clients, not loading demo data');
+      console.log('User already has', state.clients.length, 'clients');
+
+      // Check if user has demo data mixed with real data
+      var hasDemoClients = state.clients.some(function(client){
+        return client.id && client.id.startsWith('demo-');
+      });
+
+      if(hasDemoClients && !hasEverHadData){
+        console.log('Found demo clients, setting demo flag');
+        localStorage.setItem('hotlist_ever_had_data', 'demo');
+      }
     }
   }
 

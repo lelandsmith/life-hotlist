@@ -2,6 +2,21 @@
 
 All notable changes to Life Hotlist will be documented in this file.
 
+## [1.8.1] - 2025-01-17
+
+### Added
+- **Demo Data System**: Load Demo Data button (📋) in header to add 3 sample clients
+- **Clear Demo Data Section**: Prominent section above client list to remove demo clients
+- **Smart Demo Detection**: Automatic detection and management of demo vs real client data
+
+### Fixed
+- **Demo Data Visibility**: Fixed issue where demo data controls weren't appearing
+- **Cache Management**: Updated service worker cache version for proper deployment
+
+### Changed
+- **Demo UX Flow**: Moved clear demo functionality from header to above client list for better user experience
+- **Button Positioning**: Load demo in header, clear demo above data for natural workflow
+
 ## [1.8.0] - 2024-01-16
 
 ### Added

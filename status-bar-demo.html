@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Status Progress Bar Concepts - Life Hotlist</title>
+    <style>
+        :root {
+            --green: #0e7a5a;
+            --green-600: #0a5e46;
+            --green-50: #e9f5ee;
+            --orange: #f59e0b;
+            --red: #dc2626;
+            --blue: #4f79ff;
+            --purple: #8b5cf6;
+            --bg: #f6f7fb;
+            --card: #ffffff;
+            --ink: #0f172a;
+            --muted: #6b7280;
+            --line: #e6e9f2;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--green);
+            margin-bottom: 40px;
+        }
+
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .demo-card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .demo-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--green);
+        }
+
+        .demo-description {
+            color: var(--muted);
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .client-name {
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        /* Version 1: Domino's Style Pipeline */
+        .pipeline-v1 {
+            display: flex;
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .pipeline-v1::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 30px;
+            right: 30px;
+            height: 4px;
+            background: var(--line);
+            z-index: 0;
+        }
+
+        .pipeline-v1 .stage {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .pipeline-v1 .stage-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 10px;
+            border-radius: 50%;
+            background: white;
+            border: 4px solid var(--line);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .pipeline-v1 .stage.completed .stage-icon {
+            border-color: var(--green);
+            background: var(--green);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .pipeline-v1 .stage.active .stage-icon {
+            border-color: var(--orange);
+            background: var(--orange);
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        .pipeline-v1 .stage-label {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .pipeline-v1 .stage.completed .stage-label,
+        .pipeline-v1 .stage.active .stage-label {
+            color: var(--ink);
+            font-weight: 600;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1.1); }
+            50% { transform: scale(1.2); }
+        }
+
+        /* Version 2: Progress Bar with Milestones */
+        .pipeline-v2 {
+            position: relative;
+            padding: 40px 0;
+        }
+
+        .pipeline-v2 .progress-track {
+            height: 12px;
+            background: var(--line);
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .pipeline-v2 .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--green), var(--blue));
+            border-radius: 20px;
+            transition: width 0.5s ease;
+            position: relative;
+        }
+
+        .pipeline-v2 .progress-fill::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            background: white;
+            border: 3px solid var(--blue);
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .pipeline-v2 .milestones {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .pipeline-v2 .milestone {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 11px;
+        }
+
+        .pipeline-v2 .milestone-dot {
+            width: 24px;
+            height: 24px;
+            background: white;
+            border: 3px solid var(--line);
+            border-radius: 50%;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+
+        .pipeline-v2 .milestone.completed .milestone-dot {
+            border-color: var(--green);
+            background: var(--green);
+            color: white;
+        }
+
+        /* Version 3: Subway Map Style */
+        .pipeline-v3 {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #f6f7fb 0%, #e9f5ee 100%);
+            border-radius: 12px;
+        }
+
+        .pipeline-v3 .station {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .pipeline-v3 .station-node {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: white;
+            border: 3px solid var(--line);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            z-index: 2;
+            position: relative;
+        }
+
+        .pipeline-v3 .station.completed .station-node {
+            background: var(--green);
+            border-color: var(--green);
+            color: white;
+        }
+
+        .pipeline-v3 .station.active .station-node {
+            background: var(--orange);
+            border-color: var(--orange);
+            color: white;
+            box-shadow: 0 0 0 8px rgba(245, 158, 11, 0.2);
+        }
+
+        .pipeline-v3 .station-line {
+            flex: 1;
+            height: 4px;
+            background: var(--line);
+            margin: 0 -5px;
+            z-index: 1;
+        }
+
+        .pipeline-v3 .station.completed .station-line {
+            background: var(--green);
+        }
+
+        .pipeline-v3 .station-info {
+            position: absolute;
+            top: 50px;
+            left: 0;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+
+        /* Version 4: Cards with Connecting Lines */
+        .pipeline-v4 {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        .pipeline-v4 .status-card {
+            min-width: 140px;
+            padding: 15px;
+            background: white;
+            border: 2px solid var(--line);
+            border-radius: 12px;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .pipeline-v4 .status-card::after {
+            content: '→';
+            position: absolute;
+            right: -32px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--line);
+            font-size: 20px;
+        }
+
+        .pipeline-v4 .status-card:last-child::after {
+            display: none;
+        }
+
+        .pipeline-v4 .status-card.completed {
+            background: var(--green-50);
+            border-color: var(--green);
+        }
+
+        .pipeline-v4 .status-card.active {
+            background: linear-gradient(135deg, #fff8e1, #ffecb3);
+            border-color: var(--orange);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(245, 158, 11, 0.2);
+        }
+
+        .pipeline-v4 .status-card .card-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .pipeline-v4 .status-card .card-title {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .pipeline-v4 .status-card .card-date {
+            font-size: 10px;
+            color: var(--muted);
+        }
+
+        .pipeline-v4 .status-card.completed::after {
+            color: var(--green);
+        }
+
+        /* Version 5: Minimalist Timeline */
+        .pipeline-v5 {
+            position: relative;
+            padding: 30px 20px;
+        }
+
+        .pipeline-v5 .timeline {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .pipeline-v5 .timeline::before {
+            content: '';
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--line);
+        }
+
+        .pipeline-v5 .timeline-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .pipeline-v5 .timeline-content {
+            background: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--line);
+            font-size: 11px;
+            margin-bottom: 10px;
+            white-space: nowrap;
+        }
+
+        .pipeline-v5 .timeline-item.completed .timeline-content {
+            background: var(--green);
+            color: white;
+            border-color: var(--green);
+        }
+
+        .pipeline-v5 .timeline-item.active .timeline-content {
+            background: var(--orange);
+            color: white;
+            border-color: var(--orange);
+        }
+
+        .pipeline-v5 .timeline-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid var(--line);
+        }
+
+        .pipeline-v5 .timeline-item.completed .timeline-dot {
+            background: var(--green);
+            border-color: var(--green);
+        }
+
+        .pipeline-v5 .timeline-item.active .timeline-dot {
+            background: var(--orange);
+            border-color: var(--orange);
+            width: 16px;
+            height: 16px;
+        }
+
+        .status-icons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .status-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border: 2px solid var(--line);
+            font-size: 16px;
+        }
+
+        .status-icon.active {
+            border-color: var(--orange);
+            background: var(--orange);
+        }
+
+        .demo-controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .demo-controls button {
+            padding: 8px 16px;
+            border: 1px solid var(--line);
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .demo-controls button:hover {
+            background: var(--green-50);
+        }
+    </style>
+</head>
+<body>
+    <h1>🔥 Status Progress Bar Concepts</h1>
+
+    <div class="demo-container">
+
+        <!-- Version 1: Domino's Style Pipeline -->
+        <div class="demo-card">
+            <div class="demo-title">Version 1: Domino's Pizza Tracker Style</div>
+            <div class="demo-description">Large circular icons with connecting progress line. Clear visual states with animation on active step.</div>
+
+            <div class="client-name">John Smith</div>
+
+            <div class="status-icons">
+                <div class="status-icon">🤝</div>
+                <div class="status-icon">📧</div>
+                <div class="status-icon active">📋</div>
+                <div class="status-icon">✍️</div>
+                <div class="status-icon">🏥</div>
+                <div class="status-icon">✅</div>
+            </div>
+
+            <div class="pipeline-v1">
+                <div class="stage completed">
+                    <div class="stage-icon">🤝</div>
+                    <div class="stage-label">Initial Contact</div>
+                </div>
+                <div class="stage completed">
+                    <div class="stage-icon">📧</div>
+                    <div class="stage-label">Quoted</div>
+                </div>
+                <div class="stage active">
+                    <div class="stage-icon">📋</div>
+                    <div class="stage-label">Application Sent</div>
+                </div>
+                <div class="stage">
+                    <div class="stage-icon">✍️</div>
+                    <div class="stage-label">Pending Signature</div>
+                </div>
+                <div class="stage">
+                    <div class="stage-icon">🏥</div>
+                    <div class="stage-label">Medical Review</div>
+                </div>
+                <div class="stage">
+                    <div class="stage-icon">✅</div>
+                    <div class="stage-label">Purchased</div>
+                </div>
+            </div>
+
+            <div class="demo-controls">
+                <button onclick="updateProgress('v1', 0)">Start</button>
+                <button onclick="updateProgress('v1', 20)">Quoted</button>
+                <button onclick="updateProgress('v1', 40)">Applied</button>
+                <button onclick="updateProgress('v1', 60)">Signing</button>
+                <button onclick="updateProgress('v1', 80)">Medical</button>
+                <button onclick="updateProgress('v1', 100)">Purchased</button>
+            </div>
+        </div>
+
+        <!-- Version 2: Progress Bar with Milestones -->
+        <div class="demo-card">
+            <div class="demo-title">Version 2: Gradient Progress Bar with Milestones</div>
+            <div class="demo-description">Smooth gradient progress bar with milestone markers. Shows percentage completion visually.</div>
+
+            <div class="client-name">Sarah Johnson - 40% Complete</div>
+
+            <div class="pipeline-v2">
+                <div class="progress-track">
+                    <div class="progress-fill" style="width: 40%"></div>
+                </div>
+                <div class="milestones">
+                    <div class="milestone completed">
+                        <div class="milestone-dot">✓</div>
+                        <span>Contact</span>
+                    </div>
+                    <div class="milestone completed">
+                        <div class="milestone-dot">✓</div>
+                        <span>Quote</span>
+                    </div>
+                    <div class="milestone">
+                        <div class="milestone-dot">3</div>
+                        <span>Application</span>
+                    </div>
+                    <div class="milestone">
+                        <div class="milestone-dot">4</div>
+                        <span>Signature</span>
+                    </div>
+                    <div class="milestone">
+                        <div class="milestone-dot">5</div>
+                        <span>Medical</span>
+                    </div>
+                    <div class="milestone">
+                        <div class="milestone-dot">6</div>
+                        <span>Complete</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="demo-controls">
+                <button onclick="updateProgress('v2', 0)">0%</button>
+                <button onclick="updateProgress('v2', 20)">20%</button>
+                <button onclick="updateProgress('v2', 40)">40%</button>
+                <button onclick="updateProgress('v2', 60)">60%</button>
+                <button onclick="updateProgress('v2', 80)">80%</button>
+                <button onclick="updateProgress('v2', 100)">100%</button>
+            </div>
+        </div>
+
+        <!-- Version 3: Subway Map Style -->
+        <div class="demo-card">
+            <div class="demo-title">Version 3: Subway/Transit Map Style</div>
+            <div class="demo-description">Connected stations with a transit map aesthetic. Clean and modern with hover effects.</div>
+
+            <div class="client-name">Mike Williams</div>
+
+            <div class="pipeline-v3">
+                <div class="station completed">
+                    <div class="station-node">📞</div>
+                    <div class="station-line"></div>
+                    <div class="station-info">Contacted</div>
+                </div>
+                <div class="station completed">
+                    <div class="station-node">💰</div>
+                    <div class="station-line"></div>
+                    <div class="station-info">Quoted</div>
+                </div>
+                <div class="station completed">
+                    <div class="station-node">📄</div>
+                    <div class="station-line"></div>
+                    <div class="station-info">Applied</div>
+                </div>
+                <div class="station active">
+                    <div class="station-node">✏️</div>
+                    <div class="station-line"></div>
+                    <div class="station-info">Signing</div>
+                </div>
+                <div class="station">
+                    <div class="station-node">🔬</div>
+                    <div class="station-line"></div>
+                    <div class="station-info">Medical</div>
+                </div>
+                <div class="station">
+                    <div class="station-node">🎉</div>
+                    <div class="station-info">Complete!</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Version 4: Cards with Connecting Lines -->
+        <div class="demo-card">
+            <div class="demo-title">Version 4: Status Cards with Connections</div>
+            <div class="demo-description">Card-based approach with clear status information and dates. Active card elevates for emphasis.</div>
+
+            <div class="client-name">Jennifer Davis</div>
+
+            <div class="pipeline-v4">
+                <div class="status-card completed">
+                    <div class="card-icon">📞</div>
+                    <div class="card-title">Contacted</div>
+                    <div class="card-date">Jan 5</div>
+                </div>
+                <div class="status-card completed">
+                    <div class="card-icon">💵</div>
+                    <div class="card-title">Quote Sent</div>
+                    <div class="card-date">Jan 8</div>
+                </div>
+                <div class="status-card active">
+                    <div class="card-icon">📝</div>
+                    <div class="card-title">Application</div>
+                    <div class="card-date">Jan 12</div>
+                </div>
+                <div class="status-card">
+                    <div class="card-icon">✍️</div>
+                    <div class="card-title">Signature</div>
+                    <div class="card-date">Pending</div>
+                </div>
+                <div class="status-card">
+                    <div class="card-icon">🏥</div>
+                    <div class="card-title">Medical</div>
+                    <div class="card-date">-</div>
+                </div>
+                <div class="status-card">
+                    <div class="card-icon">✅</div>
+                    <div class="card-title">Purchased</div>
+                    <div class="card-date">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Version 5: Minimalist Timeline -->
+        <div class="demo-card">
+            <div class="demo-title">Version 5: Minimalist Timeline</div>
+            <div class="demo-description">Clean, minimal timeline with status labels above. Perfect for compact spaces.</div>
+
+            <div class="client-name">Robert Chen</div>
+
+            <div class="pipeline-v5">
+                <div class="timeline">
+                    <div class="timeline-item completed">
+                        <div class="timeline-content">📞 Contacted</div>
+                        <div class="timeline-dot"></div>
+                    </div>
+                    <div class="timeline-item completed">
+                        <div class="timeline-content">💰 Quoted</div>
+                        <div class="timeline-dot"></div>
+                    </div>
+                    <div class="timeline-item completed">
+                        <div class="timeline-content">📋 Applied</div>
+                        <div class="timeline-dot"></div>
+                    </div>
+                    <div class="timeline-item completed">
+                        <div class="timeline-content">✍️ Signed</div>
+                        <div class="timeline-dot"></div>
+                    </div>
+                    <div class="timeline-item active">
+                        <div class="timeline-content">🏥 Medical</div>
+                        <div class="timeline-dot"></div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-content">✅ Complete</div>
+                        <div class="timeline-dot"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function updateProgress(version, percentage) {
+            if (version === 'v1') {
+                const stages = document.querySelectorAll('.pipeline-v1 .stage');
+                const stageCount = stages.length;
+                const activeIndex = Math.floor((percentage / 100) * stageCount);
+
+                stages.forEach((stage, index) => {
+                    stage.classList.remove('completed', 'active');
+                    if (index < activeIndex) {
+                        stage.classList.add('completed');
+                    } else if (index === activeIndex && percentage < 100) {
+                        stage.classList.add('active');
+                    } else if (percentage === 100) {
+                        stage.classList.add('completed');
+                    }
+                });
+            }
+
+            if (version === 'v2') {
+                const fill = document.querySelector('.pipeline-v2 .progress-fill');
+                const milestones = document.querySelectorAll('.pipeline-v2 .milestone');
+                fill.style.width = percentage + '%';
+
+                const activeIndex = Math.floor((percentage / 100) * milestones.length);
+                milestones.forEach((milestone, index) => {
+                    if (index < activeIndex || (index === milestones.length - 1 && percentage === 100)) {
+                        milestone.classList.add('completed');
+                        milestone.querySelector('.milestone-dot').textContent = '✓';
+                    } else {
+                        milestone.classList.remove('completed');
+                        milestone.querySelector('.milestone-dot').textContent = (index + 1);
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
