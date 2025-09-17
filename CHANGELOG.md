@@ -2,12 +2,26 @@
 
 All notable changes to Life Hotlist will be documented in this file.
 
+## [1.8.3] - 2025-01-17
+
+### Changed
+- **Simplified Density Modes**: Removed ultra-compact mode, now only comfortable and compact
+- **Compact Mode Enhancement**: Compact mode now hides status labels for cleaner interface
+- **Removed Complexity**: Eliminated ultra-compact CSS and JavaScript logic for maintainability
+
+### Removed
+- **Ultra-Compact Mode**: Completely removed ultra-compact density option and all related code
+
 ## [1.8.2] - 2025-01-17
 
 ### Fixed
 - **Density Setting Persistence**: Switched from localStorage to cookie-based storage for density settings
 - **Ultra-Compact Status Icons**: Fixed status tracker icons shrinking after clicking in ultra-compact mode
 - **Cache-Resistant Settings**: Density settings now persist through browser cache clearing and hard refreshes
+- **Status Tracker Cookie Integration**: Fixed ultra-compact detection to use cookies instead of UI object
+- **Ultra-Compact CSS Targeting**: Fixed CSS selectors to work without compact class in ultra-compact mode
+- **Nuclear CSS Override**: Added aggressive CSS overrides with min/max sizing to prevent any status icon shrinking
+- **Inline Style Force Override**: Added inline styles with !important to force ultra-compact icon sizing at render time
 
 ### Changed
 - **Density Storage Method**: Replaced complex IndexedDB/localStorage density logic with simple, reliable cookies

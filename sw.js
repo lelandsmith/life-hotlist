@@ -1,19 +1,9 @@
-const CACHE_NAME = 'hotlist-v29-changelog';
-const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json'
-];
+const CACHE_NAME = 'hotlist-v34-no-cache';
+const urlsToCache = [];
 
-// Install event - cache resources
+// Install event - NO CACHING
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
-      })
-  );
+  console.log('Service worker installed - NO CACHING ENABLED');
   self.skipWaiting();
 });
 
@@ -34,36 +24,19 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch event - network first, fallback to cache
+// Fetch event - ALWAYS USE NETWORK, NO CACHE
 self.addEventListener('fetch', event => {
   event.respondWith(
-    fetch(event.request)
-      .then(response => {
-        // Check if valid response
-        if (!response || response.status !== 200 || response.type !== 'basic') {
-          return response;
-        }
-
-        // Clone the response
-        const responseToCache = response.clone();
-
-        caches.open(CACHE_NAME)
-          .then(cache => {
-            cache.put(event.request, responseToCache);
-          });
-
-        return response;
-      })
-      .catch(() => {
-        // Network failed, try cache
-        return caches.match(event.request)
-          .then(response => {
-            if (response) {
-              return response;
-            }
-            // Offline fallback
-            return caches.match('/index.html');
-          });
-      })
+    fetch(event.request, {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    }).catch(() => {
+      // Only fallback to network without cache headers
+      return fetch(event.request);
+    })
   );
 });
