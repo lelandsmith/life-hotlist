@@ -1045,17 +1045,17 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
   /* =========================
    *  Version & Changelog
    * ========================= */
-  var VERSION = '1.8.0';
+  var VERSION = '1.8.3';
   // Recent commits from git log
   var CHANGELOG = [
+    { version: '1.8.3', date: '2025-01-17', changes: 'Remove ultra-compact mode, simplify to 2 density options, fix density select display' },
+    { version: '1.8.2', date: '2025-01-17', changes: 'Switch to cookie-based density persistence for cache-resistant settings' },
+    { version: '1.8.1', date: '2025-01-17', changes: 'Add demo data system with Load Demo button for first-time users' },
     { version: '1.8.0', date: '2025-01-16', changes: 'Implement IndexedDB persistent storage, fix celebration logic, add storage management tools' },
     { version: '1.7.2', date: '2025-01-16', changes: 'Redesign celebrations, fix header layout, and prevent duplicate goal celebrations' },
     { version: '1.7.1', date: '2025-01-16', changes: 'Fix service worker caching strategy and force cache refresh' },
     { version: '1.7.0', date: '2025-01-15', changes: 'Add epic purchase celebration with money rain and cha-ching sound' },
-    { version: '1.6.0', date: '2025-01-15', changes: 'Fix purchase tracking with unique purchase dates and cancelable purchase chips' },
-    { version: '1.5.0', date: '2025-01-15', changes: 'Fix blank changelog modal and add monthly Life apps purchased counter' },
-    { version: '1.4.0', date: '2025-01-15', changes: 'Update PWA icon to flame emoji with reddish-orange theme' },
-    { version: '1.3.1', date: '2025-01-15', changes: 'Convert Summary Report to Activity Chart and remove Today\'s Queue widget' }
+    { version: '1.6.0', date: '2025-01-15', changes: 'Fix purchase tracking with unique purchase dates and cancelable purchase chips' }
   ];
 
   /* =========================
@@ -2417,8 +2417,9 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
     if(els.densitySelect) els.densitySelect.value = mode;
   }
 
-  // Apply density immediately on page load
-  applyDensity();
+  // Apply density immediately on page load (body only, select will be set later)
+  var initialDensity = getCookie('density') || 'comfortable';
+  document.body.setAttribute('data-density', initialDensity);
 
   /* Sidebar position + show/hide */
   ;(function(){
@@ -3554,8 +3555,11 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
 
     // Density is now handled by cookies and applied immediately on page load
 
-    // Setup density change listener - using cookies now
+    // Setup density change listener and set initial value
     if(els.densitySelect){
+      var currentDensity = getCookie('density') || 'comfortable';
+      els.densitySelect.value = currentDensity;
+
       els.densitySelect.addEventListener('change', function(){
         setDensityCookie(this.value);
         applyDensity();

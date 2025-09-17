@@ -9,6 +9,10 @@ All notable changes to Life Hotlist will be documented in this file.
 - **Compact Mode Enhancement**: Compact mode now hides status labels for cleaner interface
 - **Removed Complexity**: Eliminated ultra-compact CSS and JavaScript logic for maintainability
 
+### Fixed
+- **Density Select Display**: Fixed issue where density dropdown wasn't showing the current selection
+- **Default Density**: Ensured comfortable mode is properly set as default when no preference exists
+
 ### Removed
 - **Ultra-Compact Mode**: Completely removed ultra-compact density option and all related code
 
