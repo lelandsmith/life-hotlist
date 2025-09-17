@@ -2,6 +2,17 @@
 
 All notable changes to Life Hotlist will be documented in this file.
 
+## [1.8.2] - 2025-01-17
+
+### Fixed
+- **Density Setting Persistence**: Switched from localStorage to cookie-based storage for density settings
+- **Ultra-Compact Status Icons**: Fixed status tracker icons shrinking after clicking in ultra-compact mode
+- **Cache-Resistant Settings**: Density settings now persist through browser cache clearing and hard refreshes
+
+### Changed
+- **Density Storage Method**: Replaced complex IndexedDB/localStorage density logic with simple, reliable cookies
+- **Immediate Density Application**: Density settings now apply instantly on page load without async dependencies
+
 ## [1.8.1] - 2025-01-17
 
 ### Added

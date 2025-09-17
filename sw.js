@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hotlist-v28-cookies';
+const CACHE_NAME = 'hotlist-v29-changelog';
 const urlsToCache = [
   '/',
   '/index.html',
