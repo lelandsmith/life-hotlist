@@ -449,19 +449,19 @@ button:focus-visible{outline:none; box-shadow:var(--ring)}
 }
 
 .status-tracker .stage.completed .stage-icon {
-  border-color: #10b981;
+  border-color: var(--line);
   background: #10b981;
   transform: scale(1.05);
 }
 
 .status-tracker .stage.active .stage-icon {
-  border: 2px solid #059669;
+  border: 3px solid #059669;
   background: var(--orange);
   color: white;
 }
 
 .status-tracker .stage.active.purchased .stage-icon {
-  border: 2px solid #059669;
+  border: 3px solid #059669;
   background: #10b981;
   color: white;
 }
@@ -1090,7 +1090,7 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   var UI_KEY='hotlistUI';
 
   var STATUS=['Initial Contact','Sent Quote','Sent Application','Pending Application Signature','Pending Medical Questionnaire','Purchased'];
-  var STATUS_ABBR={'Initial Contact':'Contact','Sent Quote':'Quote','Sent Application':'App','Pending Application Signature':'SigPend','Pending Medical Questionnaire':'MedQ','Purchased':'Purchased'};
+  var STATUS_ABBR={'Initial Contact':'Contact','Sent Quote':'Quoted','Sent Application':'App','Pending Application Signature':'SigPend','Pending Medical Questionnaire':'MedQ','Purchased':'Purchased'};
   var STATUS_ICON={'Initial Contact':'\uD83E\uDD1D','Sent Quote':'\uD83E\uDD7E','Sent Application':'\uD83D\uDCDD','Pending Application Signature':'\u270D\uFE0F','Pending Medical Questionnaire':'\uD83E\uDDEA','Purchased':'\u2705'};
   var EMOJI_CALL='\uD83D\uDCDE';
   var EMOJI_MSG ='\uD83D\uDCAC';
@@ -1153,13 +1153,55 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   var DB_VERSION = 1;
   var STORE_NAME = 'appData';
 
+  async function requestPersistentStorage() {
+    if ('storage' in navigator && 'persist' in navigator.storage) {
+      try {
+        const persistent = await navigator.storage.persist();
+        console.log('Persistent storage:', persistent ? 'granted' : 'denied');
+        return persistent;
+      } catch (e) {
+        console.warn('Could not request persistent storage:', e);
+        return false;
+      }
+    }
+    return false;
+  }
+
+  async function getStorageInfo() {
+    const info = {
+      persistent: false,
+      quota: 0,
+      usage: 0
+    };
+
+    if ('storage' in navigator) {
+      try {
+        if ('persisted' in navigator.storage) {
+          info.persistent = await navigator.storage.persisted();
+        }
+        if ('estimate' in navigator.storage) {
+          const estimate = await navigator.storage.estimate();
+          info.quota = estimate.quota || 0;
+          info.usage = estimate.usage || 0;
+        }
+      } catch (e) {
+        console.warn('Could not get storage info:', e);
+      }
+    }
+
+    return info;
+  }
+
   function initDB() {
-    return new Promise(function(resolve, reject) {
+    return new Promise(async function(resolve, reject) {
       if (!window.indexedDB) {
         console.log('IndexedDB not supported, falling back to localStorage');
         resolve(null);
         return;
       }
+
+      // Request persistent storage to prevent data loss during cache clearing
+      await requestPersistentStorage();
 
       var request = indexedDB.open(DB_NAME, DB_VERSION);
 
@@ -2283,7 +2325,8 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
       var emptyMsg = document.createElement('div');
       emptyMsg.style.cssText = 'padding:40px 20px; text-align:center; color:var(--muted);';
       emptyMsg.innerHTML = '<div style="font-size:16px; margin-bottom:10px;">No clients yet</div>' +
-        '<div style="font-size:14px;">Use the search bar above to add your first client.<br/>Just type a name and press Enter!</div>';
+        '<div style="font-size:14px; margin-bottom:20px;">Use the search bar above to add your first client.<br/>Just type a name and press Enter!</div>' +
+        '<button onclick="loadDemoData()" style="background:var(--info); color:white; border:none; padding:12px 24px; border-radius:8px; font-size:14px; cursor:pointer; margin-top:10px;">📋 Load Demo Data</button>';
       container.appendChild(emptyMsg);
       return;
     }
@@ -2702,6 +2745,81 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   // Make showFlameAnimation available globally for keyboard shortcuts
   window.showFlameAnimation = showFlameAnimation;
 
+  /* Demo Data Function */
+  function loadDemoData(){
+    if(!confirm('This will add 3 demo clients to your list. Continue?')) return;
+
+    var now = new Date().toISOString();
+    var yesterday = new Date(Date.now() - 24*60*60*1000).toISOString();
+    var twoDaysAgo = new Date(Date.now() - 2*24*60*60*1000).toISOString();
+
+    var demoClients = [
+      {
+        id: 'demo-' + Date.now() + '-1',
+        name: 'Sarah Johnson',
+        status: 'Sent Quote',
+        notes: 'Interested in term life insurance for $500K coverage.\nHas 2 young children, budget around $150/month.\nPrefers to meet on weekends due to work schedule.',
+        callCount: 2,
+        msgCount: 1,
+        lastTouch: yesterday,
+        created: twoDaysAgo,
+        hot: false,
+        archived: false,
+        queueToday: false,
+        queueTomorrow: false,
+        history: [
+          { ts: twoDaysAgo, action: 'created' }
+        ]
+      },
+      {
+        id: 'demo-' + Date.now() + '-2',
+        name: 'Michael Chen',
+        notes: 'Self-employed business owner looking for disability insurance.\nRuns a successful consulting firm, needs income protection.\nVery detail-oriented, asks lots of questions.',
+        callCount: 0,
+        msgCount: 0,
+        lastTouch: new Date(Date.now() - 5*24*60*60*1000).toISOString(),
+        created: new Date(Date.now() - 5*24*60*60*1000).toISOString(),
+        hot: false,
+        archived: false,
+        queueToday: false,
+        queueTomorrow: false,
+        history: [
+          { ts: new Date(Date.now() - 5*24*60*60*1000).toISOString(), action: 'created' }
+        ]
+      },
+      {
+        id: 'demo-' + Date.now() + '-3',
+        name: 'Jennifer Martinez',
+        status: 'Purchased',
+        notes: 'Purchased whole life policy for $250K.\nEasy client, referred by existing customer.\nInterested in additional coverage for spouse.',
+        callCount: 1,
+        msgCount: 0,
+        lastTouch: yesterday,
+        created: new Date(Date.now() - 7*24*60*60*1000).toISOString(),
+        purchaseDate: yesterday,
+        hot: false,
+        archived: false,
+        queueToday: false,
+        queueTomorrow: false,
+        history: [
+          { ts: new Date(Date.now() - 7*24*60*60*1000).toISOString(), action: 'created' }
+        ]
+      }
+    ];
+
+    // Add demo clients to state
+    state.clients = state.clients.concat(demoClients);
+    save(state);
+    render();
+
+    // Show success message
+    setTimeout(function(){
+      alert('Demo data loaded! 📋\n\n• Sarah Johnson (Sent Quote)\n• Michael Chen (No status - try setting one!)\n• Jennifer Martinez (Purchased)\n\nExplore the features and use keyboard shortcuts 1-6!');
+    }, 100);
+  }
+
+  window.loadDemoData = loadDemoData;
+
   /* Click handler for unscheduling and clearing purchases */
   document.addEventListener('click', function(e){
     if(e.target.classList.contains('unschedule-x')){
@@ -2778,14 +2896,14 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
 
       var buttons = activeDropdown.querySelectorAll('button');
 
-      if(e.key === 'ArrowDown'){
+      if(e.key === 'ArrowDown' || e.key === 'j' || e.key === 'J'){
         buttons[dropdownSelectedIndex].classList.remove('selected');
         dropdownSelectedIndex = (dropdownSelectedIndex + 1) % buttons.length;
         buttons[dropdownSelectedIndex].classList.add('selected');
         e.preventDefault();
         e.stopPropagation();
       }
-      else if(e.key === 'ArrowUp'){
+      else if(e.key === 'ArrowUp' || e.key === 'k' || e.key === 'K'){
         buttons[dropdownSelectedIndex].classList.remove('selected');
         dropdownSelectedIndex = (dropdownSelectedIndex - 1 + buttons.length) % buttons.length;
         buttons[dropdownSelectedIndex].classList.add('selected');
@@ -2797,7 +2915,7 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
         e.preventDefault();
         e.stopPropagation();
       }
-      else if(e.key === 'Escape' || e.key === 's' || e.key === 'S'){
+      else if(e.key === 'Escape'){
         closeDropdown();
         e.preventDefault();
         e.stopPropagation();

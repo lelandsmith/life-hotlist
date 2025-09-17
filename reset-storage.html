@@ -28,6 +28,7 @@
     <button onclick="clearLocalStorage()">Clear localStorage Only</button>
     <button onclick="clearAll()">Clear All Storage (Reset App)</button>
     <button onclick="forceMigration()">Force Re-Migration from localStorage</button>
+    <button onclick="requestPersistent()">Request Persistent Storage</button>
 
     <h2>Log</h2>
     <pre id="log"></pre>
@@ -49,6 +50,24 @@
         async function checkStatus() {
             const statusEl = document.getElementById('status');
             let html = '<ul>';
+
+            // Check storage persistence
+            if ('storage' in navigator && 'persisted' in navigator.storage) {
+                try {
+                    const persistent = await navigator.storage.persisted();
+                    const estimate = await navigator.storage.estimate();
+                    html += `<li><strong>Persistent Storage: ${persistent ? 'GRANTED' : 'NOT GRANTED'}</strong></li>`;
+                    if (estimate.quota) {
+                        const usageGB = (estimate.usage / 1024 / 1024 / 1024).toFixed(2);
+                        const quotaGB = (estimate.quota / 1024 / 1024 / 1024).toFixed(2);
+                        html += `<li>Storage Usage: ${usageGB}GB / ${quotaGB}GB</li>`;
+                    }
+                } catch (e) {
+                    html += `<li>Persistent Storage: Error checking (${e.message})</li>`;
+                }
+            } else {
+                html += `<li>Persistent Storage: API not supported</li>`;
+            }
 
             // Check localStorage
             const lsData = localStorage.getItem(STABLE_KEY);
@@ -208,6 +227,26 @@
                 log('Migration completed. Refresh the app.', 'success');
             } catch (e) {
                 log('Error during migration: ' + e.message, 'error');
+            }
+            checkStatus();
+        }
+
+        async function requestPersistent() {
+            if ('storage' in navigator && 'persist' in navigator.storage) {
+                try {
+                    const persistent = await navigator.storage.persist();
+                    log(`Persistent storage request: ${persistent ? 'GRANTED' : 'DENIED'}`, persistent ? 'success' : 'error');
+                    if (persistent) {
+                        log('Your data should now persist even when clearing browser cache', 'success');
+                    } else {
+                        log('Persistent storage was denied. Data may still be cleared during cache clearing.', 'error');
+                        log('Try using the site more regularly or adding it to your bookmarks to increase persistence chance.', '');
+                    }
+                } catch (e) {
+                    log(`Error requesting persistent storage: ${e.message}`, 'error');
+                }
+            } else {
+                log('Persistent storage API not supported in this browser', 'error');
             }
             checkStatus();
         }
