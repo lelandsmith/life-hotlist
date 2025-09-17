@@ -1930,7 +1930,13 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   /* Render Status Progress Tracker */
   function renderStatusTracker(clientOrStatus, clientObj){
     var tracker = document.createElement('div');
-    tracker.className = 'status-tracker compact';
+    var currentDensity = document.body.getAttribute('data-density');
+    var uiDensity = ui.density;
+    var isUltraCompact = currentDensity === 'ultra-compact' || uiDensity === 'ultra-compact';
+
+    console.log('renderStatusTracker - body density:', currentDensity, 'ui density:', uiDensity, 'isUltraCompact:', isUltraCompact);
+
+    tracker.className = isUltraCompact ? 'status-tracker' : 'status-tracker compact';
 
     // Handle both client object and status string, with null checks
     var currentStatus = null;
