@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hotlist-v27-density';
+const CACHE_NAME = 'hotlist-v28-cookies';
 const urlsToCache = [
   '/',
   '/index.html',
