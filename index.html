@@ -7,7 +7,9 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
-<meta name="cache-buster" content="v22-20250117" />
+<meta name="cache-buster" content="v24-20250117-density-fix" />
+<meta http-equiv="Last-Modified" content="0" />
+<meta http-equiv="If-Modified-Since" content="0" />
 <title>Life Hotlist</title>
 <link rel="manifest" href="/manifest.json?v=1.7.2">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='28'%3E🔥%3C/text%3E%3C/svg%3E">
@@ -1401,10 +1403,20 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     if (result && result.then) {
       return result.then(function(loadedUI) {
         ui = loadedUI || {};
+        // Apply density immediately after UI loads
+        if(ui.density) {
+          document.body.setAttribute('data-density', ui.density);
+          if(els.densitySelect) els.densitySelect.value = ui.density;
+        }
         return ui;
       });
     }
     ui = result || {};
+    // Apply density immediately after UI loads
+    if(ui.density) {
+      document.body.setAttribute('data-density', ui.density);
+      if(els.densitySelect) els.densitySelect.value = ui.density;
+    }
     return ui;
   });
 
@@ -1934,8 +1946,6 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     var uiDensity = ui.density;
     var isUltraCompact = currentDensity === 'ultra-compact' || uiDensity === 'ultra-compact';
 
-    console.log('renderStatusTracker - body density:', currentDensity, 'ui density:', uiDensity, 'isUltraCompact:', isUltraCompact);
-
     tracker.className = isUltraCompact ? 'status-tracker' : 'status-tracker compact';
 
     // Handle both client object and status string, with null checks
@@ -2459,8 +2469,6 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
 
   /* Density */
   function applyDensity(){ var mode = ui.density || 'comfortable'; document.body.setAttribute('data-density', mode); if(els.densitySelect) els.densitySelect.value = mode; }
-  if(typeof ui.density==='undefined'){ ui.density='comfortable'; saveUI(ui); }
-  if(els.densitySelect){ els.densitySelect.value=ui.density; els.densitySelect.addEventListener('change', function(){ ui.density=this.value; saveUI(ui); applyDensity(); }); }
 
   /* Sidebar position + show/hide */
   ;(function(){
@@ -3463,8 +3471,6 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   if($('#sortBy')) $('#sortBy').value=ui.sortBy||'lastTouch';
 
   if(els.ageDays){ if(ui.ageDays!=null) els.ageDays.value = String(ui.ageDays); else els.ageDays.value='4'; }
-  if(typeof ui.density==='undefined'){ ui.density='comfortable'; }
-  applyDensity();
 
   // ensure widgets are draggable
   $all('#sidebarWidgets .widget').forEach(function(w){ if(!w.getAttribute('draggable')) w.setAttribute('draggable','true'); });
@@ -3595,7 +3601,24 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   /* Wait for storage initialization then render */
   Promise.all([storageReady, uiReady]).then(function() {
     // Now that storage is ready, perform initial setup
+
+    // Initialize density settings with proper UI data
+    console.log('UI loaded with density:', ui.density, 'Full UI:', ui);
+    if(typeof ui.density==='undefined'){ ui.density='comfortable'; saveUI(ui); }
     applyDensity(); // Apply density after UI is loaded
+
+    // Setup density change listener after UI is loaded
+    if(els.densitySelect){
+      els.densitySelect.value=ui.density;
+      els.densitySelect.addEventListener('change', function(){
+        console.log('Density changing from', ui.density, 'to', this.value);
+        ui.density=this.value;
+        console.log('Saving UI with density:', ui.density, 'Full UI object:', ui);
+        saveUI(ui);
+        applyDensity();
+      });
+    }
+
     rotateDailyQueues();
     initializeFirstTimeUser(); // Check for first-time user and load demo data
     renderQuote(false);
