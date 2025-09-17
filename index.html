@@ -951,8 +951,9 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
             </label>
             <button id="toggleSidebarBtn" class="btn-min gray" title="Toggle Sidebar" style="padding:4px 8px;">◧</button>
             <div id="sidebar-controls" style="display:flex; gap:2px;"></div>
-            <button id="importBtn" class="btn-min gray" title="Import Clients" style="padding:4px 8px;">⬇</button>
-            <button id="exportBtn" class="btn-min gray" title="Export Clients" style="padding:4px 8px;">⬆</button>
+            <button id="importBtn" class="btn-min gray" title="Import Clients" style="padding:4px 8px;">📥</button>
+            <button id="exportBtn" class="btn-min gray" title="Export Clients" style="padding:4px 8px;">📤</button>
+            <button id="clearDemoBtn" class="btn-min gray" title="Clear Demo Data" style="padding:4px 8px; display:none;">🗑️</button>
           </div>
         </div>
       </div>
@@ -965,7 +966,8 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
       <div id="todayList"></div>
     </div>
 
-    <div class="table-head">
+    <div id="emptyState" style="display:none;"></div>
+    <div class="table-head" id="mainTableHead">
       <div>Client • Notes</div>
       <div>Actions</div>
     </div>
@@ -1143,8 +1145,9 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     scheduledBlock:$('#scheduledBlock'), scheduledList:$('#scheduledList'),
     densitySelect:$('#densitySelect'),
     toggleSidebarBtn:$('#toggleSidebarBtn'),
-    importBtn:$('#importBtn'), exportBtn:$('#exportBtn'),
-    sidebarControls:$('#sidebar-controls')
+    importBtn:$('#importBtn'), exportBtn:$('#exportBtn'), clearDemoBtn:$('#clearDemoBtn'),
+    sidebarControls:$('#sidebar-controls'),
+    emptyState:$('#emptyState'), mainTableHead:$('#mainTableHead')
   };
 
   /* IndexedDB Storage Module */
@@ -2320,14 +2323,9 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
       return true;
     });
 
-    // Show empty state message if no clients
+    // Show empty state message if no clients (but not in renderList - handle this at higher level)
     if(filtered.length === 0 && clients.length === 0 && !q){
-      var emptyMsg = document.createElement('div');
-      emptyMsg.style.cssText = 'padding:40px 20px; text-align:center; color:var(--muted);';
-      emptyMsg.innerHTML = '<div style="font-size:16px; margin-bottom:10px;">No clients yet</div>' +
-        '<div style="font-size:14px; margin-bottom:20px;">Use the search bar above to add your first client.<br/>Just type a name and press Enter!</div>' +
-        '<button onclick="loadDemoData()" style="background:var(--info); color:white; border:none; padding:12px 24px; border-radius:8px; font-size:14px; cursor:pointer; margin-top:10px;">📋 Load Demo Data</button>';
-      container.appendChild(emptyMsg);
+      // Don't show empty state in list container - this will be handled by main render function
       return;
     }
 
@@ -2346,8 +2344,16 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     var mainActive = activeAll.filter(function(c){ return !isFutureFollowUp(c) && !c.queueToday; });
     var archived=state.clients.filter(function(c){return c.archived;});
 
-    renderKPIs(); renderPipeline(); renderTrendRibbons(); renderDailyOutreach();
-    renderList(els.list, mainActive);
+    renderKPIs(); renderPipeline(); renderTrendRibbons(); renderDailyOutreach(); updateClearDemoButton();
+
+    // Handle empty state for main list
+    var totalActiveClients = mainActive.length + todayClients.length + scheduled.length;
+    if(totalActiveClients === 0){
+      showEmptyState();
+    } else {
+      hideEmptyState();
+      renderList(els.list, mainActive);
+    }
 
     // Today section
     if(els.todayBlock && els.todayList){
@@ -2544,6 +2550,56 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
       URL.revokeObjectURL(url);
       showNotification('Export Complete', 'Your data has been exported successfully');
     });
+  }
+
+  /* Clear Demo Data Button */
+  if(els.clearDemoBtn){
+    els.clearDemoBtn.addEventListener('click', function(){
+      clearDemoData();
+    });
+  }
+
+  /* Show/hide clear demo button based on presence of demo data */
+  function updateClearDemoButton(){
+    if(!els.clearDemoBtn) {
+      console.log('Clear demo button element not found');
+      return;
+    }
+    var hasDemoData = state.clients && state.clients.some(function(client){
+      return client.id.startsWith('demo-');
+    });
+    console.log('=== updateClearDemoButton Debug ===');
+    console.log('state.clients:', state.clients);
+    console.log('hasDemoData:', hasDemoData);
+    console.log('Setting clear button display to:', hasDemoData ? 'block' : 'none');
+
+    els.clearDemoBtn.style.display = hasDemoData ? 'block' : 'none';
+  }
+
+  /* Empty State Management */
+  function showEmptyState(){
+    if(!els.emptyState || !els.mainTableHead) return;
+
+    els.emptyState.style.display = 'block';
+    els.mainTableHead.style.display = 'none';
+    els.list.innerHTML = '';
+
+    els.emptyState.innerHTML = '<div style="padding:40px 20px; text-align:center; color:var(--muted);">' +
+      '<div style="font-size:16px; margin-bottom:10px;">No clients yet</div>' +
+      '<div style="font-size:14px; margin-bottom:20px;">Use the search bar above to add your first client.<br/>Just type a name and press Enter!<br/><br/>Or use the Import Client button (📥) in the top right to import from a file.</div>' +
+      '<button onclick="loadDemoData()" style="background:var(--info); color:white; border:none; padding:12px 24px; border-radius:8px; font-size:14px; cursor:pointer; margin-top:10px; margin-bottom:20px;">📋 Load Demo Data</button>' +
+      '<div style="font-size:12px; color:var(--muted); max-width:750px; margin:0 auto; line-height:1.4; background:rgba(0,0,0,0.02); padding:15px; border-radius:8px;">' +
+      '<strong>🔒 Privacy Notice:</strong> All data is stored locally in your browser only. Nothing is sent to any server. ' +
+      'However, please avoid entering personally identifiable information (PII) like social security numbers, full addresses, or sensitive personal details.' +
+      '</div>' +
+      '</div>';
+  }
+
+  function hideEmptyState(){
+    if(!els.emptyState || !els.mainTableHead) return;
+
+    els.emptyState.style.display = 'none';
+    els.mainTableHead.style.display = 'flex';
   }
 
   /* Notification helper */
@@ -2745,9 +2801,8 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   // Make showFlameAnimation available globally for keyboard shortcuts
   window.showFlameAnimation = showFlameAnimation;
 
-  /* Demo Data Function */
-  function loadDemoData(){
-    if(!confirm('This will add 3 demo clients to your list. Continue?')) return;
+  /* Demo Data Functions */
+  function createDemoClients(){
 
     var now = new Date().toISOString();
     var yesterday = new Date(Date.now() - 24*60*60*1000).toISOString();
@@ -2807,6 +2862,14 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
       }
     ];
 
+    return demoClients;
+  }
+
+  function loadDemoData(){
+    if(!confirm('This will add 3 demo clients to your list. Continue?')) return;
+
+    var demoClients = createDemoClients();
+
     // Add demo clients to state
     state.clients = state.clients.concat(demoClients);
     save(state);
@@ -2818,7 +2881,94 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     }, 100);
   }
 
+  function clearDemoData(){
+    if(!confirm('This will remove all demo clients (names starting with demo-). Your real clients will remain. Continue?')) return;
+
+    // Remove all clients with demo IDs
+    state.clients = state.clients.filter(function(client){
+      return !client.id.startsWith('demo-');
+    });
+
+    save(state);
+    render();
+
+    // Mark that user has cleared demo data
+    localStorage.setItem('hotlist_ever_had_data', 'cleared');
+
+    // Show success message
+    setTimeout(function(){
+      alert('Demo data cleared! 🗑️\n\nYou can now add your real clients.');
+    }, 100);
+  }
+
+  function initializeFirstTimeUser(){
+    console.log('=== initializeFirstTimeUser Debug ===');
+    console.log('state.clients:', state.clients);
+    console.log('clients length:', state.clients ? state.clients.length : 'undefined');
+
+    // Check if this is a first-time user (no clients and no previous data)
+    if(!state.clients || state.clients.length === 0){
+      var hasEverHadData = localStorage.getItem('hotlist_ever_had_data');
+      console.log('hasEverHadData localStorage value:', hasEverHadData);
+
+      if(!hasEverHadData){
+        console.log('Loading demo data for first-time user...');
+        // First-time user - load demo data automatically
+        var demoClients = createDemoClients();
+        state.clients = demoClients;
+
+        // Mark that user has seen demo data
+        localStorage.setItem('hotlist_ever_had_data', 'demo');
+        save(state);
+
+        console.log('Demo data loaded! Client count:', state.clients.length);
+        console.log('Demo clients:', state.clients.map(function(c){ return c.name; }));
+      } else {
+        console.log('User has had data before (flag:', hasEverHadData, '), not loading demo data');
+      }
+    } else {
+      console.log('User already has', state.clients.length, 'clients, not loading demo data');
+    }
+  }
+
+  /* Debug/Reset Functions */
+  function resetForTesting(){
+    localStorage.removeItem('hotlist_ever_had_data');
+    state.clients = [];
+    save(state);
+    render();
+    console.log('App reset for testing - refresh page to see first-time user experience');
+  }
+
+  function forceLoadDemo(){
+    var demoClients = createDemoClients();
+    state.clients = demoClients;
+    localStorage.setItem('hotlist_ever_had_data', 'demo');
+    save(state);
+    render();
+    console.log('Demo data force loaded, client count:', state.clients.length);
+  }
+
+  function debugCurrentState(){
+    console.log('=== Current App State ===');
+    console.log('state.clients:', state.clients);
+    console.log('clients count:', state.clients ? state.clients.length : 'undefined');
+    console.log('localStorage flag:', localStorage.getItem('hotlist_ever_had_data'));
+    console.log('clearDemoBtn element:', els.clearDemoBtn);
+    console.log('clearDemoBtn display:', els.clearDemoBtn ? els.clearDemoBtn.style.display : 'element not found');
+
+    if(state.clients && state.clients.length > 0){
+      console.log('Client IDs:', state.clients.map(function(c){ return c.id; }));
+      console.log('Demo clients:', state.clients.filter(function(c){ return c.id.startsWith('demo-'); }));
+    }
+  }
+
+  // Make functions available globally for testing
   window.loadDemoData = loadDemoData;
+  window.clearDemoData = clearDemoData;
+  window.resetForTesting = resetForTesting;
+  window.forceLoadDemo = forceLoadDemo;
+  window.debugCurrentState = debugCurrentState;
 
   /* Click handler for unscheduling and clearing purchases */
   document.addEventListener('click', function(e){
@@ -3394,6 +3544,7 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   Promise.all([storageReady, uiReady]).then(function() {
     // Now that storage is ready, perform initial setup
     rotateDailyQueues();
+    initializeFirstTimeUser(); // Check for first-time user and load demo data
     renderQuote(false);
     scheduleQuoteTimer();
     renderDailyOutreach();
