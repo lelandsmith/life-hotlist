@@ -7,6 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
+<meta name="cache-buster" content="v22-20250117" />
 <title>Life Hotlist</title>
 <link rel="manifest" href="/manifest.json?v=1.7.2">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='28'%3E🔥%3C/text%3E%3C/svg%3E">
@@ -846,6 +847,18 @@ body[data-density="ultra-compact"] .sbtn .label{display:none} /* Hide labels in 
 body[data-density="ultra-compact"] .sbtn.active{opacity:1; outline:1px solid var(--green)}
 body[data-density="ultra-compact"] .sbtn.s-hot.active{outline:1px solid #fb923c}
 body[data-density="ultra-compact"] .status-tracker .stage-label{display:none} /* Hide status tracker labels */
+/* Ultra-compact status tracker - override all compact mode sizing */
+body[data-density="ultra-compact"] .status-tracker.compact .stage-icon,
+body[data-density="ultra-compact"] .status-tracker.compact .stage.completed .stage-icon,
+body[data-density="ultra-compact"] .status-tracker.compact .stage.active .stage-icon,
+body[data-density="ultra-compact"] .status-tracker.compact .stage.active.purchased .stage-icon{
+  width: 44px !important;
+  height: 44px !important;
+  font-size: 18px !important;
+}
+body[data-density="ultra-compact"] .status-tracker.compact .stage-icon:hover{
+  transform: scale(1.05) !important; /* Consistent hover scale */
+}
 body[data-density="ultra-compact"] .iconbtn{
   min-width:20px; padding:2px 3px; font-size:12px; border-radius:4px;
 }
@@ -3576,6 +3589,7 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   /* Wait for storage initialization then render */
   Promise.all([storageReady, uiReady]).then(function() {
     // Now that storage is ready, perform initial setup
+    applyDensity(); // Apply density after UI is loaded
     rotateDailyQueues();
     initializeFirstTimeUser(); // Check for first-time user and load demo data
     renderQuote(false);

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hotlist-v21';
+const CACHE_NAME = 'hotlist-v22';
 const urlsToCache = [
   '/',
   '/index.html',
