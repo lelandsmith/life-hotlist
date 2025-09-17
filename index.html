@@ -259,7 +259,6 @@ button:focus-visible{outline:none; box-shadow:var(--ring)}
 .row:last-child{border-bottom:none}
 /* Remove untouched background - we'll use green dot instead */
 .row.selected{outline:2px solid var(--info); box-shadow:var(--ring-strong)}
-.purchased{box-shadow:inset 0 0 0 999px var(--green-50)}
 
 /* Hot lead styling */
 .row.hot-row{
@@ -384,6 +383,140 @@ button:focus-visible{outline:none; box-shadow:var(--ring)}
   font-size:14px; cursor:pointer; color:var(--ink); border-radius:10px;
 }
 .sched-menu button:hover{background:#f1f5ff; transform:none; box-shadow:none;}
+.sched-menu button.selected{background:#f1f5ff;}
+
+/* Status Progress Tracker - Domino's Style */
+.status-tracker {
+  display: flex;
+  position: relative;
+  padding: 15px 0;
+  margin: 10px 0;
+}
+
+.status-tracker::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 25px;
+  right: 25px;
+  height: 3px;
+  background: var(--line);
+  z-index: 0;
+}
+
+.status-tracker::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 25px;
+  height: 3px;
+  background: var(--green);
+  z-index: 0;
+  transition: width 0.3s ease;
+  width: 0;
+}
+
+.status-tracker[data-progress="0"]::after { width: calc(16.67% - 20px); }
+.status-tracker[data-progress="1"]::after { width: calc(33.33% - 20px); }
+.status-tracker[data-progress="2"]::after { width: calc(50% - 20px); }
+.status-tracker[data-progress="3"]::after { width: calc(66.67% - 20px); }
+.status-tracker[data-progress="4"]::after { width: calc(83.33% - 20px); }
+.status-tracker[data-progress="5"]::after { width: calc(100% - 45px); }
+
+/* No status selected */
+.status-tracker[data-progress="-1"]::after { width: 0; }
+
+.status-tracker .stage {
+  flex: 1;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.status-tracker .stage-icon {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 6px;
+  border-radius: 50%;
+  background: white;
+  border: 3px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.status-tracker .stage.completed .stage-icon {
+  border-color: #10b981;
+  background: #10b981;
+  transform: scale(1.05);
+}
+
+.status-tracker .stage.active .stage-icon {
+  border: 2px solid #059669;
+  background: var(--orange);
+  color: white;
+}
+
+.status-tracker .stage.active.purchased .stage-icon {
+  border: 2px solid #059669;
+  background: #10b981;
+  color: white;
+}
+
+
+.status-tracker .stage-label {
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.2;
+}
+
+.status-tracker .stage.completed .stage-label,
+.status-tracker .stage.active .stage-label {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+
+/* Compact mode for status tracker */
+.status-tracker.compact {
+  padding: 0;
+  margin: 0;
+  min-width: 320px;
+}
+
+.status-tracker.compact::before {
+  top: 22px;
+  left: 20px;
+  right: 20px;
+  height: 2px;
+}
+
+.status-tracker.compact::after {
+  top: 22px;
+  transform: none;
+}
+
+.status-tracker.compact .stage-icon {
+  width: 36px;
+  height: 36px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.status-tracker.compact .stage-icon:hover {
+  transform: scale(1.1);
+}
+
+.status-tracker.compact .stage-label {
+  font-size: 9px;
+  max-width: 50px;
+  text-align: center;
+  line-height: 1.1;
+}
 
 /* Notes area */
 .notes{display:grid;margin-top:6px}
@@ -956,9 +1089,9 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   var STABLE_KEY='hotlistStable';
   var UI_KEY='hotlistUI';
 
-  var STATUS=['Sent Quote','Sent Application','Pending Application Signature','Pending Medical Questionnaire','Purchased'];
-  var STATUS_ABBR={'Sent Quote':'Quote','Sent Application':'App','Pending Application Signature':'SigPend','Pending Medical Questionnaire':'MedQ','Purchased':'Purchased'};
-  var STATUS_ICON={'Sent Quote':'\uD83E\uDD7E','Sent Application':'\uD83D\uDCDD','Pending Application Signature':'\u270D\uFE0F','Pending Medical Questionnaire':'\uD83E\uDDEA','Purchased':'\u2705'};
+  var STATUS=['Initial Contact','Sent Quote','Sent Application','Pending Application Signature','Pending Medical Questionnaire','Purchased'];
+  var STATUS_ABBR={'Initial Contact':'Contact','Sent Quote':'Quote','Sent Application':'App','Pending Application Signature':'SigPend','Pending Medical Questionnaire':'MedQ','Purchased':'Purchased'};
+  var STATUS_ICON={'Initial Contact':'\uD83E\uDD1D','Sent Quote':'\uD83E\uDD7E','Sent Application':'\uD83D\uDCDD','Pending Application Signature':'\u270D\uFE0F','Pending Medical Questionnaire':'\uD83E\uDDEA','Purchased':'\u2705'};
   var EMOJI_CALL='\uD83D\uDCDE';
   var EMOJI_MSG ='\uD83D\uDCAC';
   var CLAP      ='\uD83D\uDC4F';
@@ -1358,6 +1491,26 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   function addClient(name){ preserveUIAndRender(function(){ state.clients.push({id:uid(), name:name, notes:'', status:'', lastTouch:nowISO(), createdAt:nowISO(), archived:false, followUp:'', callCount:0, msgCount:0, queueToday:false, queueTomorrow:false, hot:false, history:[]}); }); }
   function setStatus(c,newStatus,buttonElement){
     var wasPurchased = c.status === 'Purchased';
+    var oldStatus = c.status;
+
+    // Only update if status is actually changing
+    if(oldStatus === newStatus) {
+      // Check if we already have this status recorded today
+      var today = new Date().toDateString();
+      var alreadyRecordedToday = (c.history || []).some(function(h) {
+        if(h.action === 'status' && h.to === newStatus) {
+          var histDate = new Date(h.ts).toDateString();
+          return histDate === today;
+        }
+        return false;
+      });
+
+      if(alreadyRecordedToday) {
+        console.log('Status already recorded today, skipping duplicate entry');
+        return;
+      }
+    }
+
     preserveUIAndRender(function(){
       var when=nowISO();
       c.status=newStatus;
@@ -1543,13 +1696,20 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
   
   /* Daily Outreach Goal */
   function getDailyOutreachCounts(){
-    var today = new Date().toISOString().slice(0,10);
+    // Use local date, not UTC
+    var todayStart = new Date();
+    todayStart.setHours(0,0,0,0);
+    var todayEnd = new Date();
+    todayEnd.setHours(23,59,59,999);
+
     var calls = 0, messages = 0;
     if(state && state.clients) state.clients.forEach(function(c){
       if(c.history){
         c.history.forEach(function(h){
-          var hDate = (h.ts || '').slice(0,10);
-          if(hDate === today){
+          if(!h.ts) return;
+          var hTime = new Date(h.ts);
+          // Check if the history entry is from today (in local time)
+          if(hTime >= todayStart && hTime <= todayEnd){
             if(h.to === 'Called' || h.action === 'call') calls++;
             else if(h.to === 'Emailed' || h.action === 'message') messages++;
           }
@@ -1624,10 +1784,16 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     if(isNewDay){
       ui.lastCelebrationGoal = 0; // Reset the celebrated goal level
       ui.lastCelebrationDate = today;
-      ui.lastOutreachCount = counts.total;
-      // For a new day, if the goal is already achieved, mark it as celebrated at this level
-      if(goalAchieved){
-        ui.lastCelebrationGoal = goal;
+      // For a new day, reset the count to 0 to track fresh
+      ui.lastOutreachCount = 0;
+      // If there are already activities today (from before page load), update the count
+      if(counts.total > 0){
+        // If goal is already achieved on first load of the day, mark as celebrated
+        if(goalAchieved){
+          ui.lastCelebrationGoal = goal;
+        }
+        // Update count after checking celebration status
+        ui.lastOutreachCount = counts.total;
       }
       saveUI(ui);
     }
@@ -1690,7 +1856,80 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     });
   }
 
-  function colorClass(st){ return st==='Sent Quote'?'s-quote' : st==='Sent Application'?'s-app' : st==='Pending Application Signature'?'s-sig' : st==='Pending Medical Questionnaire'?'s-medq' : 's-pur'; }
+  function colorClass(st){ return st==='Initial Contact'?'s-contact' : st==='Sent Quote'?'s-quote' : st==='Sent Application'?'s-app' : st==='Pending Application Signature'?'s-sig' : st==='Pending Medical Questionnaire'?'s-medq' : 's-pur'; }
+
+  /* Render Status Progress Tracker */
+  function renderStatusTracker(clientOrStatus, clientObj){
+    var tracker = document.createElement('div');
+    tracker.className = 'status-tracker compact';
+
+    // Handle both client object and status string, with null checks
+    var currentStatus = null;
+    var client = null;
+
+    if(typeof clientOrStatus === 'string'){
+      currentStatus = clientOrStatus;
+      client = clientObj;
+    } else if(clientOrStatus){
+      currentStatus = clientOrStatus.status;
+      client = clientOrStatus;
+    } else {
+      currentStatus = null;
+      client = clientObj;
+    }
+
+    // Determine which stage is active/completed
+    var currentStatusIndex = STATUS.indexOf(currentStatus);
+
+    // Set progress level for the green line (0-5 based on status index)
+    // Line should go TO the active status, not past it
+    if(currentStatusIndex >= 0){
+      tracker.setAttribute('data-progress', currentStatusIndex);
+    } else {
+      tracker.setAttribute('data-progress', '-1');
+    }
+
+    STATUS.forEach(function(status, index){
+      var stage = document.createElement('div');
+      stage.className = 'stage';
+
+      // Set completed/active state
+      if(currentStatusIndex >= 0){
+        if(index < currentStatusIndex){
+          stage.classList.add('completed');
+        } else if(index === currentStatusIndex){
+          stage.classList.add('active');
+          // Add purchased class if this is the purchased status
+          if(status === 'Purchased'){
+            stage.classList.add('purchased');
+          }
+        }
+      }
+
+      var icon = document.createElement('div');
+      icon.className = 'stage-icon';
+      icon.textContent = STATUS_ICON[status] || '•';
+      icon.title = status; // Tooltip
+
+      // Make clickable to set status (only if we have a client object)
+      if(client && client.id){
+        icon.addEventListener('click', function(e){
+          e.stopPropagation();
+          setStatus(client, status);
+        });
+      }
+
+      var label = document.createElement('div');
+      label.className = 'stage-label';
+      label.textContent = STATUS_ABBR[status] || status;
+
+      stage.appendChild(icon);
+      stage.appendChild(label);
+      tracker.appendChild(stage);
+    });
+
+    return tracker;
+  }
   function agingBadge(businessDays, thr){ var span=document.createElement('span'); var clr= businessDays > thr*2 ? 'red' : (businessDays > thr ? 'orange' : ''); span.className='age-badge'+(clr?(' '+clr):''); if(!clr){ span.style.display='none'; } span.textContent=String(businessDays); return span; }
   function contactedToday(c){ var start=startOfDay(new Date()), end=addDays(start,1); return (c.history||[]).some(function(h){ return h.action==='status' && isWithin(h.ts,start,end); }); }
 
@@ -1743,8 +1982,7 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
       var icons=document.createElement('div'); icons.className='status-icons';
       var bd=businessDaysSince(c.lastTouch||nowISO());
       var badge=agingBadge(bd, thr); icons.appendChild(badge);
-      /* Touched indicator moved to name - no longer in icons */
-      if(lastStatusEvt){ var em=STATUS_ICON[lastStatusEvt.to]; if(em){ var s3=document.createElement('span'); s3.className='status-icon'; s3.textContent=em; setTip(s3, lastStatusEvt.to); icons.appendChild(s3); } }
+      /* Status icon removed - replaced by progress tracker */
       
       var name=document.createElement('div'); name.className='name'; 
       name.textContent=c.name;
@@ -1778,8 +2016,7 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
       var icons=document.createElement('div'); icons.className='status-icons';
       var bd=businessDaysSince(c.lastTouch||nowISO());
       var badge=agingBadge(bd, thr); badge.style.marginRight='4px'; icons.appendChild(badge);
-      /* Touched indicator moved to name - no longer in icons */
-      if(lastStatusEvt){ var em=STATUS_ICON[lastStatusEvt.to]; if(em){ var s3=document.createElement('span'); s3.className='status-icon'; s3.textContent=em; setTip(s3, lastStatusEvt.to); icons.appendChild(s3); } }
+      /* Status icon removed - replaced by progress tracker below */
 
       var name=document.createElement('div'); name.className='name'; 
       name.textContent=c.name;
@@ -1893,20 +2130,27 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
       var msgBadge=document.createElement('span'); msgBadge.className='badge'; msgBadge.textContent=String(c.msgCount||0); msgBadge.setAttribute('data-zero', (c.msgCount||0)===0 ? '1':'0'); msgBtn.appendChild(msgBadge); msgBtn.addEventListener('click', function(){ incrementMsg(c); });
       quick.appendChild(callBtn); quick.appendChild(msgBtn);
 
-      // Status icons with active caption & hover tip
-      var bar=document.createElement('div'); bar.className='group--status';
-      STATUS.forEach(function(st){
-        var btn=document.createElement('button'); btn.className='sbtn has-tip '+colorClass(st); setTip(btn, st);
-        if(c.status===st) btn.classList.add('active');
-        var ico=document.createElement('span'); ico.className='ico status-icon'; ico.textContent=STATUS_ICON[st] || '•';
-        var cap=document.createElement('span'); cap.className='label'; cap.textContent=STATUS_ABBR[st] || st;
-        btn.appendChild(ico); btn.appendChild(cap);
-        btn.addEventListener('click', function(){ setStatus(c,st,btn); });
-        bar.appendChild(btn);
-      });
+      // Replace status buttons with progress tracker
+      var statusTracker = renderStatusTracker(c ? c.status : null, c);
+
+      // Create a wrapper for status tracker and hot button
+      var bar = document.createElement('div');
+      bar.className = 'group--status';
+      bar.style.display = 'flex';
+      bar.style.alignItems = 'center';
+      bar.style.gap = '12px';
+
+      if(statusTracker){
+        statusTracker.style.margin = '0';
+        statusTracker.style.padding = '0';
+        bar.appendChild(statusTracker);
+      }
 
       // Hot Lead toggle button
-      var hotBtn=document.createElement('button'); hotBtn.className='sbtn has-tip s-hot'; setTip(hotBtn, 'Hot lead (pin to top)');
+      var hotBtn=document.createElement('button');
+      hotBtn.className='sbtn has-tip s-hot';
+      hotBtn.style.marginLeft = '8px';
+      setTip(hotBtn, 'Hot lead (pin to top)');
       if(c.hot) hotBtn.classList.add('active');
       var hotIco=document.createElement('span'); hotIco.className='ico'; hotIco.textContent='🔥';
       var hotCap=document.createElement('span'); hotCap.className='label'; hotCap.textContent='Hot';
@@ -2478,8 +2722,113 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     }
   });
 
+  /* Schedule Dropdown */
+  var activeDropdown = null;
+  var dropdownSelectedIndex = 0;
+
+  function showScheduleDropdown(client, event){
+    // Close any existing dropdown
+    if(activeDropdown){
+      activeDropdown.remove();
+      activeDropdown = null;
+    }
+
+    // Create dropdown menu
+    var menu = document.createElement('div');
+    menu.className = 'sched-menu';
+    menu.style.position = 'fixed';
+
+    // Get the selected row element to position the dropdown
+    var rows = allRows();
+    var selectedRow = rows[selectionIndex];
+    if(!selectedRow) return;
+
+    var rect = selectedRow.getBoundingClientRect();
+    menu.style.left = rect.left + 100 + 'px';
+    menu.style.top = rect.bottom + 'px';
+
+    // Create menu options
+    var options = [
+      { label: '🔥 Mark Hot', action: function(){ preserveUIAndRender(function(){ client.hot = !client.hot; }); } },
+      { label: '📅 Today', action: function(){ toggleQueueToday(client); } },
+      { label: '➡️ Tomorrow', action: function(){ toggleQueueTomorrow(client); } },
+      { label: '⏰ Follow-up...', action: function(){ setFollowUpViaPicker(client); } },
+      { label: '📝 Archive', action: function(){ archiveClient(client, true); } },
+      { label: '❌ Clear Status', action: function(){ clearStatus(client); } }
+    ];
+
+    options.forEach(function(opt, index){
+      var btn = document.createElement('button');
+      btn.textContent = opt.label;
+      btn.onclick = function(){
+        opt.action();
+        closeDropdown();
+      };
+      if(index === 0) btn.className = 'selected';
+      menu.appendChild(btn);
+    });
+
+    document.body.appendChild(menu);
+    activeDropdown = menu;
+    dropdownSelectedIndex = 0;
+
+    // Handle dropdown navigation
+    function handleDropdownKey(e){
+      if(!activeDropdown) return;
+
+      var buttons = activeDropdown.querySelectorAll('button');
+
+      if(e.key === 'ArrowDown'){
+        buttons[dropdownSelectedIndex].classList.remove('selected');
+        dropdownSelectedIndex = (dropdownSelectedIndex + 1) % buttons.length;
+        buttons[dropdownSelectedIndex].classList.add('selected');
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      else if(e.key === 'ArrowUp'){
+        buttons[dropdownSelectedIndex].classList.remove('selected');
+        dropdownSelectedIndex = (dropdownSelectedIndex - 1 + buttons.length) % buttons.length;
+        buttons[dropdownSelectedIndex].classList.add('selected');
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      else if(e.key === 'Enter'){
+        buttons[dropdownSelectedIndex].click();
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      else if(e.key === 'Escape' || e.key === 's' || e.key === 'S'){
+        closeDropdown();
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }
+
+    function closeDropdown(){
+      if(activeDropdown){
+        activeDropdown.remove();
+        activeDropdown = null;
+        document.removeEventListener('keydown', handleDropdownKey, true);
+        document.removeEventListener('click', outsideClickHandler);
+      }
+    }
+
+    function outsideClickHandler(e){
+      if(activeDropdown && !activeDropdown.contains(e.target)){
+        closeDropdown();
+      }
+    }
+
+    // Add event listeners with capture to intercept before main handler
+    document.addEventListener('keydown', handleDropdownKey, true);
+    document.addEventListener('click', outsideClickHandler);
+  }
+
   /* Keyboard shortcuts */
   document.addEventListener('keydown', function(e){
+    // Skip if dropdown is active (dropdown handler will process)
+    if(activeDropdown) return;
+
     var tag=(document.activeElement && document.activeElement.tagName)||'';
 
     // Handle Cmd+/ or Ctrl+/ for shortcuts modal
@@ -2512,7 +2861,7 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
     if(key==='ArrowDown' || key==='j' || key==='J'){ selectionIndex++; restoreSelection(); e.preventDefault(); }
     if(key==='ArrowUp' || key==='k' || key==='K'){ selectionIndex--; restoreSelection(); e.preventDefault(); }
 
-    var map={'1':'Sent Quote','2':'Sent Application','3':'Pending Application Signature','4':'Pending Medical Questionnaire','5':'Purchased'};
+    var map={'1':'Initial Contact','2':'Sent Quote','3':'Sent Application','4':'Pending Application Signature','5':'Pending Medical Questionnaire','6':'Purchased'};
     if(map[key]){ var c1=getSelectedClient(); if(c1){ setStatus(c1,map[key]); e.preventDefault(); } }
     
     if(key==='0'){ var c0=getSelectedClient(); if(c0){ clearStatus(c0); e.preventDefault(); } }
@@ -2562,13 +2911,22 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
         e.preventDefault(); 
       } 
     }
-    if(key==='d' || key==='D'){ 
-      var c5=getSelectedClient() || state.clients.find(function(c){return !c.archived && !isFutureFollowUp(c) && !c.queueToday && !c.queueTomorrow;}); 
-      if(c5){ 
-        toggleQueueTomorrow(c5); 
+    if(key==='d' || key==='D'){
+      var c5=getSelectedClient() || state.clients.find(function(c){return !c.archived && !isFutureFollowUp(c) && !c.queueToday && !c.queueTomorrow;});
+      if(c5){
+        toggleQueueTomorrow(c5);
         // Client stays in main list but gets Tomorrow label, so selection stays the same
-        e.preventDefault(); 
-      } 
+        e.preventDefault();
+      }
+    }
+
+    // Schedule dropdown (S)
+    if(key==='s' || key==='S'){
+      var c6=getSelectedClient();
+      if(c6){
+        showScheduleDropdown(c6, e);
+        e.preventDefault();
+      }
     }
 
     // Undo (U) / placeholder Redo (R)
@@ -2956,11 +3314,12 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
       <div>
         <h3 style="color:var(--green); margin-bottom:8px; font-size:14px;">Status Management</h3>
         <div style="display:grid; gap:4px; font-size:13px;">
-          <div><kbd>1</kbd> - Sent Quote</div>
-          <div><kbd>2</kbd> - Sent Application</div>
-          <div><kbd>3</kbd> - Pending Application Signature</div>
-          <div><kbd>4</kbd> - Pending Medical Questionnaire</div>
-          <div><kbd>5</kbd> - Purchased</div>
+          <div><kbd>1</kbd> - Initial Contact</div>
+          <div><kbd>2</kbd> - Sent Quote</div>
+          <div><kbd>3</kbd> - Sent Application</div>
+          <div><kbd>4</kbd> - Pending Application Signature</div>
+          <div><kbd>5</kbd> - Pending Medical Questionnaire</div>
+          <div><kbd>6</kbd> - Purchased</div>
           <div><kbd>0</kbd> - Clear status</div>
         </div>
       </div>
@@ -2978,6 +3337,7 @@ body[data-density="ultra-compact"] .age-badge{width:14px; height:14px; font-size
       <div>
         <h3 style="color:var(--green); margin-bottom:8px; font-size:14px;">Scheduling</h3>
         <div style="display:grid; gap:4px; font-size:13px;">
+          <div><kbd>S</kbd> - Open schedule menu (navigate with arrows)</div>
           <div><kbd>F</kbd> - Queue for today</div>
           <div><kbd>D</kbd> - Queue for tomorrow</div>
           <div><kbd>U</kbd> - Undo last action</div>
