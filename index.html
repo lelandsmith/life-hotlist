@@ -264,6 +264,20 @@ button:focus-visible{outline:none; box-shadow:var(--ring)}
 /* Remove untouched background - we'll use green dot instead */
 .row.selected{outline:2px solid var(--info); box-shadow:var(--ring-strong)}
 
+/* Drag and drop styles */
+.row.draggable { cursor: move; }
+.row.dragging { opacity: 0.5; transform: scale(0.98); }
+.row.drag-over {
+  background: linear-gradient(180deg, #3b82f6 2px, transparent 2px);
+  background-position: top;
+  padding-top: 14px;
+}
+.row.drag-over-bottom {
+  background: linear-gradient(180deg, transparent calc(100% - 2px), #3b82f6 calc(100% - 2px));
+  background-position: bottom;
+  padding-bottom: 14px;
+}
+
 /* Font size adjustments for client rows */
 body[data-font-size="small"] .row { font-size: 13px; }
 body[data-font-size="small"] .row .name { font-size: 14px; }
@@ -1112,9 +1126,10 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
   /* =========================
    *  Version & Changelog
    * ========================= */
-  var VERSION = '1.9.2';
+  var VERSION = '1.10.0';
   // Recent commits from git log
   var CHANGELOG = [
+    { version: '1.10.0', date: '2025-01-18', changes: 'Add drag-and-drop support for manual client reordering when "No Sort" is selected' },
     { version: '1.9.2', date: '2025-01-18', changes: 'Default sort option to "No Sort" to maintain client order' },
     { version: '1.9.1', date: '2025-01-18', changes: 'Fix font size adjustment to include all row icons, reset font size when changing density' },
     { version: '1.9.0', date: '2025-01-18', changes: 'Add font size adjustment buttons, cookie-based sort preference, and "No Sort" option to prevent client reordering' },
@@ -2449,6 +2464,9 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
 
     els.todayDate && (els.todayDate.textContent=new Date().toLocaleDateString([], {weekday:'long',month:'long',day:'numeric',year:'numeric'}));
     renderActivity(); renderChart(); renderHeatmap(); renderNextToTouch(); renderFollowUps(); renderQuote(false);
+
+    // Enable drag and drop after rendering if "No Sort" is selected
+    setTimeout(enableDragAndDrop, 100);
   }
 
   /* Quotes (light) */
@@ -2461,7 +2479,11 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
     if(els.statusFilter) els.statusFilter.addEventListener(ev, render);
     if(els.showArchived) els.showArchived.addEventListener(ev, render);
     if(els.globalSearch) els.globalSearch.addEventListener(ev, render);
-    if(els.sortBy) els.sortBy.addEventListener(ev, function(){ setSortCookie(els.sortBy.value); render(); });
+    if(els.sortBy) els.sortBy.addEventListener(ev, function(){
+      setSortCookie(els.sortBy.value);
+      render();
+      setTimeout(enableDragAndDrop, 100);
+    });
     if(els.chartRangeSel) els.chartRangeSel.addEventListener(ev, function(){ renderChart(); });
   });
 
@@ -2515,6 +2537,121 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
     if(els.densitySelect) els.densitySelect.value = mode;
   }
 
+  /* Drag and Drop functionality for manual sorting */
+  var draggedElement = null;
+  var draggedClientId = null;
+
+  function enableDragAndDrop() {
+    var isNoSort = getCookie('sortBy') === 'none';
+    var rows = $all('.row');
+
+    rows.forEach(function(row) {
+      if(isNoSort) {
+        row.draggable = true;
+        row.classList.add('draggable');
+
+        // Remove old listeners to avoid duplicates
+        row.removeEventListener('dragstart', handleDragStart);
+        row.removeEventListener('dragend', handleDragEnd);
+        row.removeEventListener('dragover', handleDragOver);
+        row.removeEventListener('drop', handleDrop);
+        row.removeEventListener('dragenter', handleDragEnter);
+        row.removeEventListener('dragleave', handleDragLeave);
+
+        // Add new listeners
+        row.addEventListener('dragstart', handleDragStart);
+        row.addEventListener('dragend', handleDragEnd);
+        row.addEventListener('dragover', handleDragOver);
+        row.addEventListener('drop', handleDrop);
+        row.addEventListener('dragenter', handleDragEnter);
+        row.addEventListener('dragleave', handleDragLeave);
+      } else {
+        row.draggable = false;
+        row.classList.remove('draggable');
+      }
+    });
+  }
+
+  function handleDragStart(e) {
+    draggedElement = this;
+    draggedClientId = this.dataset.id;
+    this.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', this.innerHTML);
+  }
+
+  function handleDragEnd(e) {
+    this.classList.remove('dragging');
+    $all('.row').forEach(function(row) {
+      row.classList.remove('drag-over', 'drag-over-bottom');
+    });
+    draggedElement = null;
+    draggedClientId = null;
+  }
+
+  function handleDragOver(e) {
+    if(e.preventDefault) e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+
+    var rect = this.getBoundingClientRect();
+    var midpoint = rect.top + rect.height / 2;
+
+    this.classList.remove('drag-over', 'drag-over-bottom');
+    if(e.clientY < midpoint) {
+      this.classList.add('drag-over');
+    } else {
+      this.classList.add('drag-over-bottom');
+    }
+
+    return false;
+  }
+
+  function handleDragEnter(e) {
+    // Handled in dragover
+  }
+
+  function handleDragLeave(e) {
+    this.classList.remove('drag-over', 'drag-over-bottom');
+  }
+
+  function handleDrop(e) {
+    if(e.stopPropagation) e.stopPropagation();
+    if(e.preventDefault) e.preventDefault();
+
+    if(draggedElement !== this && draggedClientId) {
+      var targetId = this.dataset.id;
+      var rect = this.getBoundingClientRect();
+      var midpoint = rect.top + rect.height / 2;
+      var insertBefore = e.clientY < midpoint;
+
+      // Update the manual order in state
+      if(state && state.clients) {
+        var draggedIndex = state.clients.findIndex(function(c) { return c.id === draggedClientId; });
+        var targetIndex = state.clients.findIndex(function(c) { return c.id === targetId; });
+
+        if(draggedIndex !== -1 && targetIndex !== -1) {
+          var draggedClient = state.clients.splice(draggedIndex, 1)[0];
+
+          // Adjust target index after removal if necessary
+          if(draggedIndex < targetIndex) targetIndex--;
+
+          // Insert at the appropriate position
+          if(!insertBefore) targetIndex++;
+
+          state.clients.splice(targetIndex, 0, draggedClient);
+
+          // Save the new order
+          save(state);
+
+          // Re-render to apply the new order
+          render();
+        }
+      }
+    }
+
+    this.classList.remove('drag-over', 'drag-over-bottom');
+    return false;
+  }
 
   /* Sidebar position + show/hide */
   ;(function(){
