@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hotlist-v35-no-cache';
+const CACHE_NAME = 'hotlist-v36-no-cache';
 const urlsToCache = [];
 
 // Install event - NO CACHING

@@ -2,6 +2,13 @@
 
 All notable changes to Life Hotlist will be documented in this file.
 
+## [1.8.6] - 2025-01-17
+
+### Changed
+- **Favicon Revert**: Reverted browser favicon to emoji fire icon for better visibility
+  - Kept custom SVG fire icons for PWA installation
+  - Browser tab shows emoji fire, PWA uses custom graphics
+
 ## [1.8.5] - 2025-01-17
 
 ### Added
