@@ -1125,9 +1125,10 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
   /* =========================
    *  Version & Changelog
    * ========================= */
-  var VERSION = '1.10.1';
+  var VERSION = '1.10.2';
   // Recent commits from git log
   var CHANGELOG = [
+    { version: '1.10.2', date: '2025-01-18', changes: 'Fix drag-and-drop initialization and improve drag visual to show only client name' },
     { version: '1.10.1', date: '2025-01-18', changes: 'Remove drag cursor on hover - only show when actively dragging' },
     { version: '1.10.0', date: '2025-01-18', changes: 'Add drag-and-drop support for manual client reordering when "No Sort" is selected' },
     { version: '1.9.2', date: '2025-01-18', changes: 'Default sort option to "No Sort" to maintain client order' },
@@ -2571,11 +2572,29 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
   }
 
   function handleDragStart(e) {
+    // Don't drag if clicking on buttons or inputs
+    if(e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+      e.preventDefault();
+      return false;
+    }
+
     draggedElement = this;
     draggedClientId = this.dataset.id;
     this.classList.add('dragging');
     e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/html', this.innerHTML);
+
+    // Create a simple drag image instead of showing the whole row
+    var dragImage = document.createElement('div');
+    dragImage.style.cssText = 'position:absolute;left:-9999px;padding:8px 16px;background:#3b82f6;color:white;border-radius:4px;font-size:14px;';
+    var clientName = this.querySelector('.name').textContent || 'Moving...';
+    dragImage.textContent = clientName;
+    document.body.appendChild(dragImage);
+    e.dataTransfer.setDragImage(dragImage, 0, 0);
+
+    // Clean up the drag image after a moment
+    setTimeout(function() {
+      if(dragImage.parentNode) dragImage.parentNode.removeChild(dragImage);
+    }, 0);
   }
 
   function handleDragEnd(e) {
@@ -3835,6 +3854,7 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
     scheduleQuoteTimer();
     renderDailyOutreach();
     render();
+    setTimeout(enableDragAndDrop, 100);
   }).catch(function(e) {
     console.error('Failed to initialize storage:', e);
     if (!state) {
