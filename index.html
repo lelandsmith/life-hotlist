@@ -1112,9 +1112,10 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
   /* =========================
    *  Version & Changelog
    * ========================= */
-  var VERSION = '1.9.1';
+  var VERSION = '1.9.2';
   // Recent commits from git log
   var CHANGELOG = [
+    { version: '1.9.2', date: '2025-01-18', changes: 'Default sort option to "No Sort" to maintain client order' },
     { version: '1.9.1', date: '2025-01-18', changes: 'Fix font size adjustment to include all row icons, reset font size when changing density' },
     { version: '1.9.0', date: '2025-01-18', changes: 'Add font size adjustment buttons, cookie-based sort preference, and "No Sort" option to prevent client reordering' },
     { version: '1.8.8', date: '2025-01-18', changes: 'Fix keyboard navigation wrapping - stop at top when pressing k instead of jumping to bottom' },
@@ -2345,7 +2346,7 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
 
   /* Root render */
   function sortClients(arr){
-    var key = getCookie('sortBy') || 'lastTouch';
+    var key = getCookie('sortBy') || 'none';
 
     // If no sort is selected, return the array as-is
     if(key === 'none') {
@@ -3514,7 +3515,7 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
   /* Boot */
   // Sort is now handled by cookies
   if($('#sortBy')) {
-    var currentSort = getCookie('sortBy') || 'lastTouch';
+    var currentSort = getCookie('sortBy') || 'none';
     $('#sortBy').value = currentSort;
   }
 
