@@ -339,6 +339,17 @@ body[data-font-size="xlarge"] .row .stage-label { font-size: 12px; }
   position:relative;
 }
 
+/* Hot icon sizing to match stage icons */
+.sbtn.s-hot .ico {
+  font-size: 18px; /* Default size to match stage icons */
+}
+
+/* Hot icon sizes for each font-size level */
+body[data-font-size="small"] .row .sbtn.s-hot .ico { font-size: 14px; }
+body[data-font-size="medium"] .row .sbtn.s-hot .ico { font-size: 18px; }
+body[data-font-size="large"] .row .sbtn.s-hot .ico { font-size: 20px; }
+body[data-font-size="xlarge"] .row .sbtn.s-hot .ico { font-size: 24px; }
+
 /* Animate the fire icon when hot status is active */
 .sbtn.s-hot.active .ico {
   display: inline-block;
@@ -926,6 +937,13 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
 
   body[data-density="comfortable"][data-font-size="xlarge"] .status-tracker::before,
   body[data-density="comfortable"][data-font-size="xlarge"] .status-tracker::after { top: 32px; }
+
+  /* Hot icon sizes for large screens to match stage icons */
+  body[data-density="comfortable"] .row .sbtn.s-hot .ico { font-size: 22px; }
+  body[data-density="comfortable"][data-font-size="small"] .row .sbtn.s-hot .ico { font-size: 18px; }
+  body[data-density="comfortable"][data-font-size="medium"] .row .sbtn.s-hot .ico { font-size: 22px; }
+  body[data-density="comfortable"][data-font-size="large"] .row .sbtn.s-hot .ico { font-size: 25px; }
+  body[data-density="comfortable"][data-font-size="xlarge"] .row .sbtn.s-hot .ico { font-size: 28px; }
 }
 
 @media (max-width:1150px){
@@ -1168,9 +1186,10 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
   /* =========================
    *  Version & Changelog
    * ========================= */
-  var VERSION = '1.10.4';
+  var VERSION = '1.10.5';
   // Recent commits from git log
   var CHANGELOG = [
+    { version: '1.10.5', date: '2025-01-18', changes: 'Match hot icon sizing with stage icons across all font sizes and screen sizes' },
     { version: '1.10.4', date: '2025-01-18', changes: 'Fix drag-and-drop, improve header layout, and enhance daily outreach bar' },
     { version: '1.10.3', date: '2025-01-18', changes: 'Add responsive status icons for large screens (1680px+) with progressive scaling' },
     { version: '1.10.2', date: '2025-01-18', changes: 'Fix drag-and-drop initialization and improve drag visual to show only client name' },
