@@ -278,6 +278,18 @@ button:focus-visible{outline:none; box-shadow:var(--ring)}
 }
 
 /* Font size adjustments for client rows */
+body[data-font-size="xsmall"] .row { font-size: 12px; }
+body[data-font-size="xsmall"] .row .name { font-size: 13px; } /* Keep name readable */
+body[data-font-size="xsmall"] .row .qbtn { font-size: 16px; padding: 3px 7px; } /* Keep group icons same as small */
+body[data-font-size="xsmall"] .row .sbtn { font-size: 11px; padding: 3px 6px; }
+body[data-font-size="xsmall"] .row .sbtn .ico { font-size: 12px; }
+body[data-font-size="xsmall"] .row .iconbtn { font-size: 12px; padding: 2px 5px; }
+body[data-font-size="xsmall"] .row .badge { font-size: 9px; }
+body[data-font-size="xsmall"] .row .notes-preview { font-size: 10px; }
+body[data-font-size="xsmall"] .row .status-icon { font-size: 12px; }
+body[data-font-size="xsmall"] .row .stage-icon { width: 32px; height: 32px; font-size: 12px; }
+body[data-font-size="xsmall"] .row .stage-label { font-size: 8px; }
+
 body[data-font-size="small"] .row { font-size: 13px; }
 body[data-font-size="small"] .row .name { font-size: 14px; }
 body[data-font-size="small"] .row .qbtn { font-size: 16px; padding: 3px 7px; }
@@ -345,6 +357,7 @@ body[data-font-size="xlarge"] .row .stage-label { font-size: 12px; }
 }
 
 /* Hot icon sizes for each font-size level */
+body[data-font-size="xsmall"] .row .sbtn.s-hot .ico { font-size: 12px; }
 body[data-font-size="small"] .row .sbtn.s-hot .ico { font-size: 14px; }
 body[data-font-size="medium"] .row .sbtn.s-hot .ico { font-size: 18px; }
 body[data-font-size="large"] .row .sbtn.s-hot .ico { font-size: 20px; }
@@ -923,12 +936,16 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
   }
 
   /* Scale up further with font size adjustments on large screens */
+  body[data-density="comfortable"][data-font-size="xsmall"] .status-tracker .stage-icon { width: 44px; height: 44px; font-size: 16px; }
   body[data-density="comfortable"][data-font-size="small"] .status-tracker .stage-icon { width: 48px; height: 48px; font-size: 18px; }
   body[data-density="comfortable"][data-font-size="medium"] .status-tracker .stage-icon { width: 53px; height: 53px; font-size: 22px; }
   body[data-density="comfortable"][data-font-size="large"] .status-tracker .stage-icon { width: 58px; height: 58px; font-size: 25px; }
   body[data-density="comfortable"][data-font-size="xlarge"] .status-tracker .stage-icon { width: 64px; height: 64px; font-size: 28px; }
 
   /* Adjust line position for different font sizes */
+  body[data-density="comfortable"][data-font-size="xsmall"] .status-tracker::before,
+  body[data-density="comfortable"][data-font-size="xsmall"] .status-tracker::after { top: 22px; }
+
   body[data-density="comfortable"][data-font-size="small"] .status-tracker::before,
   body[data-density="comfortable"][data-font-size="small"] .status-tracker::after { top: 24px; }
 
@@ -940,6 +957,7 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
 
   /* Hot icon sizes for large screens to match stage icons */
   body[data-density="comfortable"] .row .sbtn.s-hot .ico { font-size: 22px; }
+  body[data-density="comfortable"][data-font-size="xsmall"] .row .sbtn.s-hot .ico { font-size: 16px; }
   body[data-density="comfortable"][data-font-size="small"] .row .sbtn.s-hot .ico { font-size: 18px; }
   body[data-density="comfortable"][data-font-size="medium"] .row .sbtn.s-hot .ico { font-size: 22px; }
   body[data-density="comfortable"][data-font-size="large"] .row .sbtn.s-hot .ico { font-size: 25px; }
@@ -1186,9 +1204,10 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
   /* =========================
    *  Version & Changelog
    * ========================= */
-  var VERSION = '1.10.5';
+  var VERSION = '1.10.6';
   // Recent commits from git log
   var CHANGELOG = [
+    { version: '1.10.6', date: '2025-01-18', changes: 'Add extra small (XS) font size option while keeping client names and group icons readable' },
     { version: '1.10.5', date: '2025-01-18', changes: 'Match hot icon sizing with stage icons across all font sizes and screen sizes' },
     { version: '1.10.4', date: '2025-01-18', changes: 'Fix drag-and-drop, improve header layout, and enhance daily outreach bar' },
     { version: '1.10.3', date: '2025-01-18', changes: 'Add responsive status icons for large screens (1680px+) with progressive scaling' },
@@ -2591,7 +2610,7 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
     var size = getCookie('fontSize') || 'medium';
     document.body.setAttribute('data-font-size', size);
     if($('#fontSizeLabel')) {
-      var labels = {small: 'S', medium: 'M', large: 'L', xlarge: 'XL'};
+      var labels = {xsmall: 'XS', small: 'S', medium: 'M', large: 'L', xlarge: 'XL'};
       $('#fontSizeLabel').textContent = labels[size] || 'M';
     }
   }
@@ -3893,7 +3912,7 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
     }
 
     // Setup font size controls
-    var fontSizes = ['small', 'medium', 'large', 'xlarge'];
+    var fontSizes = ['xsmall', 'small', 'medium', 'large', 'xlarge'];
     var currentFontSize = getCookie('fontSize') || 'medium';
     applyFontSize();
 
