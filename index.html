@@ -264,6 +264,55 @@ button:focus-visible{outline:none; box-shadow:var(--ring)}
 /* Remove untouched background - we'll use green dot instead */
 .row.selected{outline:2px solid var(--info); box-shadow:var(--ring-strong)}
 
+/* Font size adjustments for client rows */
+body[data-font-size="small"] .row { font-size: 13px; }
+body[data-font-size="small"] .row .name { font-size: 14px; }
+body[data-font-size="small"] .row .qbtn { font-size: 16px; padding: 3px 7px; }
+body[data-font-size="small"] .row .sbtn { font-size: 12px; padding: 4px 7px; }
+body[data-font-size="small"] .row .sbtn .ico { font-size: 14px; }
+body[data-font-size="small"] .row .iconbtn { font-size: 14px; padding: 3px 6px; }
+body[data-font-size="small"] .row .badge { font-size: 10px; }
+body[data-font-size="small"] .row .notes-preview { font-size: 11px; }
+body[data-font-size="small"] .row .status-icon { font-size: 14px; }
+body[data-font-size="small"] .row .stage-icon { width: 36px; height: 36px; font-size: 14px; }
+body[data-font-size="small"] .row .stage-label { font-size: 9px; }
+
+body[data-font-size="medium"] .row { font-size: 14px; }
+body[data-font-size="medium"] .row .name { font-size: 15px; }
+body[data-font-size="medium"] .row .qbtn { font-size: 18px; padding: 4px 8px; }
+body[data-font-size="medium"] .row .sbtn { font-size: 13px; padding: 5px 8px; }
+body[data-font-size="medium"] .row .sbtn .ico { font-size: 16px; }
+body[data-font-size="medium"] .row .iconbtn { font-size: 16px; padding: 4px 7px; }
+body[data-font-size="medium"] .row .badge { font-size: 11px; }
+body[data-font-size="medium"] .row .notes-preview { font-size: 12px; }
+body[data-font-size="medium"] .row .status-icon { font-size: 16px; }
+body[data-font-size="medium"] .row .stage-icon { width: 44px; height: 44px; font-size: 18px; }
+body[data-font-size="medium"] .row .stage-label { font-size: 10px; }
+
+body[data-font-size="large"] .row { font-size: 15px; }
+body[data-font-size="large"] .row .name { font-size: 16px; }
+body[data-font-size="large"] .row .qbtn { font-size: 20px; padding: 5px 9px; }
+body[data-font-size="large"] .row .sbtn { font-size: 14px; padding: 6px 9px; }
+body[data-font-size="large"] .row .sbtn .ico { font-size: 18px; }
+body[data-font-size="large"] .row .iconbtn { font-size: 18px; padding: 5px 8px; }
+body[data-font-size="large"] .row .badge { font-size: 12px; }
+body[data-font-size="large"] .row .notes-preview { font-size: 13px; }
+body[data-font-size="large"] .row .status-icon { font-size: 18px; }
+body[data-font-size="large"] .row .stage-icon { width: 50px; height: 50px; font-size: 20px; }
+body[data-font-size="large"] .row .stage-label { font-size: 11px; }
+
+body[data-font-size="xlarge"] .row { font-size: 16px; }
+body[data-font-size="xlarge"] .row .name { font-size: 18px; }
+body[data-font-size="xlarge"] .row .qbtn { font-size: 22px; padding: 6px 10px; }
+body[data-font-size="xlarge"] .row .sbtn { font-size: 15px; padding: 7px 10px; }
+body[data-font-size="xlarge"] .row .sbtn .ico { font-size: 20px; }
+body[data-font-size="xlarge"] .row .iconbtn { font-size: 20px; padding: 6px 9px; }
+body[data-font-size="xlarge"] .row .badge { font-size: 13px; }
+body[data-font-size="xlarge"] .row .notes-preview { font-size: 14px; }
+body[data-font-size="xlarge"] .row .status-icon { font-size: 20px; }
+body[data-font-size="xlarge"] .row .stage-icon { width: 56px; height: 56px; font-size: 24px; }
+body[data-font-size="xlarge"] .row .stage-label { font-size: 12px; }
+
 /* Hot lead styling */
 .row.hot-row{
   border-left:4px solid #f97316;
@@ -898,12 +947,13 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
         <!-- All controls in single row below daily outreach -->
         <div class="controls" style="margin:0;padding:0;">
           <div class="stack" style="flex-wrap:nowrap;align-items:center;">
-            <input id="globalSearch" type="text" placeholder="Search clients or add new (press Enter)" style="min-width:200px;flex:1;" />
+            <input id="globalSearch" type="text" placeholder="Search clients or add new (press Enter)" style="min-width:160px;flex:1;" />
             <label class="small">Sort
               <select id="sortBy">
                 <option value="lastTouch">Last touched</option>
                 <option value="createdAt">Date added</option>
                 <option value="name">Name</option>
+                <option value="none">No Sort</option>
               </select>
             </label>
             <label class="small">Density
@@ -912,6 +962,11 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
                 <option value="compact">Compact</option>
               </select>
             </label>
+            <div style="display:flex;gap:2px;align-items:center;">
+              <button id="fontSizeDown" class="btn-min gray" title="Decrease font size" style="padding:4px 8px;font-weight:bold;">−</button>
+              <span id="fontSizeLabel" style="font-size:11px;color:var(--muted);min-width:20px;text-align:center;">M</span>
+              <button id="fontSizeUp" class="btn-min gray" title="Increase font size" style="padding:4px 8px;font-weight:bold;">+</button>
+            </div>
             <button id="toggleSidebarBtn" class="btn-min gray" title="Toggle Sidebar" style="padding:4px 8px;">◧</button>
             <div id="sidebar-controls" style="display:flex; gap:2px;"></div>
             <button id="importBtn" class="btn-min gray" title="Import Clients" style="padding:4px 8px;">📥</button>
@@ -1041,13 +1096,28 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
 <!-- Part B goes right below -->
 <!-- Part B — JS logic (save as part-b.js or inline under Part A) -->
 <script>
+// Apply density and font size immediately (before IIFE to ensure earliest possible execution)
+(function() {
+  function getCookieEarly(name) {
+    var value = "; " + document.cookie;
+    var parts = value.split("; " + name + "=");
+    if (parts.length == 2) return parts.pop().split(";").shift();
+    return null;
+  }
+  document.body.setAttribute('data-density', getCookieEarly('density') || 'comfortable');
+  document.body.setAttribute('data-font-size', getCookieEarly('fontSize') || 'medium');
+})();
+
 (function(){
   /* =========================
    *  Version & Changelog
    * ========================= */
-  var VERSION = '1.8.7';
+  var VERSION = '1.9.1';
   // Recent commits from git log
   var CHANGELOG = [
+    { version: '1.9.1', date: '2025-01-18', changes: 'Fix font size adjustment to include all row icons, reset font size when changing density' },
+    { version: '1.9.0', date: '2025-01-18', changes: 'Add font size adjustment buttons, cookie-based sort preference, and "No Sort" option to prevent client reordering' },
+    { version: '1.8.8', date: '2025-01-18', changes: 'Fix keyboard navigation wrapping - stop at top when pressing k instead of jumping to bottom' },
     { version: '1.8.7', date: '2025-01-17', changes: 'Fix Windows PWA icon by reverting to emoji fire icon with rounded corners' },
     { version: '1.8.6', date: '2025-01-17', changes: 'Revert favicon to emoji fire while keeping PWA icon as custom SVG' },
     { version: '1.8.5', date: '2025-01-17', changes: 'Add custom fire icon for PWA installation replacing emoji icon' },
@@ -2204,7 +2274,7 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
   function allRows(){ return $all('#todayList .row, #list .row'); }
   var selectionIndex=0;
   function setSelectedRowById(id){ var rows=allRows(); var idx=rows.findIndex(function(r){return r.dataset.id===id;}); if(idx>=0){ selectionIndex=idx; restoreSelection(); } }
-  function restoreSelection(){ var rows=allRows(); rows.forEach(function(r){ r.classList.remove('selected'); }); if(!rows.length) return; if(selectionIndex<0) selectionIndex=rows.length-1; if(selectionIndex>=rows.length) selectionIndex=0; rows[selectionIndex].classList.add('selected'); rows[selectionIndex].scrollIntoView({block:'nearest'}); }
+  function restoreSelection(){ var rows=allRows(); rows.forEach(function(r){ r.classList.remove('selected'); }); if(!rows.length) return; if(selectionIndex<0) selectionIndex=0; if(selectionIndex>=rows.length) selectionIndex=0; rows[selectionIndex].classList.add('selected'); rows[selectionIndex].scrollIntoView({block:'nearest'}); }
   function getSelectedClient(){ var rows=allRows(); if(!rows.length) return null; var id=rows[selectionIndex] && rows[selectionIndex].dataset.id; return (state && state.clients) ? state.clients.find(function(c){return c.id===id;}) : null; }
 
   /* Activity / chart / heatmap */
@@ -2274,18 +2344,24 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
   function isFutureFollowUp(c){ if(!c.followUp) return false; var t=new Date(c.followUp); return !isNaN(+t) && t>new Date(); }
 
   /* Root render */
-  function sortClients(arr){ 
-    var key=(ui.sortBy||'lastTouch'); 
-    return arr.slice().sort(function(a,b){ 
+  function sortClients(arr){
+    var key = getCookie('sortBy') || 'lastTouch';
+
+    // If no sort is selected, return the array as-is
+    if(key === 'none') {
+      return arr.slice();
+    }
+
+    return arr.slice().sort(function(a,b){
       // Prioritize hot leads first
       if(a.hot !== b.hot) return a.hot ? -1 : 1;
-      
+
       // Then apply the current sort key
-      if(key==='name'){ 
-        return a.name.localeCompare(b.name); 
-      } 
-      return new Date(b[key]||0)-new Date(a[key]||0); 
-    }); 
+      if(key==='name'){
+        return a.name.localeCompare(b.name);
+      }
+      return new Date(b[key]||0)-new Date(a[key]||0);
+    });
   }
   function renderList(container, clients, opts){
     opts=opts||{};
@@ -2384,7 +2460,7 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
     if(els.statusFilter) els.statusFilter.addEventListener(ev, render);
     if(els.showArchived) els.showArchived.addEventListener(ev, render);
     if(els.globalSearch) els.globalSearch.addEventListener(ev, render);
-    if(els.sortBy) els.sortBy.addEventListener(ev, function(){ ui.sortBy=els.sortBy.value; saveUI(ui); render(); });
+    if(els.sortBy) els.sortBy.addEventListener(ev, function(){ setSortCookie(els.sortBy.value); render(); });
     if(els.chartRangeSel) els.chartRangeSel.addEventListener(ev, function(){ renderChart(); });
   });
 
@@ -2415,15 +2491,29 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
     document.cookie = "density=" + density + "; path=/; max-age=31536000"; // 1 year
   }
 
+  function setSortCookie(sortBy) {
+    document.cookie = "sortBy=" + sortBy + "; path=/; max-age=31536000"; // 1 year
+  }
+
+  function setFontSizeCookie(fontSize) {
+    document.cookie = "fontSize=" + fontSize + "; path=/; max-age=31536000"; // 1 year
+  }
+
+  function applyFontSize() {
+    var size = getCookie('fontSize') || 'medium';
+    document.body.setAttribute('data-font-size', size);
+    if($('#fontSizeLabel')) {
+      var labels = {small: 'S', medium: 'M', large: 'L', xlarge: 'XL'};
+      $('#fontSizeLabel').textContent = labels[size] || 'M';
+    }
+  }
+
   function applyDensity() {
     var mode = getCookie('density') || 'comfortable';
     document.body.setAttribute('data-density', mode);
     if(els.densitySelect) els.densitySelect.value = mode;
   }
 
-  // Apply density immediately on page load (body only, select will be set later)
-  var initialDensity = getCookie('density') || 'comfortable';
-  document.body.setAttribute('data-density', initialDensity);
 
   /* Sidebar position + show/hide */
   ;(function(){
@@ -3422,8 +3512,11 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
   }
 
   /* Boot */
-  if(typeof ui.sortBy==='undefined') ui.sortBy='lastTouch';
-  if($('#sortBy')) $('#sortBy').value=ui.sortBy||'lastTouch';
+  // Sort is now handled by cookies
+  if($('#sortBy')) {
+    var currentSort = getCookie('sortBy') || 'lastTouch';
+    $('#sortBy').value = currentSort;
+  }
 
   if(els.ageDays){ if(ui.ageDays!=null) els.ageDays.value = String(ui.ageDays); else els.ageDays.value='4'; }
 
@@ -3567,6 +3660,36 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
       els.densitySelect.addEventListener('change', function(){
         setDensityCookie(this.value);
         applyDensity();
+        // Reset font size to medium when changing density
+        setFontSizeCookie('medium');
+        applyFontSize();
+      });
+    }
+
+    // Setup font size controls
+    var fontSizes = ['small', 'medium', 'large', 'xlarge'];
+    var currentFontSize = getCookie('fontSize') || 'medium';
+    applyFontSize();
+
+    if($('#fontSizeDown')){
+      $('#fontSizeDown').addEventListener('click', function(){
+        var current = getCookie('fontSize') || 'medium';
+        var index = fontSizes.indexOf(current);
+        if(index > 0){
+          setFontSizeCookie(fontSizes[index - 1]);
+          applyFontSize();
+        }
+      });
+    }
+
+    if($('#fontSizeUp')){
+      $('#fontSizeUp').addEventListener('click', function(){
+        var current = getCookie('fontSize') || 'medium';
+        var index = fontSizes.indexOf(current);
+        if(index < fontSizes.length - 1){
+          setFontSizeCookie(fontSizes[index + 1]);
+          applyFontSize();
+        }
       });
     }
 
