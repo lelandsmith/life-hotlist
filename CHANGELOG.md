@@ -2,6 +2,15 @@
 
 All notable changes to Life Hotlist will be documented in this file.
 
+## [1.8.5] - 2025-01-17
+
+### Added
+- **Custom Fire Icon**: Created stylized SVG fire icon for PWA installation
+  - New icon-192.svg and icon-512.svg files with animated flame effect
+  - Replaced emoji-based icons with professional fire graphics
+  - Updated manifest.json to reference new icon files
+  - Updated apple-touch-icon and favicon in index.html
+
 ## [1.8.4] - 2025-01-17
 
 ### Changed

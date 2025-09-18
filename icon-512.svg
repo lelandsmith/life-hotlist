@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background Circle -->
+  <circle cx="256" cy="256" r="256" fill="#ff5722"/>
+
+  <!-- Outer Fire -->
+  <path d="M256 100 C210 140, 180 180, 180 240 C180 330, 210 380, 256 380 C302 380, 332 330, 332 240 C332 180, 302 140, 256 100 Z" fill="#ffc107" stroke="#ff6f00" stroke-width="4"/>
+
+  <!-- Middle Fire -->
+  <path d="M256 140 C225 170, 205 200, 205 240 C205 300, 225 340, 256 340 C287 340, 307 300, 307 240 C307 200, 287 170, 256 140 Z" fill="#ffeb3b" opacity="0.9"/>
+
+  <!-- Inner Flame -->
+  <path d="M256 180 C240 200, 230 220, 230 240 C230 280, 240 300, 256 300 C272 300, 282 280, 282 240 C282 220, 272 200, 256 180 Z" fill="#fff9c4" opacity="0.8"/>
+
+  <!-- Core -->
+  <ellipse cx="256" cy="260" rx="30" ry="45" fill="#ffffff" opacity="0.9"/>
+</svg>
