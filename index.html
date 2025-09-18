@@ -3258,7 +3258,37 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   /* Modal functions */
   function showShortcutsModal(){
-    document.getElementById('shortcutsModal').style.display = 'block';
+    // Update the shortcuts modal with current context stages
+    var modal = document.getElementById('shortcutsModal');
+    if(!modal) return;
+
+    // Find all h3 elements and locate Status Management section
+    var h3Elements = modal.querySelectorAll('h3');
+    for(var i = 0; i < h3Elements.length; i++){
+      if(h3Elements[i].textContent.includes('Status Management')){
+        var statusContainer = h3Elements[i].nextElementSibling;
+        if(statusContainer){
+          // Clear existing content
+          statusContainer.innerHTML = '';
+
+          // Add current context stages
+          var contextConfig = CONTEXTS[currentContext] || CONTEXTS.life;
+          contextConfig.stages.forEach(function(stage, index){
+            var div = document.createElement('div');
+            div.innerHTML = '<kbd>' + (index + 1) + '</kbd> - ' + stage;
+            statusContainer.appendChild(div);
+          });
+
+          // Add clear option
+          var clearDiv = document.createElement('div');
+          clearDiv.innerHTML = '<kbd>0</kbd> - Reset to first stage';
+          statusContainer.appendChild(clearDiv);
+        }
+        break;
+      }
+    }
+
+    modal.style.display = 'block';
   }
   function closeShortcutsModal(){
     document.getElementById('shortcutsModal').style.display = 'none';
@@ -3691,10 +3721,27 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     if(key==='ArrowDown' || key==='j' || key==='J'){ selectionIndex++; restoreSelection(); e.preventDefault(); }
     if(key==='ArrowUp' || key==='k' || key==='K'){ selectionIndex--; restoreSelection(); e.preventDefault(); }
 
-    var map={'1':'Initial Contact','2':'Sent Quote','3':'Sent Application','4':'Pending Application Signature','5':'Pending Medical Questionnaire','6':'Purchased'};
-    if(map[key]){ var c1=getSelectedClient(); if(c1){ setStatus(c1,map[key]); e.preventDefault(); } }
-    
-    if(key==='0'){ var c0=getSelectedClient(); if(c0){ clearStatus(c0); e.preventDefault(); } }
+    // Handle number keys for stage selection based on current context
+    if(key >= '1' && key <= '9'){
+      var stageIndex = parseInt(key) - 1;
+      var contextConfig = CONTEXTS[currentContext] || CONTEXTS.life;
+      if(stageIndex < contextConfig.stages.length){
+        var c1=getSelectedClient();
+        if(c1){
+          setClientStage(c1, stageIndex);
+          e.preventDefault();
+        }
+      }
+    }
+
+    if(key==='0'){
+      var c0=getSelectedClient();
+      if(c0){
+        // Clear stage (set to -1 or first stage)
+        setClientStage(c0, 0);
+        e.preventDefault();
+      }
+    }
 
     if(key==='a' || key==='A'){ 
       var c2=getSelectedClient(); 
