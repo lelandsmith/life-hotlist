@@ -1216,9 +1216,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   /* =========================
    *  Version & Changelog
    * ========================= */
-  var VERSION = '1.10.8';
+  var VERSION = '1.10.9';
   // Recent commits from git log
   var CHANGELOG = [
+    { version: '1.10.9', date: '2025-01-18', changes: 'Fix drag-and-drop in incognito/production by defaulting to no-sort when no cookie exists' },
     { version: '1.10.8', date: '2025-01-18', changes: 'Add Google Tag Manager integration (GTM-N5DXZ4MC) and standardize iconbtn sizes' },
     { version: '1.10.7', date: '2025-01-18', changes: 'Standardize group icon sizes with 18px minimum and 2px increments (18/20/22/24/26px)' },
     { version: '1.10.6', date: '2025-01-18', changes: 'Add extra small (XS) font size option while keeping client names and group icons readable' },
@@ -2459,7 +2460,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   /* Root render */
   function sortClients(arr){
-    var key = getCookie('sortBy') || 'none';
+    var key = getCookie('sortBy');
+    // Default to 'none' if no cookie is set
+    if(!key) key = 'none';
 
     // If no sort is selected, return the array as-is
     if(key === 'none') {
@@ -2640,7 +2643,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   var draggedClientId = null;
 
   function enableDragAndDrop() {
-    var isNoSort = getCookie('sortBy') === 'none';
+    var sortBy = getCookie('sortBy');
+    // Default to 'none' if no cookie is set (for incognito/new browsers)
+    var isNoSort = (!sortBy || sortBy === 'none');
     var rows = $all('.row');
 
     rows.forEach(function(row) {
@@ -3773,8 +3778,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   /* Boot */
   // Sort is now handled by cookies
   if($('#sortBy')) {
-    var currentSort = getCookie('sortBy') || 'none';
-    $('#sortBy').value = currentSort;
+    var currentSort = getCookie('sortBy');
+    // Default to 'none' if no cookie exists
+    $('#sortBy').value = currentSort || 'none';
   }
 
   if(els.ageDays){ if(ui.ageDays!=null) els.ageDays.value = String(ui.ageDays); else els.ageDays.value='4'; }
