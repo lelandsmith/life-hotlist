@@ -265,8 +265,7 @@ button:focus-visible{outline:none; box-shadow:var(--ring)}
 .row.selected{outline:2px solid var(--info); box-shadow:var(--ring-strong)}
 
 /* Drag and drop styles */
-.row.draggable { cursor: move; }
-.row.dragging { opacity: 0.5; transform: scale(0.98); }
+.row.dragging { opacity: 0.5; transform: scale(0.98); cursor: move; }
 .row.drag-over {
   background: linear-gradient(180deg, #3b82f6 2px, transparent 2px);
   background-position: top;
@@ -1126,9 +1125,10 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
   /* =========================
    *  Version & Changelog
    * ========================= */
-  var VERSION = '1.10.0';
+  var VERSION = '1.10.1';
   // Recent commits from git log
   var CHANGELOG = [
+    { version: '1.10.1', date: '2025-01-18', changes: 'Remove drag cursor on hover - only show when actively dragging' },
     { version: '1.10.0', date: '2025-01-18', changes: 'Add drag-and-drop support for manual client reordering when "No Sort" is selected' },
     { version: '1.9.2', date: '2025-01-18', changes: 'Default sort option to "No Sort" to maintain client order' },
     { version: '1.9.1', date: '2025-01-18', changes: 'Fix font size adjustment to include all row icons, reset font size when changing density' },
@@ -2548,7 +2548,6 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
     rows.forEach(function(row) {
       if(isNoSort) {
         row.draggable = true;
-        row.classList.add('draggable');
 
         // Remove old listeners to avoid duplicates
         row.removeEventListener('dragstart', handleDragStart);
@@ -2567,7 +2566,6 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
         row.addEventListener('dragleave', handleDragLeave);
       } else {
         row.draggable = false;
-        row.classList.remove('draggable');
       }
     });
   }
