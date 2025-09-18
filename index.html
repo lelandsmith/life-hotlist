@@ -2647,10 +2647,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     container.innerHTML='';
     var q=(els.globalSearch && els.globalSearch.value ? els.globalSearch.value : '').toLowerCase().trim();
     var filtered = clients.filter(function(c){
-      // Ensure client has a context (migrate if needed)
-      if(!c.context) c.context = 'life';
-      // Filter by current context
-      if(c.context !== currentContext) return false;
+      // Note: Context filtering already done in render() function
+      // Don't double-filter here
       if(els.showArchived && els.showArchived.checked ? !c.archived : c.archived) return false;
       if(els.statusFilter && els.statusFilter.value && c.status!==els.statusFilter.value) return false;
       if(q && !(c.name.toLowerCase().includes(q) || (c.notes||'').toLowerCase().includes(q) || (c.status||'').toLowerCase().includes(q))) return false;
@@ -2683,7 +2681,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     var todayClients = activeAll.filter(function(c){ return c.queueToday; });
     var scheduled = activeAll.filter(isFutureFollowUp);
     var mainActive = activeAll.filter(function(c){ return !isFutureFollowUp(c) && !c.queueToday; });
-    var archived=state.clients.filter(function(c){return c.archived;});
+    var archived=contextClients.filter(function(c){return c.archived;});
 
     renderKPIs(); renderPipeline(); renderTrendRibbons(); renderDailyOutreach(); updateDemoButtons();
 
@@ -3098,25 +3096,22 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   /* Show/hide demo buttons based on presence of demo data */
   function updateDemoButtons(){
+    // Only show demo buttons for Life context
+    var isLifeContext = currentContext === 'life';
+
     // Check if there are any demo clients
     var hasDemoClients = state.clients && state.clients.some(function(client){
       return client.id && client.id.startsWith('demo-');
     });
 
-    console.log('=== updateDemoButtons Debug ===');
-    console.log('state.clients:', state.clients);
-    console.log('hasDemoClients:', hasDemoClients);
-
-    // Show/hide load demo button (show when no demo clients exist)
+    // Show/hide load demo button (only for Life context when no demo clients exist)
     if(els.loadDemoBtn){
-      els.loadDemoBtn.style.display = hasDemoClients ? 'none' : 'block';
-      console.log('Setting load demo button display to:', hasDemoClients ? 'none' : 'block');
+      els.loadDemoBtn.style.display = (isLifeContext && !hasDemoClients) ? 'block' : 'none';
     }
 
-    // Show/hide clear demo section (show when demo clients exist)
+    // Show/hide clear demo section (only for Life context when demo clients exist)
     if(els.clearDemoSection){
-      els.clearDemoSection.style.display = hasDemoClients ? 'block' : 'none';
-      console.log('Setting clear demo section display to:', hasDemoClients ? 'block' : 'none');
+      els.clearDemoSection.style.display = (isLifeContext && hasDemoClients) ? 'block' : 'none';
     }
   }
 
@@ -3356,12 +3351,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       {
         id: 'demo-' + Date.now() + '-1',
         name: 'Sarah Johnson',
+        context: 'life',
         status: 'Sent Quote',
+        stage: 1,  // Quoted stage
         notes: 'Interested in term life insurance for $500K coverage.\nHas 2 young children, budget around $150/month.\nPrefers to meet on weekends due to work schedule.',
         callCount: 2,
         msgCount: 1,
         lastTouch: yesterday,
         created: twoDaysAgo,
+        createdAt: twoDaysAgo,
         hot: false,
         archived: false,
         queueToday: false,
@@ -3373,11 +3371,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       {
         id: 'demo-' + Date.now() + '-2',
         name: 'Michael Chen',
+        context: 'life',
+        stage: 0,  // Initial Contact stage
         notes: 'Self-employed business owner looking for disability insurance.\nRuns a successful consulting firm, needs income protection.\nVery detail-oriented, asks lots of questions.',
         callCount: 0,
         msgCount: 0,
         lastTouch: new Date(Date.now() - 5*24*60*60*1000).toISOString(),
         created: new Date(Date.now() - 5*24*60*60*1000).toISOString(),
+        createdAt: new Date(Date.now() - 5*24*60*60*1000).toISOString(),
         hot: false,
         archived: false,
         queueToday: false,
@@ -3389,12 +3390,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       {
         id: 'demo-' + Date.now() + '-3',
         name: 'Jennifer Martinez',
+        context: 'life',
         status: 'Purchased',
+        stage: 5,  // Purchased/Issued stage
         notes: 'Purchased whole life policy for $250K.\nEasy client, referred by existing customer.\nInterested in additional coverage for spouse.',
         callCount: 1,
         msgCount: 0,
         lastTouch: yesterday,
         created: new Date(Date.now() - 7*24*60*60*1000).toISOString(),
+        createdAt: new Date(Date.now() - 7*24*60*60*1000).toISOString(),
         purchaseDate: yesterday,
         hot: false,
         archived: false,
