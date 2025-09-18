@@ -1665,7 +1665,37 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   /* Stable state */
   function coerceState(x){ var out={clients:[], quotes:{raw:'', list:[]}, quotesSettings:{interval:15, random:true, norepeat:true, recent:[]} }; if(!x) return out; if(Array.isArray(x)){ out.clients=x; return normalize(out); } if(typeof x==='object'){ if(Array.isArray(x.clients)) out.clients=x.clients; if(x.quotes) out.quotes=x.quotes; if(x.quotesSettings) out.quotesSettings=x.quotesSettings; return normalize(out);} return out; }
-  function normalize(state){ state.clients=(state.clients||[]).map(function(c){ return { id:c.id||uid(), name:c.name||'(Unnamed)', notes:(typeof c.notes==='string'?c.notes:''), status:c.status||'', purchaseDate:(typeof c.purchaseDate==='string'?c.purchaseDate:''), lastTouch:c.lastTouch||nowISO(), createdAt:c.createdAt||c.lastTouch||nowISO(), archived:!!c.archived, followUp:(typeof c.followUp==='string'?c.followUp:''), callCount:(isFinite(c.callCount)?c.callCount:0), msgCount:(isFinite(c.msgCount)?c.msgCount:0), queueToday:!!c.queueToday, queueTomorrow:!!c.queueTomorrow, hot:!!c.hot, history:Array.isArray(c.history)? c.history.filter(Boolean).map(function(h){ return {id:(h.id||uid()), ts:(h.ts||nowISO()), action:(h.action||'status'), to:(h.to!=null?h.to:''), kind:(h.kind!=null?h.kind:'')}; }) : [] }; }); state.quotes = state.quotes || {raw:'', list:[]}; if(!Array.isArray(state.quotes.list)) state.quotes.list=[]; state.quotesSettings = state.quotesSettings || {interval:15, random:true, norepeat:true, recent:[]}; if(!Array.isArray(state.quotesSettings.recent)) state.quotesSettings.recent=[]; return state; }
+  function normalize(state){
+    state.clients=(state.clients||[]).map(function(c){
+      return {
+        id:c.id||uid(),
+        name:c.name||'(Unnamed)',
+        notes:(typeof c.notes==='string'?c.notes:''),
+        context:c.context||'life',  // Preserve context field
+        stage:(typeof c.stage==='number'?c.stage:0),  // Preserve stage field
+        status:c.status||'',
+        purchaseDate:(typeof c.purchaseDate==='string'?c.purchaseDate:''),
+        lastTouch:c.lastTouch||nowISO(),
+        createdAt:c.createdAt||c.lastTouch||nowISO(),
+        archived:!!c.archived,
+        followUp:(typeof c.followUp==='string'?c.followUp:''),
+        callCount:(isFinite(c.callCount)?c.callCount:0),
+        msgCount:(isFinite(c.msgCount)?c.msgCount:0),
+        queueToday:!!c.queueToday,
+        queueTomorrow:!!c.queueTomorrow,
+        hot:!!c.hot,
+        history:Array.isArray(c.history)?
+          c.history.filter(Boolean).map(function(h){
+            return {id:(h.id||uid()), ts:(h.ts||nowISO()), action:(h.action||'status'), to:(h.to!=null?h.to:''), kind:(h.kind!=null?h.kind:'')};
+          }) : []
+      };
+    });
+    state.quotes = state.quotes || {raw:'', list:[]};
+    if(!Array.isArray(state.quotes.list)) state.quotes.list=[];
+    state.quotesSettings = state.quotesSettings || {interval:15, random:true, norepeat:true, recent:[]};
+    if(!Array.isArray(state.quotesSettings.recent)) state.quotesSettings.recent=[];
+    return state;
+  }
 
   /* Enhanced load/save with IndexedDB and localStorage fallback */
   function load() {
@@ -2670,11 +2700,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   function render(){
     if(!state || !state.clients) return;
 
-    // Filter clients by current context (or show all if no context)
+    // Filter clients by current context
     var contextClients = state.clients.filter(function(c){
-      // If client has no context, default to 'life' for migration
-      if(!c.context) c.context = 'life';
-      return c.context === currentContext;
+      return (c.context || 'life') === currentContext;
     });
 
     var activeAll=contextClients.filter(function(c){return !c.archived;});
