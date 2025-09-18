@@ -2,6 +2,14 @@
 
 All notable changes to Life Hotlist will be documented in this file.
 
+## [1.8.7] - 2025-01-17
+
+### Fixed
+- **Windows PWA Icon**: Reverted to emoji-based fire icon for better Windows compatibility
+  - Windows PWA installations now properly show fire emoji instead of "L"
+  - Added rounded corners to icon background for modern appearance
+  - Removed custom SVG icon files that weren't rendering on Windows
+
 ## [1.8.6] - 2025-01-17
 
 ### Changed
