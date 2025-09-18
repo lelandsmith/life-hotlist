@@ -292,7 +292,7 @@ body[data-font-size="xsmall"] .row .stage-label { font-size: 8px; }
 
 body[data-font-size="small"] .row { font-size: 13px; }
 body[data-font-size="small"] .row .name { font-size: 14px; }
-body[data-font-size="small"] .row .qbtn { font-size: 18px; padding: 4px 8px; } /* Keep at 18px minimum */
+body[data-font-size="small"] .row .qbtn { font-size: 20px; padding: 5px 9px; }
 body[data-font-size="small"] .row .sbtn { font-size: 12px; padding: 4px 7px; }
 body[data-font-size="small"] .row .sbtn .ico { font-size: 14px; }
 body[data-font-size="small"] .row .iconbtn { font-size: 14px; padding: 3px 6px; }
@@ -304,7 +304,7 @@ body[data-font-size="small"] .row .stage-label { font-size: 9px; }
 
 body[data-font-size="medium"] .row { font-size: 14px; }
 body[data-font-size="medium"] .row .name { font-size: 15px; }
-body[data-font-size="medium"] .row .qbtn { font-size: 18px; padding: 4px 8px; }
+body[data-font-size="medium"] .row .qbtn { font-size: 22px; padding: 5px 9px; }
 body[data-font-size="medium"] .row .sbtn { font-size: 13px; padding: 5px 8px; }
 body[data-font-size="medium"] .row .sbtn .ico { font-size: 16px; }
 body[data-font-size="medium"] .row .iconbtn { font-size: 16px; padding: 4px 7px; }
@@ -316,7 +316,7 @@ body[data-font-size="medium"] .row .stage-label { font-size: 10px; }
 
 body[data-font-size="large"] .row { font-size: 15px; }
 body[data-font-size="large"] .row .name { font-size: 16px; }
-body[data-font-size="large"] .row .qbtn { font-size: 20px; padding: 5px 9px; }
+body[data-font-size="large"] .row .qbtn { font-size: 24px; padding: 6px 10px; }
 body[data-font-size="large"] .row .sbtn { font-size: 14px; padding: 6px 9px; }
 body[data-font-size="large"] .row .sbtn .ico { font-size: 18px; }
 body[data-font-size="large"] .row .iconbtn { font-size: 18px; padding: 5px 8px; }
@@ -328,7 +328,7 @@ body[data-font-size="large"] .row .stage-label { font-size: 11px; }
 
 body[data-font-size="xlarge"] .row { font-size: 16px; }
 body[data-font-size="xlarge"] .row .name { font-size: 18px; }
-body[data-font-size="xlarge"] .row .qbtn { font-size: 22px; padding: 6px 10px; }
+body[data-font-size="xlarge"] .row .qbtn { font-size: 26px; padding: 7px 11px; }
 body[data-font-size="xlarge"] .row .sbtn { font-size: 15px; padding: 7px 10px; }
 body[data-font-size="xlarge"] .row .sbtn .ico { font-size: 20px; }
 body[data-font-size="xlarge"] .row .iconbtn { font-size: 20px; padding: 6px 9px; }
@@ -1204,9 +1204,10 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
   /* =========================
    *  Version & Changelog
    * ========================= */
-  var VERSION = '1.10.6';
+  var VERSION = '1.10.7';
   // Recent commits from git log
   var CHANGELOG = [
+    { version: '1.10.7', date: '2025-01-18', changes: 'Standardize group icon sizes with 18px minimum and 2px increments (18/20/22/24/26px)' },
     { version: '1.10.6', date: '2025-01-18', changes: 'Add extra small (XS) font size option while keeping client names and group icons readable' },
     { version: '1.10.5', date: '2025-01-18', changes: 'Match hot icon sizing with stage icons across all font sizes and screen sizes' },
     { version: '1.10.4', date: '2025-01-18', changes: 'Fix drag-and-drop, improve header layout, and enhance daily outreach bar' },
