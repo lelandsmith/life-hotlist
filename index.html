@@ -1013,7 +1013,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <section class="card">
     <header>
       <div style="display:flex;flex-direction:column;gap:8px;width:100%">
-        <h1 id="hotlistTitle" class="flame-title">Life Hotlist 🔥</h1>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <h1 id="hotlistTitle" class="flame-title">
+            <span id="contextName">Life</span> Hotlist 🔥
+          </h1>
+          <select id="contextSelector" style="font-size:14px; padding:6px 10px; border-radius:6px; border:1px solid var(--border);">
+            <option value="life">❤️ Life</option>
+            <option value="home_auto">🏠 Home & Auto</option>
+            <option value="commercial">🏢 Commercial</option>
+            <option value="farm">🚜 Farm</option>
+            <option value="networking">🤝 Networking</option>
+          </select>
+        </div>
         <div id="errorBanner" class="error-banner"></div>
 
         <!-- Daily Outreach Progress Bar -->
@@ -1216,9 +1227,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   /* =========================
    *  Version & Changelog
    * ========================= */
-  var VERSION = '1.10.9';
+  var VERSION = '2.0.0';
   // Recent commits from git log
   var CHANGELOG = [
+    { version: '2.0.0', date: '2025-01-18', changes: 'Add multi-context support for Life, Home & Auto, Commercial, Farm, and Networking with context-specific stages' },
     { version: '1.10.9', date: '2025-01-18', changes: 'Fix drag-and-drop in incognito/production by defaulting to no-sort when no cookie exists' },
     { version: '1.10.8', date: '2025-01-18', changes: 'Add Google Tag Manager integration (GTM-N5DXZ4MC) and standardize iconbtn sizes' },
     { version: '1.10.7', date: '2025-01-18', changes: 'Standardize group icon sizes with 18px minimum and 2px increments (18/20/22/24/26px)' },
@@ -1253,6 +1265,44 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   var STABLE_KEY='hotlistStable';
   var UI_KEY='hotlistUI';
 
+  // Context configurations
+  var CONTEXTS = {
+    life: {
+      name: "Life",
+      icon: "❤️",
+      stages: ['Contact', 'Quoted', 'Applied', 'Exam/Req', 'Approved', 'Issued'],
+      stageIcons: ['📞', '💵', '📝', '🔬', '✅', '📋']
+    },
+    home_auto: {
+      name: "Home & Auto",
+      icon: "🏠",
+      stages: ['Contact', 'Quoted', 'Applied', 'Issued'],
+      stageIcons: ['📞', '💵', '📝', '📋']
+    },
+    commercial: {
+      name: "Commercial",
+      icon: "🏢",
+      stages: ['Lead', 'Quoted', 'Proposal', 'Underwriting', 'Issued'],
+      stageIcons: ['👤', '💵', '📊', '🔍', '📋']
+    },
+    farm: {
+      name: "Farm",
+      icon: "🚜",
+      stages: ['Lead', 'Quoted', 'Inspection', 'Underwriting', 'Issued'],
+      stageIcons: ['👤', '💵', '🔎', '🔍', '📋']
+    },
+    networking: {
+      name: "Networking",
+      icon: "🤝",
+      stages: ['Connected', 'Engaged', 'Referred'],
+      stageIcons: ['🔗', '💬', '🎯']
+    }
+  };
+
+  // Default to life insurance for backwards compatibility
+  var currentContext = 'life';
+
+  // Legacy mappings for migration
   var STATUS=['Initial Contact','Sent Quote','Sent Application','Pending Application Signature','Pending Medical Questionnaire','Purchased'];
   var STATUS_ABBR={'Initial Contact':'Contact','Sent Quote':'Quoted','Sent Application':'App','Pending Application Signature':'SigPend','Pending Medical Questionnaire':'MedQ','Purchased':'Purchased'};
   var STATUS_ICON={'Initial Contact':'\uD83E\uDD1D','Sent Quote':'\uD83E\uDD7E','Sent Application':'\uD83D\uDCDD','Pending Application Signature':'\u270D\uFE0F','Pending Medical Questionnaire':'\uD83E\uDDEA','Purchased':'\u2705'};
@@ -1695,7 +1745,28 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   }
 
   /* CRUD / actions */
-  function addClient(name){ preserveUIAndRender(function(){ state.clients.push({id:uid(), name:name, notes:'', status:'', lastTouch:nowISO(), createdAt:nowISO(), archived:false, followUp:'', callCount:0, msgCount:0, queueToday:false, queueTomorrow:false, hot:false, history:[]}); }); }
+  function addClient(name){
+    preserveUIAndRender(function(){
+      state.clients.push({
+        id:uid(),
+        name:name,
+        notes:'',
+        context: currentContext,  // Set context for new clients
+        stage: 0,  // Start at first stage
+        status:'',  // Keep for backwards compatibility
+        lastTouch:nowISO(),
+        createdAt:nowISO(),
+        archived:false,
+        followUp:'',
+        callCount:0,
+        msgCount:0,
+        queueToday:false,
+        queueTomorrow:false,
+        hot:false,
+        history:[]
+      });
+    });
+  }
   function setStatus(c,newStatus,buttonElement){
     var wasPurchased = c.status === 'Purchased';
     var oldStatus = c.status;
@@ -1736,6 +1807,51 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       }, 100);
     }
   }
+
+  // New function for setting stage in context-aware system
+  function setClientStage(c, newStage){
+    var clientContext = c.context || currentContext;
+    var contextConfig = CONTEXTS[clientContext] || CONTEXTS.life;
+    var stages = contextConfig.stages;
+
+    // Validate stage index
+    if(newStage < 0 || newStage >= stages.length) return;
+
+    var oldStage = c.stage;
+    var wasFinalStage = oldStage === stages.length - 1;
+
+    preserveUIAndRender(function(){
+      var when = nowISO();
+      c.stage = newStage;
+      c.context = clientContext; // Ensure context is set
+      c.lastTouch = when;
+
+      // Add history entry
+      if(!c.history) c.history = [];
+      c.history.push({
+        id: uid(),
+        ts: when,
+        action: 'stage',
+        to: stages[newStage],
+        stageIndex: newStage
+      });
+
+      if(c.queueToday) c.queueToday = false;
+
+      // Set purchase/issue date when reaching final stage
+      if(newStage === stages.length - 1 && !c.purchaseDate){
+        c.purchaseDate = when;
+      }
+    });
+
+    // Trigger celebration for final stage
+    if(newStage === stages.length - 1 && !wasFinalStage){
+      setTimeout(function(){
+        startPurchaseCelebration();
+      }, 100);
+    }
+  }
+
   function clearStatus(c){ preserveUIAndRender(function(){ c.status=''; if(c.purchaseDate) delete c.purchaseDate; }); }
   function clearPurchase(c){ preserveUIAndRender(function(){ if(c.status === 'Purchased') c.status=''; if(c.purchaseDate) delete c.purchaseDate; }); }
   function incrementCall(c){
@@ -2066,48 +2182,78 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   function colorClass(st){ return st==='Initial Contact'?'s-contact' : st==='Sent Quote'?'s-quote' : st==='Sent Application'?'s-app' : st==='Pending Application Signature'?'s-sig' : st==='Pending Medical Questionnaire'?'s-medq' : 's-pur'; }
 
   /* Render Status Progress Tracker */
+  // Get stages for current context (or client's context)
+  function getContextStages(clientContext) {
+    var ctx = clientContext || currentContext;
+    return CONTEXTS[ctx] || CONTEXTS.life;
+  }
+
   function renderStatusTracker(clientOrStatus, clientObj){
     var tracker = document.createElement('div');
     tracker.className = 'status-tracker compact';
 
     // Handle both client object and status string, with null checks
-    var currentStatus = null;
+    var currentStage = null;
     var client = null;
 
     if(typeof clientOrStatus === 'string'){
-      currentStatus = clientOrStatus;
+      currentStage = clientOrStatus;
       client = clientObj;
     } else if(clientOrStatus){
-      currentStatus = clientOrStatus.status;
+      // For existing clients, use their stage or migrate from old status
+      if(clientOrStatus.stage !== undefined) {
+        currentStage = clientOrStatus.stage;
+      } else if(clientOrStatus.status) {
+        // Migrate old status to stage index
+        currentStage = STATUS.indexOf(clientOrStatus.status);
+      }
       client = clientOrStatus;
     } else {
-      currentStatus = null;
+      currentStage = null;
       client = clientObj;
     }
 
-    // Determine which stage is active/completed
-    var currentStatusIndex = STATUS.indexOf(currentStatus);
+    // Get the context configuration
+    var clientContext = (client && client.context) || currentContext;
+    var contextConfig = CONTEXTS[clientContext] || CONTEXTS.life;
+    var stages = contextConfig.stages;
+    var stageIcons = contextConfig.stageIcons;
 
-    // Set progress level for the green line (0-5 based on status index)
-    // Line should go TO the active status, not past it
-    if(currentStatusIndex >= 0){
-      tracker.setAttribute('data-progress', currentStatusIndex);
+    // Convert stage to number if it's a string (for backwards compatibility)
+    if(typeof currentStage === 'string') {
+      var idx = stages.indexOf(currentStage);
+      if(idx === -1) {
+        // Try to find in old STATUS array for migration
+        idx = STATUS.indexOf(currentStage);
+        if(idx !== -1 && clientContext === 'life') {
+          currentStage = Math.min(idx, stages.length - 1);
+        } else {
+          currentStage = -1;
+        }
+      } else {
+        currentStage = idx;
+      }
+    }
+
+    // Set progress level for the green line
+    if(currentStage >= 0){
+      tracker.setAttribute('data-progress', currentStage);
     } else {
       tracker.setAttribute('data-progress', '-1');
     }
 
-    STATUS.forEach(function(status, index){
+    stages.forEach(function(stageName, index){
       var stage = document.createElement('div');
       stage.className = 'stage';
 
       // Set completed/active state
-      if(currentStatusIndex >= 0){
-        if(index < currentStatusIndex){
+      if(currentStage >= 0){
+        if(index < currentStage){
           stage.classList.add('completed');
-        } else if(index === currentStatusIndex){
+        } else if(index === currentStage){
           stage.classList.add('active');
-          // Add purchased class if this is the purchased status
-          if(status === 'Purchased'){
+          // Add purchased class if this is the final stage
+          if(index === stages.length - 1){
             stage.classList.add('purchased');
           }
         }
@@ -2115,21 +2261,26 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
       var icon = document.createElement('div');
       icon.className = 'stage-icon';
-      icon.textContent = STATUS_ICON[status] || '•';
-      icon.title = status; // Tooltip
+      icon.textContent = stageIcons[index] || '•';
+      icon.title = stageName; // Tooltip
 
-
-      // Make clickable to set status (only if we have a client object)
+      // Make clickable to set stage (only if we have a client object)
       if(client && client.id){
         icon.addEventListener('click', function(e){
           e.stopPropagation();
-          setStatus(client, status);
+          setClientStage(client, index);
         });
       }
 
       var label = document.createElement('div');
       label.className = 'stage-label';
-      label.textContent = STATUS_ABBR[status] || status;
+      // Shorten long stage names
+      var shortName = stageName;
+      if(stageName === 'Underwriting') shortName = 'U/W';
+      else if(stageName === 'Inspection') shortName = 'Insp';
+      else if(stageName === 'Exam/Req') shortName = 'Exam';
+      else if(stageName === 'Connected') shortName = 'Connect';
+      label.textContent = shortName;
 
       stage.appendChild(icon);
       stage.appendChild(label);
@@ -2486,6 +2637,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     container.innerHTML='';
     var q=(els.globalSearch && els.globalSearch.value ? els.globalSearch.value : '').toLowerCase().trim();
     var filtered = clients.filter(function(c){
+      // Ensure client has a context (migrate if needed)
+      if(!c.context) c.context = 'life';
+      // Filter by current context
+      if(c.context !== currentContext) return false;
       if(els.showArchived && els.showArchived.checked ? !c.archived : c.archived) return false;
       if(els.statusFilter && els.statusFilter.value && c.status!==els.statusFilter.value) return false;
       if(q && !(c.name.toLowerCase().includes(q) || (c.notes||'').toLowerCase().includes(q) || (c.status||'').toLowerCase().includes(q))) return false;
@@ -2507,7 +2662,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   function render(){
     if(!state || !state.clients) return;
 
-    var activeAll=state.clients.filter(function(c){return !c.archived;});
+    // Filter clients by current context (or show all if no context)
+    var contextClients = state.clients.filter(function(c){
+      // If client has no context, default to 'life' for migration
+      if(!c.context) c.context = 'life';
+      return c.context === currentContext;
+    });
+
+    var activeAll=contextClients.filter(function(c){return !c.archived;});
     var todayClients = activeAll.filter(function(c){ return c.queueToday; });
     var scheduled = activeAll.filter(isFutureFollowUp);
     var mainActive = activeAll.filter(function(c){ return !isFutureFollowUp(c) && !c.queueToday; });
@@ -2585,6 +2747,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       render();
       setTimeout(enableDragAndDrop, 100);
     });
+    if(els.contextSelector) els.contextSelector.addEventListener(ev, function(){
+      currentContext = els.contextSelector.value;
+      setContextCookie(currentContext);
+      // Update the title
+      var contextName = CONTEXTS[currentContext].name;
+      $('#contextName').textContent = contextName;
+      // Re-render to update stage displays
+      render();
+    });
     if(els.chartRangeSel) els.chartRangeSel.addEventListener(ev, function(){ renderChart(); });
   });
 
@@ -2621,6 +2792,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   function setFontSizeCookie(fontSize) {
     document.cookie = "fontSize=" + fontSize + "; path=/; max-age=31536000"; // 1 year
+  }
+
+  function setContextCookie(context) {
+    document.cookie = "context=" + context + "; path=/; max-age=31536000"; // 1 year
   }
 
   function applyFontSize() {
@@ -3776,6 +3951,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   }
 
   /* Boot */
+  // Context is handled by cookies
+  var savedContext = getCookie('context');
+  if(savedContext && CONTEXTS[savedContext]) {
+    currentContext = savedContext;
+  }
+  if($('#contextSelector')) {
+    $('#contextSelector').value = currentContext;
+  }
+  if($('#contextName')) {
+    $('#contextName').textContent = CONTEXTS[currentContext].name;
+  }
+
   // Sort is now handled by cookies
   if($('#sortBy')) {
     var currentSort = getCookie('sortBy');
