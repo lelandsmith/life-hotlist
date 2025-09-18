@@ -885,6 +885,49 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
   }
 }
 
+/* Large screens - bigger status icons for screens 1680px and wider */
+@media (min-width: 1680px) {
+  /* Default comfortable mode gets larger icons on wide screens */
+  body[data-density="comfortable"] .status-tracker .stage-icon,
+  body[data-density="comfortable"] .status-tracker.compact .stage-icon {
+    width: 53px;
+    height: 53px;
+    font-size: 22px;
+  }
+
+  body[data-density="comfortable"] .status-tracker .stage-label,
+  body[data-density="comfortable"] .status-tracker.compact .stage-label {
+    font-size: 11px;
+  }
+
+  /* More spacing between stages to clearly show green line */
+  body[data-density="comfortable"] .status-tracker {
+    gap: 12px;
+  }
+
+  /* Center the progress line with 53px icons */
+  body[data-density="comfortable"] .status-tracker::before,
+  body[data-density="comfortable"] .status-tracker::after {
+    top: 26px; /* Center line at half of 53px */
+  }
+
+  /* Scale up further with font size adjustments on large screens */
+  body[data-density="comfortable"][data-font-size="small"] .status-tracker .stage-icon { width: 48px; height: 48px; font-size: 18px; }
+  body[data-density="comfortable"][data-font-size="medium"] .status-tracker .stage-icon { width: 53px; height: 53px; font-size: 22px; }
+  body[data-density="comfortable"][data-font-size="large"] .status-tracker .stage-icon { width: 58px; height: 58px; font-size: 25px; }
+  body[data-density="comfortable"][data-font-size="xlarge"] .status-tracker .stage-icon { width: 64px; height: 64px; font-size: 28px; }
+
+  /* Adjust line position for different font sizes */
+  body[data-density="comfortable"][data-font-size="small"] .status-tracker::before,
+  body[data-density="comfortable"][data-font-size="small"] .status-tracker::after { top: 24px; }
+
+  body[data-density="comfortable"][data-font-size="large"] .status-tracker::before,
+  body[data-density="comfortable"][data-font-size="large"] .status-tracker::after { top: 29px; }
+
+  body[data-density="comfortable"][data-font-size="xlarge"] .status-tracker::before,
+  body[data-density="comfortable"][data-font-size="xlarge"] .status-tracker::after { top: 32px; }
+}
+
 @media (max-width:1150px){
   .app{grid-template-columns:1fr;grid-template-areas:"main" "side";padding:10px}
   .table-head,.row{grid-template-columns:1fr}
@@ -1125,9 +1168,10 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
   /* =========================
    *  Version & Changelog
    * ========================= */
-  var VERSION = '1.10.2';
+  var VERSION = '1.10.3';
   // Recent commits from git log
   var CHANGELOG = [
+    { version: '1.10.3', date: '2025-01-18', changes: 'Add responsive status icons for large screens (1680px+) with progressive scaling' },
     { version: '1.10.2', date: '2025-01-18', changes: 'Fix drag-and-drop initialization and improve drag visual to show only client name' },
     { version: '1.10.1', date: '2025-01-18', changes: 'Remove drag cursor on hover - only show when actively dragging' },
     { version: '1.10.0', date: '2025-01-18', changes: 'Add drag-and-drop support for manual client reordering when "No Sort" is selected' },
