@@ -1054,7 +1054,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </div>
           <div class="stat-separator">|</div>
           <div class="stat-group" style="background:#e9f5ee; padding:4px 8px; border-radius:6px;">
-            <strong style="color:#0e7a5a;">Life Apps This Month:</strong>
+            <strong style="color:#0e7a5a;"><span id="contextLabel">Life</span> Apps This Month:</strong>
             <span id="monthlyPurchases" style="color:#0e7a5a; font-weight:700;">0</span>
           </div>
         </div>
@@ -1270,32 +1270,37 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     life: {
       name: "Life",
       icon: "❤️",
-      stages: ['Contact', 'Quoted', 'Applied', 'Exam/Req', 'Approved', 'Issued'],
-      stageIcons: ['📞', '💵', '📝', '🔬', '✅', '📋']
+      stages: ['Initial Contact', 'Sent Quote', 'Sent Application', 'Pending Application Signature', 'Pending Medical Questionnaire', 'Purchased'],
+      stageIcons: ['🤝', '💵', '📝', '✍️', '🧪', '✅'],
+      stageAbbr: ['Contact', 'Quoted', 'App', 'SigPend', 'MedQ', 'Purchased']
     },
     home_auto: {
       name: "Home & Auto",
       icon: "🏠",
       stages: ['Contact', 'Quoted', 'Applied', 'Issued'],
-      stageIcons: ['📞', '💵', '📝', '📋']
+      stageIcons: ['📞', '💵', '📝', '📋'],
+      stageAbbr: ['Contact', 'Quoted', 'Applied', 'Issued']
     },
     commercial: {
       name: "Commercial",
       icon: "🏢",
       stages: ['Lead', 'Quoted', 'Proposal', 'Underwriting', 'Issued'],
-      stageIcons: ['👤', '💵', '📊', '🔍', '📋']
+      stageIcons: ['👤', '💵', '📊', '🔍', '📋'],
+      stageAbbr: ['Lead', 'Quoted', 'Proposal', 'U/W', 'Issued']
     },
     farm: {
       name: "Farm",
       icon: "🚜",
       stages: ['Lead', 'Quoted', 'Inspection', 'Underwriting', 'Issued'],
-      stageIcons: ['👤', '💵', '🔎', '🔍', '📋']
+      stageIcons: ['👤', '💵', '🔎', '🔍', '📋'],
+      stageAbbr: ['Lead', 'Quoted', 'Insp', 'U/W', 'Issued']
     },
     networking: {
       name: "Networking",
       icon: "🤝",
       stages: ['Connected', 'Engaged', 'Referred'],
-      stageIcons: ['🔗', '💬', '🎯']
+      stageIcons: ['🔗', '💬', '🎯'],
+      stageAbbr: ['Connect', 'Engaged', 'Referred']
     }
   };
 
@@ -1331,7 +1336,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     appRoot:$('#appRoot'),
     list:$('#list'), archivedList:$('#archivedList'), archivedBlock:$('#archivedBlock'),
     kpis:$('#kpis'),
-    globalSearch:$('#globalSearch'), sortBy:$('#sortBy'),
+    globalSearch:$('#globalSearch'), sortBy:$('#sortBy'), contextSelector:$('#contextSelector'),
+    contextName:$('#contextName'), contextLabel:$('#contextLabel'),
     statusFilter:$('#statusFilter'), showArchived:$('#showArchived'),
     ageDays:$('#ageDays'), groupToggle:$('#groupToggle'),
     emailSummaryBtn:$('#emailSummaryBtn'),
@@ -2069,7 +2075,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     var count = 0;
 
     if(state && state.clients) state.clients.forEach(function(c){
-      if(c.status === 'Purchased' && c.purchaseDate){
+      // Check if client is in current context
+      var clientContext = c.context || 'life';
+      if(clientContext !== currentContext) return;
+
+      // Check if client has reached final stage (purchased/issued)
+      var contextConfig = CONTEXTS[clientContext];
+      var finalStage = contextConfig.stages.length - 1;
+
+      if((c.stage === finalStage || c.status === 'Purchased') && c.purchaseDate){
         var purchaseDate = new Date(c.purchaseDate);
         if(purchaseDate >= startOfMonth && purchaseDate < endOfMonth){
           count++;
@@ -2274,12 +2288,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
       var label = document.createElement('div');
       label.className = 'stage-label';
-      // Shorten long stage names
-      var shortName = stageName;
-      if(stageName === 'Underwriting') shortName = 'U/W';
-      else if(stageName === 'Inspection') shortName = 'Insp';
-      else if(stageName === 'Exam/Req') shortName = 'Exam';
-      else if(stageName === 'Connected') shortName = 'Connect';
+      // Use abbreviated names if available
+      var shortName = (contextConfig.stageAbbr && contextConfig.stageAbbr[index]) || stageName;
       label.textContent = shortName;
 
       stage.appendChild(icon);
@@ -2488,7 +2498,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       quick.appendChild(callBtn); quick.appendChild(msgBtn);
 
       // Replace status buttons with progress tracker
-      var statusTracker = renderStatusTracker(c ? c.status : null, c);
+      var statusTracker = renderStatusTracker(c);
 
       // Create a wrapper for status tracker and hot button
       var bar = document.createElement('div');
@@ -2750,9 +2760,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     if(els.contextSelector) els.contextSelector.addEventListener(ev, function(){
       currentContext = els.contextSelector.value;
       setContextCookie(currentContext);
-      // Update the title
-      var contextName = CONTEXTS[currentContext].name;
-      $('#contextName').textContent = contextName;
+      // Update the title and label
+      if(els.contextName) {
+        els.contextName.textContent = CONTEXTS[currentContext].name;
+      }
+      if(els.contextLabel) {
+        els.contextLabel.textContent = CONTEXTS[currentContext].name;
+      }
       // Re-render to update stage displays
       render();
     });
@@ -3956,11 +3970,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   if(savedContext && CONTEXTS[savedContext]) {
     currentContext = savedContext;
   }
-  if($('#contextSelector')) {
-    $('#contextSelector').value = currentContext;
+  if(els.contextSelector) {
+    els.contextSelector.value = currentContext;
   }
-  if($('#contextName')) {
-    $('#contextName').textContent = CONTEXTS[currentContext].name;
+  if(els.contextName) {
+    els.contextName.textContent = CONTEXTS[currentContext].name;
+  }
+  if(els.contextLabel) {
+    els.contextLabel.textContent = CONTEXTS[currentContext].name;
   }
 
   // Sort is now handled by cookies
