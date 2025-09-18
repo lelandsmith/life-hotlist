@@ -972,8 +972,20 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
 }
 
 </style>
+
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-N5DXZ4MC');</script>
+<!-- End Google Tag Manager -->
 </head>
 <body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N5DXZ4MC"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
 <div class="app" id="appRoot">
   <!-- ===== DRAG ZONES ===== -->
   <div class="sidebar-drag-zone left" id="leftDragZone"></div>
@@ -1204,9 +1216,10 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
   /* =========================
    *  Version & Changelog
    * ========================= */
-  var VERSION = '1.10.7';
+  var VERSION = '1.10.8';
   // Recent commits from git log
   var CHANGELOG = [
+    { version: '1.10.8', date: '2025-01-18', changes: 'Add Google Tag Manager integration (GTM-N5DXZ4MC) and standardize iconbtn sizes' },
     { version: '1.10.7', date: '2025-01-18', changes: 'Standardize group icon sizes with 18px minimum and 2px increments (18/20/22/24/26px)' },
     { version: '1.10.6', date: '2025-01-18', changes: 'Add extra small (XS) font size option while keeping client names and group icons readable' },
     { version: '1.10.5', date: '2025-01-18', changes: 'Match hot icon sizing with stage icons across all font sizes and screen sizes' },
