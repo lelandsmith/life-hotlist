@@ -2809,7 +2809,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   if(els.globalSearch) els.globalSearch.addEventListener('keydown', function(e){
     if(e.key==='Enter'){
       var q=els.globalSearch.value.trim(); if(!q) return;
-      var exists=state.clients.some(function(c){ return c.name.toLowerCase()===q.toLowerCase(); });
+      // Check for duplicates only within the current context
+      var exists=state.clients.some(function(c){
+        return (c.context || 'life') === currentContext && c.name.toLowerCase()===q.toLowerCase();
+      });
       if(!exists){ addClient(q); els.globalSearch.select(); }
     }
   });
