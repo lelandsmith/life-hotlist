@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Context Switcher Design Options - Hotlist</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #f8fafc;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #1e293b;
+        }
+
+        .option {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .option h2 {
+            color: #334155;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        .header-mock {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            min-height: 70px;
+        }
+
+        .title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        /* Option 1: Pills Style */
+        .pills-switcher {
+            display: flex;
+            gap: 8px;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 12px;
+        }
+
+        .pills-switcher button {
+            padding: 8px 12px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .pills-switcher button:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .pills-switcher button.active {
+            background: white;
+            color: #1e293b;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Option 2: Tab Style */
+        .tab-switcher {
+            display: flex;
+            gap: 2px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0;
+        }
+
+        .tab-switcher button {
+            padding: 10px 16px;
+            border: none;
+            background: transparent;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #64748b;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .tab-switcher button:hover {
+            color: #475569;
+            background: #f8fafc;
+        }
+
+        .tab-switcher button.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+
+        /* Option 3: Icon Grid */
+        .grid-switcher {
+            display: flex;
+            gap: 6px;
+        }
+
+        .grid-switcher button {
+            width: 44px;
+            height: 44px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            border-radius: 10px;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .grid-switcher button:hover {
+            border-color: #cbd5e1;
+            background: #f8fafc;
+            transform: translateY(-1px);
+        }
+
+        .grid-switcher button.active {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+        }
+
+        .grid-switcher button .tooltip {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .grid-switcher button:hover .tooltip {
+            opacity: 1;
+        }
+
+        /* Option 4: Segmented Control */
+        .segmented-switcher {
+            display: inline-flex;
+            background: #e2e8f0;
+            border-radius: 10px;
+            padding: 2px;
+            position: relative;
+        }
+
+        .segmented-switcher button {
+            padding: 8px 14px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #475569;
+            z-index: 1;
+            position: relative;
+        }
+
+        .segmented-switcher button:hover {
+            color: #1e293b;
+        }
+
+        .segmented-switcher button.active {
+            color: #1e293b;
+        }
+
+        .segmented-switcher .slider {
+            position: absolute;
+            background: white;
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            z-index: 0;
+        }
+
+        /* Option 5: Floating Buttons */
+        .floating-switcher {
+            display: flex;
+            gap: 12px;
+        }
+
+        .floating-switcher button {
+            width: 48px;
+            height: 48px;
+            border: none;
+            background: white;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            position: relative;
+        }
+
+        .floating-switcher button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        .floating-switcher button.active {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .floating-switcher button.active::after {
+            content: '✓';
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            background: #10b981;
+            color: white;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .description {
+            margin-top: 16px;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #475569;
+        }
+
+        .all-option {
+            font-size: 16px !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Context Switcher Design Options</h1>
+
+        <!-- Option 1: Pills Style -->
+        <div class="option">
+            <h2>Option 1: Pills Style (Horizontal with Labels)</h2>
+            <div class="header-mock">
+                <span class="title">Hotlist 🔥</span>
+                <div class="pills-switcher">
+                    <button class="all-option">📊 All</button>
+                    <button class="active">❤️ Life</button>
+                    <button>🏠 H&A</button>
+                    <button>🏢 Comm</button>
+                    <button>🚜 Farm</button>
+                    <button>🤝 Network</button>
+                </div>
+            </div>
+            <div class="description">
+                <strong>Pros:</strong> Clear labels, easy to understand, shows active state clearly<br>
+                <strong>Cons:</strong> Takes more horizontal space<br>
+                <strong>Best for:</strong> Users who want clarity over compactness
+            </div>
+        </div>
+
+        <!-- Option 2: Tab Style -->
+        <div class="option">
+            <h2>Option 2: Tab Style (Underline Active)</h2>
+            <div class="header-mock">
+                <span class="title">Hotlist 🔥</span>
+                <div class="tab-switcher">
+                    <button class="all-option">📊 All</button>
+                    <button class="active">❤️ Life</button>
+                    <button>🏠 Home</button>
+                    <button>🏢 Comm</button>
+                    <button>🚜 Farm</button>
+                    <button>🤝 Net</button>
+                </div>
+            </div>
+            <div class="description">
+                <strong>Pros:</strong> Familiar tab pattern, clean look, clear active indicator<br>
+                <strong>Cons:</strong> Still takes horizontal space<br>
+                <strong>Best for:</strong> Professional, clean interface preference
+            </div>
+        </div>
+
+        <!-- Option 3: Icon Grid -->
+        <div class="option">
+            <h2>Option 3: Icon Grid (Icons Only with Tooltip)</h2>
+            <div class="header-mock">
+                <span class="title">Life Hotlist 🔥</span>
+                <div class="grid-switcher">
+                    <button class="all-option">
+                        📊
+                        <span class="tooltip">All Contexts</span>
+                    </button>
+                    <button class="active">
+                        ❤️
+                        <span class="tooltip">Life Insurance</span>
+                    </button>
+                    <button>
+                        🏠
+                        <span class="tooltip">Home & Auto</span>
+                    </button>
+                    <button>
+                        🏢
+                        <span class="tooltip">Commercial</span>
+                    </button>
+                    <button>
+                        🚜
+                        <span class="tooltip">Farm</span>
+                    </button>
+                    <button>
+                        🤝
+                        <span class="tooltip">Networking</span>
+                    </button>
+                </div>
+            </div>
+            <div class="description">
+                <strong>Pros:</strong> Very compact, clean design, tooltips on hover<br>
+                <strong>Cons:</strong> Requires hover/learning what icons mean<br>
+                <strong>Best for:</strong> Power users who value screen space
+            </div>
+        </div>
+
+        <!-- Option 4: Segmented Control -->
+        <div class="option">
+            <h2>Option 4: Segmented Control (iOS Style)</h2>
+            <div class="header-mock">
+                <span class="title">Life Hotlist 🔥</span>
+                <div class="segmented-switcher" id="segmented">
+                    <button class="all-option" onclick="moveSlider(0)">📊</button>
+                    <button class="active" onclick="moveSlider(1)">❤️</button>
+                    <button onclick="moveSlider(2)">🏠</button>
+                    <button onclick="moveSlider(3)">🏢</button>
+                    <button onclick="moveSlider(4)">🚜</button>
+                    <button onclick="moveSlider(5)">🤝</button>
+                    <div class="slider" style="width: 40px; height: 36px; left: 42px; top: 2px;"></div>
+                </div>
+            </div>
+            <div class="description">
+                <strong>Pros:</strong> Modern look, smooth animation, compact<br>
+                <strong>Cons:</strong> Icons only might need learning<br>
+                <strong>Best for:</strong> Modern, minimal interface aesthetic
+            </div>
+        </div>
+
+        <!-- Option 5: Floating Buttons -->
+        <div class="option">
+            <h2>Option 5: Floating Circle Buttons</h2>
+            <div class="header-mock">
+                <span class="title">Life Hotlist 🔥</span>
+                <div class="floating-switcher">
+                    <button class="all-option">📊</button>
+                    <button class="active">❤️</button>
+                    <button>🏠</button>
+                    <button>🏢</button>
+                    <button>🚜</button>
+                    <button>🤝</button>
+                </div>
+            </div>
+            <div class="description">
+                <strong>Pros:</strong> Eye-catching, clear selection with checkmark, modern<br>
+                <strong>Cons:</strong> Takes more vertical space, might be too playful<br>
+                <strong>Best for:</strong> Modern apps with emphasis on visual design
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Demo for segmented control animation
+        function moveSlider(index) {
+            const slider = document.querySelector('.segmented-switcher .slider');
+            const buttons = document.querySelectorAll('.segmented-switcher button');
+
+            // Remove active from all buttons
+            buttons.forEach(btn => btn.classList.remove('active'));
+            // Add active to clicked button
+            buttons[index].classList.add('active');
+
+            // Move slider
+            const buttonWidth = 40;
+            const gap = 2;
+            slider.style.left = (index * (buttonWidth + gap) + 2) + 'px';
+        }
+
+        // Add click handlers to all buttons for demo
+        document.querySelectorAll('button').forEach(button => {
+            if (!button.onclick) {
+                button.addEventListener('click', function() {
+                    const parent = this.parentElement;
+                    parent.querySelectorAll('button').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

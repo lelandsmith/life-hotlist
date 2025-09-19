@@ -123,7 +123,7 @@ h1{
 
 /* Flame title styling */
 .flame-title {
-  background: linear-gradient(135deg, #ff6b35, #ff8c00, #ffa500);
+  background: linear-gradient(135deg, #ea580c, #fb923c, #f97316);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -261,8 +261,15 @@ button:focus-visible{outline:none; box-shadow:var(--ring)}
 }
 .row:hover{background:color-mix(in oklab, var(--card) 92%, #eef2ff)}
 .row:last-child{border-bottom:none}
-/* Remove untouched background - we'll use green dot instead */
-.row.selected{outline:2px solid var(--info); box-shadow:var(--ring-strong)}
+/* Selected row styling - more subtle and modern */
+.row.selected {
+  background: linear-gradient(90deg, #3b82f6 3px, rgba(59, 130, 246, 0.08) 3px);
+  box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.15);
+  border-radius: 12px;
+}
+.row.selected:hover {
+  background: linear-gradient(90deg, #3b82f6 3px, rgba(59, 130, 246, 0.12) 3px);
+}
 
 /* Drag and drop styles */
 .row.dragging { opacity: 0.5; transform: scale(0.98); cursor: move; }
@@ -424,6 +431,11 @@ body[data-font-size="xlarge"] .row .sbtn.s-hot .ico { font-size: 24px; }
   border-radius:10px;font-size:10px;line-height:1;padding:2px 5px; box-shadow:0 2px 6px rgba(15,23,42,.08)
 }
 .badge[data-zero="1"]{display:none}
+.qbtn .last-contact{
+  position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);
+  font-size:9px;color:#6b7280;white-space:nowrap;background:rgba(255,255,255,0.9);
+  padding:1px 3px;border-radius:4px;
+}
 
 /* Status buttons */
 .sbtn{
@@ -804,6 +816,215 @@ body[data-font-size="xlarge"] .row .sbtn.s-hot .ico { font-size: 24px; }
   }
 }
 
+/* Context selector for adding in All view */
+#addContextSelector {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+  margin-left: 8px;
+  display: none;
+}
+
+body[data-all-contexts="true"] #addContextSelector {
+  display: inline-block;
+}
+
+/* Context Pills Switcher */
+.context-pills {
+  display: inline-flex;
+  gap: 6px;
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: 12px;
+}
+
+.context-pills button {
+  padding: 7px 11px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #64748b;
+  font-weight: 500;
+  font-family: system-ui, -apple-system, sans-serif;
+  line-height: 1.2;
+}
+
+.context-pills button:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.context-pills button.active {
+  background: white;
+  color: #1e293b;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.context-pills .pill-icon {
+  font-size: 16px;
+}
+
+.context-pills .pill-label {
+  font-size: 13px;
+}
+
+/* Context Group Headers */
+.context-group {
+  margin-bottom: 16px;
+  position: relative;
+}
+
+/* Compact mode for All Contexts view */
+body[data-all-contexts="true"] .row {
+  padding: 6px 12px;
+}
+
+body[data-all-contexts="true"] .context-group {
+  margin-bottom: 12px;
+}
+
+body[data-all-contexts="true"] .context-group-header {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+body[data-all-contexts="true"] .context-group > div:last-child {
+  padding: 4px;
+}
+
+.context-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
+  border: 1px solid #fb923c;
+  border-radius: 12px 12px 0 0;
+  margin-bottom: 0;
+  font-weight: 700;
+  font-size: 13px;
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: -1px;
+  z-index: 100;
+}
+
+.context-group-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.context-group-title > span:first-child {
+  font-size: 14px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.context-group-controls {
+  display: flex;
+  gap: 6px;
+}
+
+.context-group-controls button {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  padding: 2px 6px;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  transition: all 0.2s;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.context-group-controls button:hover {
+  background: white;
+  border-color: white;
+  transform: scale(1.05);
+}
+
+.context-group-controls button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.context-group-count {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+  margin-left: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+
+.context-group > div:last-child {
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Delete Undo Notification */
+.delete-undo-notification {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e293b;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 10000;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateX(-50%) translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+.delete-undo-notification button {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.delete-undo-notification button:hover {
+  background: #2563eb;
+}
+
+.delete-undo-countdown {
+  font-weight: 600;
+  color: #fbbf24;
+}
+
 /* Activity */
 .activity{max-height:30vh;overflow:auto}
 .activity .item{
@@ -1013,7 +1234,37 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <section class="card">
     <header>
       <div style="display:flex;flex-direction:column;gap:8px;width:100%">
-        <h1 id="hotlistTitle" class="flame-title">Life Hotlist 🔥</h1>
+        <div style="display:flex; align-items:center; justify-content:center; gap:12px; position:relative;">
+          <h1 id="hotlistTitle" class="flame-title" style="position:absolute; left:0;">
+            <span id="contextName">Life</span> Hotlist 🔥
+          </h1>
+          <div id="contextPills" class="context-pills">
+            <button data-context="all">
+              <span class="pill-icon">📊</span>
+              <span class="pill-label">All</span>
+            </button>
+            <button data-context="life" class="active">
+              <span class="pill-icon">❤️</span>
+              <span class="pill-label">Life</span>
+            </button>
+            <button data-context="home_auto">
+              <span class="pill-icon">🏠</span>
+              <span class="pill-label">H&A</span>
+            </button>
+            <button data-context="commercial">
+              <span class="pill-icon">🏢</span>
+              <span class="pill-label">Comm</span>
+            </button>
+            <button data-context="farm">
+              <span class="pill-icon">🚜</span>
+              <span class="pill-label">Farm</span>
+            </button>
+            <button data-context="networking">
+              <span class="pill-icon">🤝</span>
+              <span class="pill-label">Network</span>
+            </button>
+          </div>
+        </div>
         <div id="errorBanner" class="error-banner"></div>
 
         <!-- Daily Outreach Progress Bar -->
@@ -1043,7 +1294,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </div>
           <div class="stat-separator">|</div>
           <div class="stat-group" style="background:#e9f5ee; padding:4px 8px; border-radius:6px;">
-            <strong style="color:#0e7a5a;">Life Apps This Month:</strong>
+            <strong style="color:#0e7a5a;"><span id="contextLabel">Life</span> Apps This Month:</strong>
             <span id="monthlyPurchases" style="color:#0e7a5a; font-weight:700;">0</span>
           </div>
         </div>
@@ -1052,6 +1303,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="controls" style="margin:0;padding:0;">
           <div class="stack" style="flex-wrap:nowrap;align-items:center;">
             <input id="globalSearch" type="text" placeholder="Search clients or add new (press Enter)" style="min-width:160px;flex:1;" />
+            <select id="addContextSelector" title="Select context for new client">
+              <option value="" disabled selected>Select context</option>
+              <option value="life">❤️ Life</option>
+              <option value="home_auto">🏠 Home & Auto</option>
+              <option value="commercial">🏢 Commercial</option>
+              <option value="farm">🚜 Farm</option>
+              <option value="networking">🤝 Networking</option>
+            </select>
             <label class="small">Sort
               <select id="sortBy">
                 <option value="lastTouch">Last touched</option>
@@ -1216,9 +1475,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   /* =========================
    *  Version & Changelog
    * ========================= */
-  var VERSION = '1.10.9';
+  var VERSION = '2.1.0';
   // Recent commits from git log
   var CHANGELOG = [
+    { version: '2.1.0', date: '2025-01-19', changes: 'Replace dropdown with pill-style context switcher, add last contact dates, improve All Contexts view with reorderable groups, enable adding clients in All view, change "Purchased" to "Issued" across all contexts' },
+    { version: '2.0.0', date: '2025-01-18', changes: 'Add multi-context support for Life, Home & Auto, Commercial, Farm, and Networking with context-specific stages' },
     { version: '1.10.9', date: '2025-01-18', changes: 'Fix drag-and-drop in incognito/production by defaulting to no-sort when no cookie exists' },
     { version: '1.10.8', date: '2025-01-18', changes: 'Add Google Tag Manager integration (GTM-N5DXZ4MC) and standardize iconbtn sizes' },
     { version: '1.10.7', date: '2025-01-18', changes: 'Standardize group icon sizes with 18px minimum and 2px increments (18/20/22/24/26px)' },
@@ -1253,8 +1514,51 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   var STABLE_KEY='hotlistStable';
   var UI_KEY='hotlistUI';
 
+  // Context configurations
+  var CONTEXTS = {
+    life: {
+      name: "Life",
+      icon: "❤️",
+      stages: ['Initial Contact', 'Sent Quote', 'Sent Application', 'Pending Application Signature', 'Pending Medical Questionnaire', 'Issued'],
+      stageIcons: ['🤝', '💵', '📝', '✍️', '🧪', '✅'],
+      stageAbbr: ['Contact', 'Quoted', 'App', 'SigPend', 'MedQ', 'Issued']
+    },
+    home_auto: {
+      name: "Home & Auto",
+      icon: "🏠",
+      stages: ['Contact', 'Quoted', 'Applied', 'Issued'],
+      stageIcons: ['📞', '💵', '📝', '✅'],
+      stageAbbr: ['Contact', 'Quoted', 'Applied', 'Issued']
+    },
+    commercial: {
+      name: "Commercial",
+      icon: "🏢",
+      stages: ['Lead', 'Quoted', 'Proposal', 'Underwriting', 'Issued'],
+      stageIcons: ['👤', '💵', '📊', '🔍', '✅'],
+      stageAbbr: ['Lead', 'Quoted', 'Proposal', 'U/W', 'Issued']
+    },
+    farm: {
+      name: "Farm",
+      icon: "🚜",
+      stages: ['Lead', 'Quoted', 'Inspection', 'Underwriting', 'Issued'],
+      stageIcons: ['👤', '💵', '🔎', '🔍', '✅'],
+      stageAbbr: ['Lead', 'Quoted', 'Insp', 'U/W', 'Issued']
+    },
+    networking: {
+      name: "Networking",
+      icon: "🤝",
+      stages: ['Connected', 'Engaged', 'Referred'],
+      stageIcons: ['🔗', '💬', '🎯'],
+      stageAbbr: ['Connect', 'Engaged', 'Referred']
+    }
+  };
+
+  // Default to life insurance for backwards compatibility
+  var currentContext = 'life';
+
+  // Legacy mappings for migration
   var STATUS=['Initial Contact','Sent Quote','Sent Application','Pending Application Signature','Pending Medical Questionnaire','Purchased'];
-  var STATUS_ABBR={'Initial Contact':'Contact','Sent Quote':'Quoted','Sent Application':'App','Pending Application Signature':'SigPend','Pending Medical Questionnaire':'MedQ','Purchased':'Purchased'};
+  var STATUS_ABBR={'Initial Contact':'Contact','Sent Quote':'Quoted','Sent Application':'App','Pending Application Signature':'SigPend','Pending Medical Questionnaire':'MedQ','Purchased':'Issued'};
   var STATUS_ICON={'Initial Contact':'\uD83E\uDD1D','Sent Quote':'\uD83E\uDD7E','Sent Application':'\uD83D\uDCDD','Pending Application Signature':'\u270D\uFE0F','Pending Medical Questionnaire':'\uD83E\uDDEA','Purchased':'\u2705'};
   var EMOJI_CALL='\uD83D\uDCDE';
   var EMOJI_MSG ='\uD83D\uDCAC';
@@ -1281,7 +1585,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     appRoot:$('#appRoot'),
     list:$('#list'), archivedList:$('#archivedList'), archivedBlock:$('#archivedBlock'),
     kpis:$('#kpis'),
-    globalSearch:$('#globalSearch'), sortBy:$('#sortBy'),
+    globalSearch:$('#globalSearch'), sortBy:$('#sortBy'), contextPills:$('#contextPills'),
+    addContextSelector:$('#addContextSelector'),
+    contextName:$('#contextName'), contextLabel:$('#contextLabel'),
     statusFilter:$('#statusFilter'), showArchived:$('#showArchived'),
     ageDays:$('#ageDays'), groupToggle:$('#groupToggle'),
     emailSummaryBtn:$('#emailSummaryBtn'),
@@ -1539,10 +1845,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     if (result && result.then) {
       return result.then(function(loadedUI) {
         ui = loadedUI || {};
+        // Initialize context group order if not present
+        if(!ui.contextGroupOrder){
+          ui.contextGroupOrder = ['life', 'home_auto', 'commercial', 'farm', 'networking'];
+        }
         return ui;
       });
     }
     ui = result || {};
+    // Initialize context group order if not present
+    if(!ui.contextGroupOrder){
+      ui.contextGroupOrder = ['life', 'home_auto', 'commercial', 'farm', 'networking'];
+    }
     return ui;
   });
 
@@ -1609,7 +1923,37 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   /* Stable state */
   function coerceState(x){ var out={clients:[], quotes:{raw:'', list:[]}, quotesSettings:{interval:15, random:true, norepeat:true, recent:[]} }; if(!x) return out; if(Array.isArray(x)){ out.clients=x; return normalize(out); } if(typeof x==='object'){ if(Array.isArray(x.clients)) out.clients=x.clients; if(x.quotes) out.quotes=x.quotes; if(x.quotesSettings) out.quotesSettings=x.quotesSettings; return normalize(out);} return out; }
-  function normalize(state){ state.clients=(state.clients||[]).map(function(c){ return { id:c.id||uid(), name:c.name||'(Unnamed)', notes:(typeof c.notes==='string'?c.notes:''), status:c.status||'', purchaseDate:(typeof c.purchaseDate==='string'?c.purchaseDate:''), lastTouch:c.lastTouch||nowISO(), createdAt:c.createdAt||c.lastTouch||nowISO(), archived:!!c.archived, followUp:(typeof c.followUp==='string'?c.followUp:''), callCount:(isFinite(c.callCount)?c.callCount:0), msgCount:(isFinite(c.msgCount)?c.msgCount:0), queueToday:!!c.queueToday, queueTomorrow:!!c.queueTomorrow, hot:!!c.hot, history:Array.isArray(c.history)? c.history.filter(Boolean).map(function(h){ return {id:(h.id||uid()), ts:(h.ts||nowISO()), action:(h.action||'status'), to:(h.to!=null?h.to:''), kind:(h.kind!=null?h.kind:'')}; }) : [] }; }); state.quotes = state.quotes || {raw:'', list:[]}; if(!Array.isArray(state.quotes.list)) state.quotes.list=[]; state.quotesSettings = state.quotesSettings || {interval:15, random:true, norepeat:true, recent:[]}; if(!Array.isArray(state.quotesSettings.recent)) state.quotesSettings.recent=[]; return state; }
+  function normalize(state){
+    state.clients=(state.clients||[]).map(function(c){
+      return {
+        id:c.id||uid(),
+        name:c.name||'(Unnamed)',
+        notes:(typeof c.notes==='string'?c.notes:''),
+        context:c.context||'life',  // Preserve context field
+        stage:(typeof c.stage==='number'?c.stage:0),  // Preserve stage field
+        status:c.status||'',
+        purchaseDate:(typeof c.purchaseDate==='string'?c.purchaseDate:''),
+        lastTouch:c.lastTouch||nowISO(),
+        createdAt:c.createdAt||c.lastTouch||nowISO(),
+        archived:!!c.archived,
+        followUp:(typeof c.followUp==='string'?c.followUp:''),
+        callCount:(isFinite(c.callCount)?c.callCount:0),
+        msgCount:(isFinite(c.msgCount)?c.msgCount:0),
+        queueToday:!!c.queueToday,
+        queueTomorrow:!!c.queueTomorrow,
+        hot:!!c.hot,
+        history:Array.isArray(c.history)?
+          c.history.filter(Boolean).map(function(h){
+            return {id:(h.id||uid()), ts:(h.ts||nowISO()), action:(h.action||'status'), to:(h.to!=null?h.to:''), kind:(h.kind!=null?h.kind:'')};
+          }) : []
+      };
+    });
+    state.quotes = state.quotes || {raw:'', list:[]};
+    if(!Array.isArray(state.quotes.list)) state.quotes.list=[];
+    state.quotesSettings = state.quotesSettings || {interval:15, random:true, norepeat:true, recent:[]};
+    if(!Array.isArray(state.quotesSettings.recent)) state.quotesSettings.recent=[];
+    return state;
+  }
 
   /* Enhanced load/save with IndexedDB and localStorage fallback */
   function load() {
@@ -1694,8 +2038,98 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     window.scrollTo(0,prevDocY); if(els.activity) els.activity.scrollTop=prevActY;
   }
 
+  /* Helper function to get last call or message date */
+  function getLastContactDate(client, type){
+    if(!client.history) return null;
+    // Sort history by date, newest first
+    var sorted = client.history.filter(function(h){
+      return h.action === 'status' && h.to === type;
+    }).sort(function(a,b){
+      return new Date(b.ts) - new Date(a.ts);
+    });
+    if(sorted.length > 0){
+      var date = new Date(sorted[0].ts);
+      return (date.getMonth() + 1) + '/' + date.getDate();
+    }
+    return null;
+  }
+
   /* CRUD / actions */
-  function addClient(name){ preserveUIAndRender(function(){ state.clients.push({id:uid(), name:name, notes:'', status:'', lastTouch:nowISO(), createdAt:nowISO(), archived:false, followUp:'', callCount:0, msgCount:0, queueToday:false, queueTomorrow:false, hot:false, history:[]}); }); }
+  function addClient(name){
+    // Handle adding clients in "all" context view
+    if(currentContext === 'all'){
+      var contextSelector = document.getElementById('addContextSelector');
+      var selectedContext = contextSelector ? contextSelector.value : '';
+
+      if(!selectedContext){
+        alert('Please select a context for the new client');
+        contextSelector.focus();
+        return;
+      }
+
+      // Add client to the selected context
+      preserveUIAndRender(function(){
+        var newClient = {
+          id:uid(),
+          name:name,
+          notes:'',
+          context: selectedContext,  // Use selected context
+          stage: 0,
+          status:'',
+          lastTouch:nowISO(),
+          createdAt:nowISO(),
+          archived:false,
+          followUp:'',
+          callCount:0,
+          msgCount:0,
+          queueToday:false,
+          queueTomorrow:false,
+          hot:false,
+          history:[]
+        };
+
+        // Check sort preference
+        var sortBy = getCookie('sortBy');
+        if(!sortBy || sortBy === 'none'){
+          state.clients.unshift(newClient);
+        } else {
+          state.clients.push(newClient);
+        }
+
+        // Reset the context selector
+        contextSelector.value = '';
+      });
+      return;
+    }
+    preserveUIAndRender(function(){
+      var newClient = {
+        id:uid(),
+        name:name,
+        notes:'',
+        context: currentContext,  // Set context for new clients
+        stage: 0,  // Start at first stage
+        status:'',  // Keep for backwards compatibility
+        lastTouch:nowISO(),
+        createdAt:nowISO(),
+        archived:false,
+        followUp:'',
+        callCount:0,
+        msgCount:0,
+        queueToday:false,
+        queueTomorrow:false,
+        hot:false,
+        history:[]
+      };
+
+      // If "No Sort" is selected, add to beginning, otherwise add to end
+      var sortBy = getCookie('sortBy');
+      if(!sortBy || sortBy === 'none'){
+        state.clients.unshift(newClient);  // Add to beginning
+      } else {
+        state.clients.push(newClient);  // Add to end
+      }
+    });
+  }
   function setStatus(c,newStatus,buttonElement){
     var wasPurchased = c.status === 'Purchased';
     var oldStatus = c.status;
@@ -1736,6 +2170,51 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       }, 100);
     }
   }
+
+  // New function for setting stage in context-aware system
+  function setClientStage(c, newStage){
+    var clientContext = c.context || currentContext;
+    var contextConfig = CONTEXTS[clientContext] || CONTEXTS.life;
+    var stages = contextConfig.stages;
+
+    // Validate stage index
+    if(newStage < 0 || newStage >= stages.length) return;
+
+    var oldStage = c.stage;
+    var wasFinalStage = oldStage === stages.length - 1;
+
+    preserveUIAndRender(function(){
+      var when = nowISO();
+      c.stage = newStage;
+      c.context = clientContext; // Ensure context is set
+      c.lastTouch = when;
+
+      // Add history entry
+      if(!c.history) c.history = [];
+      c.history.push({
+        id: uid(),
+        ts: when,
+        action: 'stage',
+        to: stages[newStage],
+        stageIndex: newStage
+      });
+
+      if(c.queueToday) c.queueToday = false;
+
+      // Set purchase/issue date when reaching final stage
+      if(newStage === stages.length - 1 && !c.purchaseDate){
+        c.purchaseDate = when;
+      }
+    });
+
+    // Trigger celebration for final stage
+    if(newStage === stages.length - 1 && !wasFinalStage){
+      setTimeout(function(){
+        startPurchaseCelebration();
+      }, 100);
+    }
+  }
+
   function clearStatus(c){ preserveUIAndRender(function(){ c.status=''; if(c.purchaseDate) delete c.purchaseDate; }); }
   function clearPurchase(c){ preserveUIAndRender(function(){ if(c.status === 'Purchased') c.status=''; if(c.purchaseDate) delete c.purchaseDate; }); }
   function incrementCall(c){
@@ -1754,6 +2233,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   function decrementCall(c){
     preserveUIAndRender(function(){
       c.callCount=Math.max(0,(c.callCount||0)-1);
+      // Also remove the most recent call from history
+      if(c.history && c.history.length > 0){
+        var callIndex = -1;
+        for(var i = c.history.length - 1; i >= 0; i--){
+          if(c.history[i].action === 'status' && c.history[i].to === 'Called'){
+            callIndex = i;
+            break;
+          }
+        }
+        if(callIndex !== -1){
+          c.history.splice(callIndex, 1);
+        }
+      }
     });
     // Update Power Hour call counter if timer is running
     if(hopRunning && hopCallCount > 0){
@@ -1762,10 +2254,99 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     }
   }
   function incrementMsg(c){ preserveUIAndRender(function(){ c.msgCount=(c.msgCount||0)+1; c.lastTouch=nowISO(); c.history.push({id:uid(), ts:nowISO(), action:'status', to:'Emailed'}); if(c.queueToday) c.queueToday=false; }); }
-  function decrementMsg(c){ preserveUIAndRender(function(){ c.msgCount=Math.max(0,(c.msgCount||0)-1); }); }
+  function decrementMsg(c){
+    preserveUIAndRender(function(){
+      c.msgCount=Math.max(0,(c.msgCount||0)-1);
+      // Also remove the most recent message from history
+      if(c.history && c.history.length > 0){
+        var msgIndex = -1;
+        for(var i = c.history.length - 1; i >= 0; i--){
+          if(c.history[i].action === 'status' && c.history[i].to === 'Emailed'){
+            msgIndex = i;
+            break;
+          }
+        }
+        if(msgIndex !== -1){
+          c.history.splice(msgIndex, 1);
+        }
+      }
+    });
+  }
   function updateNotes(c,notes){ c.notes=notes; save(state); }
   function archiveClient(c,flag){ preserveUIAndRender(function(){ c.archived=!!flag; }); }
-  function deleteClient(c){ if(!confirm('Delete '+c.name+'?')) return; preserveUIAndRender(function(){ state.clients=state.clients.filter(function(x){return x.id!==c.id;}); }); }
+  var deleteUndoTimeout = null;
+  var deletedClient = null;
+
+  function deleteClient(c){
+    // Store the client and its index for potential undo
+    var clientIndex = state.clients.findIndex(function(x){return x.id===c.id;});
+    deletedClient = JSON.parse(JSON.stringify(c));
+
+    // Remove the client immediately
+    preserveUIAndRender(function(){
+      state.clients=state.clients.filter(function(x){return x.id!==c.id;});
+    });
+
+    // Clear any existing timeout
+    if(deleteUndoTimeout){
+      clearTimeout(deleteUndoTimeout);
+      var existingNotif = document.querySelector('.delete-undo-notification');
+      if(existingNotif) existingNotif.remove();
+    }
+
+    // Create undo notification
+    var notif = document.createElement('div');
+    notif.className = 'delete-undo-notification';
+
+    var message = document.createElement('span');
+    message.textContent = 'Deleted "' + c.name + '" - ';
+
+    var countdown = document.createElement('span');
+    countdown.className = 'delete-undo-countdown';
+    var secondsLeft = 5;
+    countdown.textContent = secondsLeft + 's';
+
+    var undoBtn = document.createElement('button');
+    undoBtn.textContent = 'Undo';
+    undoBtn.onclick = function(){
+      clearTimeout(deleteUndoTimeout);
+      clearInterval(countdownInterval);
+
+      // Restore the client at its original position
+      preserveUIAndRender(function(){
+        if(clientIndex >= 0 && clientIndex <= state.clients.length){
+          state.clients.splice(clientIndex, 0, deletedClient);
+        } else {
+          state.clients.push(deletedClient);
+        }
+      });
+
+      notif.remove();
+      deletedClient = null;
+    };
+
+    notif.appendChild(message);
+    notif.appendChild(countdown);
+    notif.appendChild(undoBtn);
+    document.body.appendChild(notif);
+
+    // Update countdown
+    var countdownInterval = setInterval(function(){
+      secondsLeft--;
+      if(secondsLeft > 0){
+        countdown.textContent = secondsLeft + 's';
+      } else {
+        clearInterval(countdownInterval);
+      }
+    }, 1000);
+
+    // Remove notification and clear deleted client after 5 seconds
+    deleteUndoTimeout = setTimeout(function(){
+      notif.remove();
+      deletedClient = null;
+      clearInterval(countdownInterval);
+    }, 5000);
+  }
   function toggleQueueToday(c,val){ preserveUIAndRender(function(){ c.queueToday = (typeof val==='boolean') ? val : !c.queueToday; if(c.queueToday) c.queueTomorrow=false; }); }
   function toggleQueueTomorrow(c,val){ preserveUIAndRender(function(){ c.queueTomorrow = (typeof val==='boolean') ? val : !c.queueTomorrow; if(c.queueTomorrow) c.queueToday=false; }); }
 
@@ -1953,7 +2534,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     var count = 0;
 
     if(state && state.clients) state.clients.forEach(function(c){
-      if(c.status === 'Purchased' && c.purchaseDate){
+      // Check if client is in current context
+      var clientContext = c.context || 'life';
+      if(clientContext !== currentContext) return;
+
+      // Check if client has reached final stage (purchased/issued)
+      var contextConfig = CONTEXTS[clientContext];
+      var finalStage = contextConfig.stages.length - 1;
+
+      if((c.stage === finalStage || c.status === 'Purchased') && c.purchaseDate){
         var purchaseDate = new Date(c.purchaseDate);
         if(purchaseDate >= startOfMonth && purchaseDate < endOfMonth){
           count++;
@@ -2066,48 +2655,78 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   function colorClass(st){ return st==='Initial Contact'?'s-contact' : st==='Sent Quote'?'s-quote' : st==='Sent Application'?'s-app' : st==='Pending Application Signature'?'s-sig' : st==='Pending Medical Questionnaire'?'s-medq' : 's-pur'; }
 
   /* Render Status Progress Tracker */
+  // Get stages for current context (or client's context)
+  function getContextStages(clientContext) {
+    var ctx = clientContext || currentContext;
+    return CONTEXTS[ctx] || CONTEXTS.life;
+  }
+
   function renderStatusTracker(clientOrStatus, clientObj){
     var tracker = document.createElement('div');
     tracker.className = 'status-tracker compact';
 
     // Handle both client object and status string, with null checks
-    var currentStatus = null;
+    var currentStage = null;
     var client = null;
 
     if(typeof clientOrStatus === 'string'){
-      currentStatus = clientOrStatus;
+      currentStage = clientOrStatus;
       client = clientObj;
     } else if(clientOrStatus){
-      currentStatus = clientOrStatus.status;
+      // For existing clients, use their stage or migrate from old status
+      if(clientOrStatus.stage !== undefined) {
+        currentStage = clientOrStatus.stage;
+      } else if(clientOrStatus.status) {
+        // Migrate old status to stage index
+        currentStage = STATUS.indexOf(clientOrStatus.status);
+      }
       client = clientOrStatus;
     } else {
-      currentStatus = null;
+      currentStage = null;
       client = clientObj;
     }
 
-    // Determine which stage is active/completed
-    var currentStatusIndex = STATUS.indexOf(currentStatus);
+    // Get the context configuration
+    var clientContext = (client && client.context) || currentContext;
+    var contextConfig = CONTEXTS[clientContext] || CONTEXTS.life;
+    var stages = contextConfig.stages;
+    var stageIcons = contextConfig.stageIcons;
 
-    // Set progress level for the green line (0-5 based on status index)
-    // Line should go TO the active status, not past it
-    if(currentStatusIndex >= 0){
-      tracker.setAttribute('data-progress', currentStatusIndex);
+    // Convert stage to number if it's a string (for backwards compatibility)
+    if(typeof currentStage === 'string') {
+      var idx = stages.indexOf(currentStage);
+      if(idx === -1) {
+        // Try to find in old STATUS array for migration
+        idx = STATUS.indexOf(currentStage);
+        if(idx !== -1 && clientContext === 'life') {
+          currentStage = Math.min(idx, stages.length - 1);
+        } else {
+          currentStage = -1;
+        }
+      } else {
+        currentStage = idx;
+      }
+    }
+
+    // Set progress level for the green line
+    if(currentStage >= 0){
+      tracker.setAttribute('data-progress', currentStage);
     } else {
       tracker.setAttribute('data-progress', '-1');
     }
 
-    STATUS.forEach(function(status, index){
+    stages.forEach(function(stageName, index){
       var stage = document.createElement('div');
       stage.className = 'stage';
 
       // Set completed/active state
-      if(currentStatusIndex >= 0){
-        if(index < currentStatusIndex){
+      if(currentStage >= 0){
+        if(index < currentStage){
           stage.classList.add('completed');
-        } else if(index === currentStatusIndex){
+        } else if(index === currentStage){
           stage.classList.add('active');
-          // Add purchased class if this is the purchased status
-          if(status === 'Purchased'){
+          // Add purchased class if this is the final stage
+          if(index === stages.length - 1){
             stage.classList.add('purchased');
           }
         }
@@ -2115,21 +2734,22 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
       var icon = document.createElement('div');
       icon.className = 'stage-icon';
-      icon.textContent = STATUS_ICON[status] || '•';
-      icon.title = status; // Tooltip
+      icon.textContent = stageIcons[index] || '•';
+      icon.title = stageName; // Tooltip
 
-
-      // Make clickable to set status (only if we have a client object)
+      // Make clickable to set stage (only if we have a client object)
       if(client && client.id){
         icon.addEventListener('click', function(e){
           e.stopPropagation();
-          setStatus(client, status);
+          setClientStage(client, index);
         });
       }
 
       var label = document.createElement('div');
       label.className = 'stage-label';
-      label.textContent = STATUS_ABBR[status] || status;
+      // Use abbreviated names if available
+      var shortName = (contextConfig.stageAbbr && contextConfig.stageAbbr[index]) || stageName;
+      label.textContent = shortName;
 
       stage.appendChild(icon);
       stage.appendChild(label);
@@ -2269,11 +2889,27 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
       // Combine all actions into one compact group
       var callBtn=document.createElement('button'); callBtn.className='qbtn has-tip'; setTip(callBtn,'Call'); callBtn.textContent=EMOJI_CALL;
-      var callBadge=document.createElement('span'); callBadge.className='badge'; callBadge.textContent=String(c.callCount||0); callBadge.setAttribute('data-zero', (c.callCount||0)===0 ? '1':'0'); callBtn.appendChild(callBadge); callBtn.addEventListener('click', function(){ incrementCall(c); });
-      
+      var callBadge=document.createElement('span'); callBadge.className='badge'; callBadge.textContent=String(c.callCount||0); callBadge.setAttribute('data-zero', (c.callCount||0)===0 ? '1':'0'); callBtn.appendChild(callBadge);
+      var lastCallDate = getLastContactDate(c, 'Called');
+      if(lastCallDate){
+        var callDateSpan = document.createElement('span');
+        callDateSpan.className = 'last-contact';
+        callDateSpan.textContent = lastCallDate;
+        callBtn.appendChild(callDateSpan);
+      }
+      callBtn.addEventListener('click', function(){ incrementCall(c); });
+
       var msgBtn=document.createElement('button'); msgBtn.className='qbtn has-tip'; setTip(msgBtn,'Message'); msgBtn.textContent=EMOJI_MSG;
-      var msgBadge=document.createElement('span'); msgBadge.className='badge'; msgBadge.textContent=String(c.msgCount||0); msgBadge.setAttribute('data-zero', (c.msgCount||0)===0 ? '1':'0'); msgBtn.appendChild(msgBadge); msgBtn.addEventListener('click', function(){ incrementMsg(c); });
-      
+      var msgBadge=document.createElement('span'); msgBadge.className='badge'; msgBadge.textContent=String(c.msgCount||0); msgBadge.setAttribute('data-zero', (c.msgCount||0)===0 ? '1':'0'); msgBtn.appendChild(msgBadge);
+      var lastMsgDate = getLastContactDate(c, 'Emailed');
+      if(lastMsgDate){
+        var msgDateSpan = document.createElement('span');
+        msgDateSpan.className = 'last-contact';
+        msgDateSpan.textContent = lastMsgDate;
+        msgBtn.appendChild(msgDateSpan);
+      }
+      msgBtn.addEventListener('click', function(){ incrementMsg(c); });
+
       actionsSection.appendChild(callBtn); actionsSection.appendChild(msgBtn);
       
       // Status buttons (icon only)
@@ -2331,13 +2967,30 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       // Quick counters (more spacing from statuses via group class)
       var quick=document.createElement('div'); quick.className='group--quick';
       var callBtn=document.createElement('button'); callBtn.className='qbtn has-tip'; callBtn.title='Log a Call'; setTip(callBtn,'Call'); callBtn.textContent=EMOJI_CALL;
-      var callBadge=document.createElement('span'); callBadge.className='badge'; callBadge.textContent=String(c.callCount||0); callBadge.setAttribute('data-zero', (c.callCount||0)===0 ? '1':'0'); callBtn.appendChild(callBadge); callBtn.addEventListener('click', function(){ incrementCall(c); });
+      var callBadge=document.createElement('span'); callBadge.className='badge'; callBadge.textContent=String(c.callCount||0); callBadge.setAttribute('data-zero', (c.callCount||0)===0 ? '1':'0'); callBtn.appendChild(callBadge);
+      var lastCallDate = getLastContactDate(c, 'Called');
+      if(lastCallDate){
+        var callDateSpan = document.createElement('span');
+        callDateSpan.className = 'last-contact';
+        callDateSpan.textContent = lastCallDate;
+        callBtn.appendChild(callDateSpan);
+      }
+      callBtn.addEventListener('click', function(){ incrementCall(c); });
+
       var msgBtn=document.createElement('button'); msgBtn.className='qbtn has-tip'; msgBtn.title='Log a Message'; setTip(msgBtn,'Message'); msgBtn.textContent=EMOJI_MSG;
-      var msgBadge=document.createElement('span'); msgBadge.className='badge'; msgBadge.textContent=String(c.msgCount||0); msgBadge.setAttribute('data-zero', (c.msgCount||0)===0 ? '1':'0'); msgBtn.appendChild(msgBadge); msgBtn.addEventListener('click', function(){ incrementMsg(c); });
+      var msgBadge=document.createElement('span'); msgBadge.className='badge'; msgBadge.textContent=String(c.msgCount||0); msgBadge.setAttribute('data-zero', (c.msgCount||0)===0 ? '1':'0'); msgBtn.appendChild(msgBadge);
+      var lastMsgDate = getLastContactDate(c, 'Emailed');
+      if(lastMsgDate){
+        var msgDateSpan = document.createElement('span');
+        msgDateSpan.className = 'last-contact';
+        msgDateSpan.textContent = lastMsgDate;
+        msgBtn.appendChild(msgDateSpan);
+      }
+      msgBtn.addEventListener('click', function(){ incrementMsg(c); });
       quick.appendChild(callBtn); quick.appendChild(msgBtn);
 
       // Replace status buttons with progress tracker
-      var statusTracker = renderStatusTracker(c ? c.status : null, c);
+      var statusTracker = renderStatusTracker(c);
 
       // Create a wrapper for status tracker and hot button
       var bar = document.createElement('div');
@@ -2486,6 +3139,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     container.innerHTML='';
     var q=(els.globalSearch && els.globalSearch.value ? els.globalSearch.value : '').toLowerCase().trim();
     var filtered = clients.filter(function(c){
+      // Note: Context filtering already done in render() function
+      // Don't double-filter here
       if(els.showArchived && els.showArchived.checked ? !c.archived : c.archived) return false;
       if(els.statusFilter && els.statusFilter.value && c.status!==els.statusFilter.value) return false;
       if(q && !(c.name.toLowerCase().includes(q) || (c.notes||'').toLowerCase().includes(q) || (c.status||'').toLowerCase().includes(q))) return false;
@@ -2504,14 +3159,152 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     });
     restoreSelection();
   }
+
+  function renderGroupedList(container){
+    if(!container) return;
+    container.innerHTML='';
+
+    var q=(els.globalSearch && els.globalSearch.value ? els.globalSearch.value : '').toLowerCase().trim();
+
+    // Render each context group in order
+    ui.contextGroupOrder.forEach(function(contextKey, groupIndex){
+      if(!CONTEXTS[contextKey]) return;
+
+      var groupClients = state.clients.filter(function(c){
+        var clientContext = c.context || 'life';
+        if(clientContext !== contextKey) return false;
+        if(els.showArchived && els.showArchived.checked ? !c.archived : c.archived) return false;
+        if(els.statusFilter && els.statusFilter.value && c.status!==els.statusFilter.value) return false;
+        if(q && !(c.name.toLowerCase().includes(q) || (c.notes||'').toLowerCase().includes(q) || (c.status||'').toLowerCase().includes(q))) return false;
+        return true;
+      });
+
+      if(groupClients.length === 0 && !q) return; // Skip empty groups when not searching
+
+      // Create group container
+      var groupDiv = document.createElement('div');
+      groupDiv.className = 'context-group';
+      groupDiv.dataset.context = contextKey;
+
+      // Create group header
+      var header = document.createElement('div');
+      header.className = 'context-group-header';
+
+      var titleDiv = document.createElement('div');
+      titleDiv.className = 'context-group-title';
+
+      var titleSpan = document.createElement('span');
+      titleSpan.textContent = CONTEXTS[contextKey].icon + ' ' + CONTEXTS[contextKey].name;
+      titleDiv.appendChild(titleSpan);
+
+      var countSpan = document.createElement('span');
+      countSpan.className = 'context-group-count';
+      countSpan.textContent = '(' + groupClients.length + ')';
+      titleDiv.appendChild(countSpan);
+
+      header.appendChild(titleDiv);
+
+      // Add reorder controls
+      var controls = document.createElement('div');
+      controls.className = 'context-group-controls';
+
+      var upBtn = document.createElement('button');
+      upBtn.textContent = '↑';
+      upBtn.title = 'Move group up';
+      upBtn.disabled = groupIndex === 0;
+      upBtn.onclick = function(){
+        if(groupIndex > 0){
+          var temp = ui.contextGroupOrder[groupIndex];
+          ui.contextGroupOrder[groupIndex] = ui.contextGroupOrder[groupIndex - 1];
+          ui.contextGroupOrder[groupIndex - 1] = temp;
+          saveUI(ui);
+          render();
+        }
+      };
+
+      var downBtn = document.createElement('button');
+      downBtn.textContent = '↓';
+      downBtn.title = 'Move group down';
+      downBtn.disabled = groupIndex === ui.contextGroupOrder.length - 1;
+      downBtn.onclick = function(){
+        if(groupIndex < ui.contextGroupOrder.length - 1){
+          var temp = ui.contextGroupOrder[groupIndex];
+          ui.contextGroupOrder[groupIndex] = ui.contextGroupOrder[groupIndex + 1];
+          ui.contextGroupOrder[groupIndex + 1] = temp;
+          saveUI(ui);
+          render();
+        }
+      };
+
+      controls.appendChild(upBtn);
+      controls.appendChild(downBtn);
+      header.appendChild(controls);
+
+      groupDiv.appendChild(header);
+
+      // Add clients
+      var clientsContainer = document.createElement('div');
+      sortClients(groupClients).forEach(function(c){
+        var row = buildRow(c, {});
+        clientsContainer.appendChild(row);
+      });
+      groupDiv.appendChild(clientsContainer);
+
+      container.appendChild(groupDiv);
+    });
+
+    restoreSelection();
+  }
+
   function render(){
     if(!state || !state.clients) return;
 
-    var activeAll=state.clients.filter(function(c){return !c.archived;});
+    // Set body attribute for All Contexts view
+    if(currentContext === 'all'){
+      document.body.setAttribute('data-all-contexts', 'true');
+    } else {
+      document.body.removeAttribute('data-all-contexts');
+    }
+
+    // Handle "all" context separately
+    if(currentContext === 'all'){
+      var activeAll = state.clients.filter(function(c){return !c.archived;});
+      var todayClients = activeAll.filter(function(c){ return c.queueToday; });
+      var scheduled = activeAll.filter(isFutureFollowUp);
+
+      renderKPIs(); renderPipeline(); renderTrendRibbons(); renderDailyOutreach(); updateDemoButtons();
+
+      // Hide empty state for "all" view
+      hideEmptyState();
+
+      // Render grouped list
+      renderGroupedList(els.list);
+
+      // Handle today's queue and scheduled
+      renderList(els.todayList, todayClients);
+      renderList(els.followList, scheduled.sort(function(a, b) {
+        var dateA = new Date(a.followUp);
+        var dateB = new Date(b.followUp);
+        return dateA - dateB;
+      }));
+      renderNextToTouch();
+      renderFollowUps();
+      renderActivity();
+      renderHeatmap();
+      renderChart();
+      return;
+    }
+
+    // Filter clients by current context
+    var contextClients = state.clients.filter(function(c){
+      return (c.context || 'life') === currentContext;
+    });
+
+    var activeAll=contextClients.filter(function(c){return !c.archived;});
     var todayClients = activeAll.filter(function(c){ return c.queueToday; });
     var scheduled = activeAll.filter(isFutureFollowUp);
     var mainActive = activeAll.filter(function(c){ return !isFutureFollowUp(c) && !c.queueToday; });
-    var archived=state.clients.filter(function(c){return c.archived;});
+    var archived=contextClients.filter(function(c){return c.archived;});
 
     renderKPIs(); renderPipeline(); renderTrendRibbons(); renderDailyOutreach(); updateDemoButtons();
 
@@ -2584,7 +3377,46 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       setSortCookie(els.sortBy.value);
       render();
       setTimeout(enableDragAndDrop, 100);
+      els.sortBy.blur(); // Remove focus to enable keyboard navigation
     });
+    // Context pills click handlers
+    if(els.contextPills) {
+      els.contextPills.querySelectorAll('button').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var newContext = this.getAttribute('data-context');
+          if(newContext === currentContext) return; // Already selected
+
+          // Update active state
+          els.contextPills.querySelectorAll('button').forEach(function(b) {
+            b.classList.remove('active');
+          });
+          this.classList.add('active');
+
+          // Update context
+          currentContext = newContext;
+          setContextCookie(currentContext);
+
+          // Update the title and label
+          if(els.contextName) {
+            if(currentContext === 'all') {
+              els.contextName.textContent = 'All';
+            } else {
+              els.contextName.textContent = CONTEXTS[currentContext].name;
+            }
+          }
+          if(els.contextLabel) {
+            if(currentContext === 'all') {
+              els.contextLabel.textContent = 'All Contexts';
+            } else {
+              els.contextLabel.textContent = CONTEXTS[currentContext].name;
+            }
+          }
+          // Re-render to update stage displays
+          render();
+          this.blur(); // Remove focus to enable keyboard navigation
+        });
+      });
+    }
     if(els.chartRangeSel) els.chartRangeSel.addEventListener(ev, function(){ renderChart(); });
   });
 
@@ -2598,8 +3430,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   if(els.globalSearch) els.globalSearch.addEventListener('keydown', function(e){
     if(e.key==='Enter'){
       var q=els.globalSearch.value.trim(); if(!q) return;
-      var exists=state.clients.some(function(c){ return c.name.toLowerCase()===q.toLowerCase(); });
-      if(!exists){ addClient(q); els.globalSearch.select(); }
+      // Check for duplicates only within the current context
+      var exists=state.clients.some(function(c){
+        return (c.context || 'life') === currentContext && c.name.toLowerCase()===q.toLowerCase();
+      });
+      if(!exists){
+        addClient(q);
+        els.globalSearch.value = '';
+        state.searchTerm = '';
+        // Reset context selector if in All view
+        if(currentContext === 'all' && els.addContextSelector){
+          els.addContextSelector.value = '';
+        }
+        render();
+      }
     }
   });
 
@@ -2621,6 +3465,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   function setFontSizeCookie(fontSize) {
     document.cookie = "fontSize=" + fontSize + "; path=/; max-age=31536000"; // 1 year
+  }
+
+  function setContextCookie(context) {
+    document.cookie = "context=" + context + "; path=/; max-age=31536000"; // 1 year
   }
 
   function applyFontSize() {
@@ -2909,25 +3757,22 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   /* Show/hide demo buttons based on presence of demo data */
   function updateDemoButtons(){
+    // Only show demo buttons for Life context
+    var isLifeContext = currentContext === 'life';
+
     // Check if there are any demo clients
     var hasDemoClients = state.clients && state.clients.some(function(client){
       return client.id && client.id.startsWith('demo-');
     });
 
-    console.log('=== updateDemoButtons Debug ===');
-    console.log('state.clients:', state.clients);
-    console.log('hasDemoClients:', hasDemoClients);
-
-    // Show/hide load demo button (show when no demo clients exist)
+    // Show/hide load demo button (only for Life context when no demo clients exist)
     if(els.loadDemoBtn){
-      els.loadDemoBtn.style.display = hasDemoClients ? 'none' : 'block';
-      console.log('Setting load demo button display to:', hasDemoClients ? 'none' : 'block');
+      els.loadDemoBtn.style.display = (isLifeContext && !hasDemoClients) ? 'block' : 'none';
     }
 
-    // Show/hide clear demo section (show when demo clients exist)
+    // Show/hide clear demo section (only for Life context when demo clients exist)
     if(els.clearDemoSection){
-      els.clearDemoSection.style.display = hasDemoClients ? 'block' : 'none';
-      console.log('Setting clear demo section display to:', hasDemoClients ? 'block' : 'none');
+      els.clearDemoSection.style.display = (isLifeContext && hasDemoClients) ? 'block' : 'none';
     }
   }
 
@@ -2939,10 +3784,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     els.mainTableHead.style.display = 'none';
     els.list.innerHTML = '';
 
+    // Only show demo button for Life context
+    var demoButton = currentContext === 'life' ?
+      '<button onclick="loadDemoData()" style="background:var(--info); color:white; border:none; padding:12px 24px; border-radius:8px; font-size:14px; cursor:pointer; margin-top:10px; margin-bottom:20px;">📋 Load Demo Data</button>' :
+      '';
+
     els.emptyState.innerHTML = '<div style="padding:40px 20px; text-align:center; color:var(--muted);">' +
       '<div style="font-size:16px; margin-bottom:10px;">No clients yet</div>' +
       '<div style="font-size:14px; margin-bottom:20px;">Use the search bar above to add your first client.<br/>Just type a name and press Enter!<br/><br/>Or use the Import Client button (📥) in the top right to import from a file.</div>' +
-      '<button onclick="loadDemoData()" style="background:var(--info); color:white; border:none; padding:12px 24px; border-radius:8px; font-size:14px; cursor:pointer; margin-top:10px; margin-bottom:20px;">📋 Load Demo Data</button>' +
+      demoButton +
       '<div style="font-size:12px; color:var(--muted); max-width:750px; margin:0 auto; line-height:1.4; background:rgba(0,0,0,0.02); padding:15px; border-radius:8px;">' +
       '<strong>🔒 Privacy Notice:</strong> All data is stored locally in your browser only. Nothing is sent to any server. ' +
       'However, please avoid entering personally identifiable information (PII) like social security numbers, full addresses, or sensitive personal details.' +
@@ -3074,7 +3924,37 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   /* Modal functions */
   function showShortcutsModal(){
-    document.getElementById('shortcutsModal').style.display = 'block';
+    // Update the shortcuts modal with current context stages
+    var modal = document.getElementById('shortcutsModal');
+    if(!modal) return;
+
+    // Find all h3 elements and locate Status Management section
+    var h3Elements = modal.querySelectorAll('h3');
+    for(var i = 0; i < h3Elements.length; i++){
+      if(h3Elements[i].textContent.includes('Status Management')){
+        var statusContainer = h3Elements[i].nextElementSibling;
+        if(statusContainer){
+          // Clear existing content
+          statusContainer.innerHTML = '';
+
+          // Add current context stages
+          var contextConfig = CONTEXTS[currentContext] || CONTEXTS.life;
+          contextConfig.stages.forEach(function(stage, index){
+            var div = document.createElement('div');
+            div.innerHTML = '<kbd>' + (index + 1) + '</kbd> - ' + stage;
+            statusContainer.appendChild(div);
+          });
+
+          // Add clear option
+          var clearDiv = document.createElement('div');
+          clearDiv.innerHTML = '<kbd>0</kbd> - Reset to first stage';
+          statusContainer.appendChild(clearDiv);
+        }
+        break;
+      }
+    }
+
+    modal.style.display = 'block';
   }
   function closeShortcutsModal(){
     document.getElementById('shortcutsModal').style.display = 'none';
@@ -3167,12 +4047,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       {
         id: 'demo-' + Date.now() + '-1',
         name: 'Sarah Johnson',
+        context: 'life',
         status: 'Sent Quote',
+        stage: 1,  // Quoted stage
         notes: 'Interested in term life insurance for $500K coverage.\nHas 2 young children, budget around $150/month.\nPrefers to meet on weekends due to work schedule.',
         callCount: 2,
         msgCount: 1,
         lastTouch: yesterday,
         created: twoDaysAgo,
+        createdAt: twoDaysAgo,
         hot: false,
         archived: false,
         queueToday: false,
@@ -3184,11 +4067,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       {
         id: 'demo-' + Date.now() + '-2',
         name: 'Michael Chen',
+        context: 'life',
+        stage: 0,  // Initial Contact stage
         notes: 'Self-employed business owner looking for disability insurance.\nRuns a successful consulting firm, needs income protection.\nVery detail-oriented, asks lots of questions.',
         callCount: 0,
         msgCount: 0,
         lastTouch: new Date(Date.now() - 5*24*60*60*1000).toISOString(),
         created: new Date(Date.now() - 5*24*60*60*1000).toISOString(),
+        createdAt: new Date(Date.now() - 5*24*60*60*1000).toISOString(),
         hot: false,
         archived: false,
         queueToday: false,
@@ -3200,12 +4086,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       {
         id: 'demo-' + Date.now() + '-3',
         name: 'Jennifer Martinez',
+        context: 'life',
         status: 'Purchased',
+        stage: 5,  // Purchased/Issued stage
         notes: 'Purchased whole life policy for $250K.\nEasy client, referred by existing customer.\nInterested in additional coverage for spouse.',
         callCount: 1,
         msgCount: 0,
         lastTouch: yesterday,
         created: new Date(Date.now() - 7*24*60*60*1000).toISOString(),
+        createdAt: new Date(Date.now() - 7*24*60*60*1000).toISOString(),
         purchaseDate: yesterday,
         hot: false,
         archived: false,
@@ -3498,10 +4387,27 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     if(key==='ArrowDown' || key==='j' || key==='J'){ selectionIndex++; restoreSelection(); e.preventDefault(); }
     if(key==='ArrowUp' || key==='k' || key==='K'){ selectionIndex--; restoreSelection(); e.preventDefault(); }
 
-    var map={'1':'Initial Contact','2':'Sent Quote','3':'Sent Application','4':'Pending Application Signature','5':'Pending Medical Questionnaire','6':'Purchased'};
-    if(map[key]){ var c1=getSelectedClient(); if(c1){ setStatus(c1,map[key]); e.preventDefault(); } }
-    
-    if(key==='0'){ var c0=getSelectedClient(); if(c0){ clearStatus(c0); e.preventDefault(); } }
+    // Handle number keys for stage selection based on current context
+    if(key >= '1' && key <= '9'){
+      var stageIndex = parseInt(key) - 1;
+      var contextConfig = CONTEXTS[currentContext] || CONTEXTS.life;
+      if(stageIndex < contextConfig.stages.length){
+        var c1=getSelectedClient();
+        if(c1){
+          setClientStage(c1, stageIndex);
+          e.preventDefault();
+        }
+      }
+    }
+
+    if(key==='0'){
+      var c0=getSelectedClient();
+      if(c0){
+        // Clear stage (set to -1 or first stage)
+        setClientStage(c0, 0);
+        e.preventDefault();
+      }
+    }
 
     if(key==='a' || key==='A'){ 
       var c2=getSelectedClient(); 
@@ -3776,6 +4682,41 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   }
 
   /* Boot */
+  // Context is handled by cookies
+  var savedContext = getCookie('context');
+  if(savedContext && (savedContext === 'all' || CONTEXTS[savedContext])) {
+    currentContext = savedContext;
+  }
+
+  // Set body attribute for All Contexts view on initial load
+  if(currentContext === 'all'){
+    document.body.setAttribute('data-all-contexts', 'true');
+  }
+
+  // Set active context pill
+  if(els.contextPills) {
+    els.contextPills.querySelectorAll('button').forEach(function(btn) {
+      btn.classList.remove('active');
+      if(btn.getAttribute('data-context') === currentContext) {
+        btn.classList.add('active');
+      }
+    });
+  }
+  if(els.contextName) {
+    if(currentContext === 'all') {
+      els.contextName.textContent = 'All';
+    } else {
+      els.contextName.textContent = CONTEXTS[currentContext].name;
+    }
+  }
+  if(els.contextLabel) {
+    if(currentContext === 'all') {
+      els.contextLabel.textContent = 'All Contexts';
+    } else {
+      els.contextLabel.textContent = CONTEXTS[currentContext].name;
+    }
+  }
+
   // Sort is now handled by cookies
   if($('#sortBy')) {
     var currentSort = getCookie('sortBy');
@@ -3928,6 +4869,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         // Reset font size to medium when changing density
         setFontSizeCookie('medium');
         applyFontSize();
+        this.blur(); // Remove focus to enable keyboard navigation
       });
     }
 
