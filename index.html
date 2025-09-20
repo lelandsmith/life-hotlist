@@ -1435,6 +1435,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div style="display:flex; align-items:center; gap:16px; font-size:12px; color:#64748b;">
         <a href="#" onclick="showChangelogModal(); return false;" style="color:#3b82f6; text-decoration:none; hover:text-decoration:underline;">v<span id="versionNumber">1.0.0</span></a>
         <span style="color:#cbd5e1;">|</span>
+        <a href="#" onclick="showSignInDialog(); return false;" style="color:#3b82f6; text-decoration:none; hover:text-decoration:underline;" id="cloudSyncLink">Cloud sync</a>
+        <span style="color:#cbd5e1;">|</span>
         <a href="#" onclick="openSuggestEmail(); return false;" style="color:#3b82f6; text-decoration:none; hover:text-decoration:underline;">Suggest a change</a>
       </div>
     </div>
@@ -1559,8 +1561,30 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       if (user) {
         syncEnabled = true;
         updateAuthUI();
-        // Load data from cloud
-        await loadFromCloud();
+
+        // Check if this is first sync - if cloud is empty, migrate local data
+        const cloudData = await loadFromCloud();
+        if (!cloudData) {
+          console.log('First sync - migrating local data to cloud');
+          // Get existing local data
+          var localData = localStorage.getItem(STABLE_KEY);
+          if (localData) {
+            try {
+              var parsedData = JSON.parse(localData);
+              await saveToCloud(parsedData);
+              console.log('Local data migrated to cloud successfully');
+            } catch (e) {
+              console.error('Failed to migrate local data:', e);
+            }
+          }
+        } else {
+          // Cloud has data - ask user if they want to use cloud or keep local
+          if (confirm('Cloud data found. Use cloud data? (Cancel to keep local data)')) {
+            state = coerceState(cloudData);
+            save(state);
+            render();
+          }
+        }
       }
     } catch (error) {
       console.log('Auth check failed:', error);
@@ -1600,6 +1624,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       syncEnabled = false;
       updateAuthUI();
       // Continue using local storage
+      console.log('Signed out - continuing with local storage');
     } catch (error) {
       console.error('Sign out error:', error);
     }
@@ -1648,11 +1673,36 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   // Update UI based on auth status
   function updateAuthUI() {
     // This will be called to update the UI when auth status changes
+    var authStatus = document.getElementById('authStatus');
+    var cloudSyncLink = document.getElementById('cloudSyncLink');
+
     if (currentUser) {
-      // Update any UI elements that show auth status
-      var authStatus = document.getElementById('authStatus');
+      // Update header status
       if (authStatus) {
         authStatus.innerHTML = '☁️ Synced • <a href="#" onclick="signOut(); return false;" style="color:var(--muted); text-decoration:underline;">Sign out</a>';
+      }
+      // Update footer link
+      if (cloudSyncLink) {
+        cloudSyncLink.innerHTML = '☁️ Synced';
+        cloudSyncLink.onclick = function() {
+          if (confirm('Sign out from cloud sync?')) {
+            signOut();
+          }
+          return false;
+        };
+      }
+    } else {
+      // Clear header status
+      if (authStatus) {
+        authStatus.innerHTML = '';
+      }
+      // Reset footer link
+      if (cloudSyncLink) {
+        cloudSyncLink.innerHTML = 'Cloud sync';
+        cloudSyncLink.onclick = function() {
+          showSignInDialog();
+          return false;
+        };
       }
     }
   }
@@ -4267,12 +4317,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       '</details>' +
 
       '<div style="display:flex; gap:10px; justify-content:flex-end;">' +
-      '<button onclick="this.closest(\'div[style*=\\"position:fixed\\"]\').remove()" style="padding:8px 16px; border:1px solid #e2e8f0; background:white; border-radius:6px; cursor:pointer;">Cancel</button>' +
+      '<button id="cancelSignIn" style="padding:8px 16px; border:1px solid #e2e8f0; background:white; border-radius:6px; cursor:pointer;">Cancel</button>' +
       '<button id="signInButton" style="padding:8px 16px; background:var(--green); color:white; border:none; border-radius:6px; cursor:pointer;">Send Login Link</button>' +
       '</div>';
 
     dialog.appendChild(content);
     document.body.appendChild(dialog);
+
+    // Handle cancel button
+    document.getElementById('cancelSignIn').addEventListener('click', function() {
+      dialog.remove();
+    });
 
     // Handle sign in
     document.getElementById('signInButton').addEventListener('click', function() {
@@ -4294,6 +4349,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         alert('Please enter your email address');
       }
     });
+
+    // Handle ESC key to close
+    function handleEscape(e) {
+      if (e.key === 'Escape') {
+        dialog.remove();
+        document.removeEventListener('keydown', handleEscape);
+      }
+    }
+    document.addEventListener('keydown', handleEscape);
 
     // Focus email field
     setTimeout(function() {
