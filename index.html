@@ -990,7 +990,7 @@ body[data-all-contexts="true"] .row {
 }
 
 body[data-all-contexts="true"] .context-group {
-  margin-bottom: 12px;
+  margin-bottom: 0;
 }
 
 body[data-all-contexts="true"] .context-group-header {
@@ -1331,6 +1331,7 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
   .actions-wrap{justify-content:flex-start}
   .sidebar{max-height:52vh}
 }
+
 
 </style>
 
@@ -1798,6 +1799,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   // Recent commits from git log
   var CHANGELOG = [
+    { version: '2.3.1', date: '2025-01-21', changes: 'Improved All Contexts view layout by removing spacing between context groups for a more compact design' },
     { version: '2.3.0', date: '2025-01-21', changes: 'Enhanced scheduling with 30-minute calendar integration and direct Google Calendar support, improved status tracker with 1px borders and cleaner icon styling, distinctive Today\'s queue styling with blue theme, refined UI with shadow-based hover effects, fixed context switching and row selection, changed Commercial "Lead" to "Contact", default clients start with no status' },
     { version: '2.2.0', date: '2025-01-19', changes: 'Add optional cloud sync with Supabase (local storage remains default), add left/right arrow keys for stage navigation' },
     { version: '2.1.1', date: '2025-01-19', changes: 'Improve context selector styling to be more subtle (black/gray instead of orange), fix name preservation when forgetting to select context in All view' },
@@ -4075,6 +4077,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   function setContextCookie(context) {
     document.cookie = "context=" + context + "; path=/; max-age=31536000"; // 1 year
   }
+
 
   function applyFontSize() {
     var size = getCookie('fontSize') || 'medium';
