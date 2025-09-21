@@ -45,16 +45,47 @@
   }
   .bar{background:#2b335e}
   .s-hot{background:#2b1d12;border-color:#8a4e21}
+  .sbtn.s-hot{border:1px solid #8a4e21;background:#2b1d12}
+  .sbtn.s-hot:hover{background:#3a2618;opacity:1}
   .sbtn.s-hot.active{background:#3a2618}
   .hot-row{
     border-left-color:#fb923c;
-    background: linear-gradient(135deg, 
+    background: linear-gradient(135deg,
       rgba(251, 146, 60, 0.18) 0%,
       rgba(249, 115, 22, 0.12) 30%,
       rgba(234, 88, 12, 0.08) 60%,
       rgba(220, 38, 38, 0.04) 100%
     );
     animation: hotPulse 2s ease-in-out infinite;
+  }
+  /* Today's block dark mode */
+  #todayBlock {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(37, 99, 235, 0.08) 100%);
+    border-color: rgba(59, 130, 246, 0.35);
+  }
+  #todayBlock h2 {
+    color: #60a5fa;
+  }
+  #todayBlock .table-head {
+    background: rgba(59, 130, 246, 0.15);
+    border-color: rgba(59, 130, 246, 0.25);
+    color: #93c5fd;
+  }
+  #todayBlock .row {
+    background: rgba(22, 25, 42, 0.6);
+    border-color: rgba(59, 130, 246, 0.2);
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+  }
+  #todayBlock .row:hover {
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25), 0 2px 4px rgba(59, 130, 246, 0.15);
+    transform: translateY(-1px);
+    transition: all 0.2s ease;
+  }
+  #todayBlock .row.selected {
+    outline: 2px solid var(--green);
+    outline-offset: -1px;
   }
   .hot-badge {
     background: linear-gradient(135deg, #ff8a80, #ff6e40);
@@ -261,7 +292,11 @@ button:focus-visible{outline:none; box-shadow:var(--ring)}
   padding:12px 12px; border-bottom:1px dashed var(--line);
   align-items:center; border-radius:12px; position:relative;
 }
-.row:hover{background:color-mix(in oklab, var(--card) 92%, #eef2ff)}
+.row:hover{
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.2s ease;
+  transform: translateY(-1px);
+}
 .row:last-child{border-bottom:none}
 /* Selected row styling - more subtle and modern */
 .row.selected {
@@ -350,7 +385,7 @@ body[data-font-size="xlarge"] .row .stage-label { font-size: 12px; }
 /* Hot lead styling */
 .row.hot-row{
   border-left:4px solid #f97316;
-  background: linear-gradient(135deg, 
+  background: linear-gradient(135deg,
     rgba(254, 215, 170, 0.35) 0%,
     rgba(251, 146, 60, 0.25) 20%,
     rgba(249, 115, 22, 0.18) 40%,
@@ -358,6 +393,11 @@ body[data-font-size="xlarge"] .row .stage-label { font-size: 12px; }
     rgba(220, 38, 38, 0.08) 100%
   ) !important;
   position:relative;
+}
+.row.hot-row:hover{
+  box-shadow: 0 6px 20px rgba(251, 146, 60, 0.25), 0 2px 8px rgba(249, 115, 22, 0.15);
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
 }
 
 /* Hot icon sizing to match stage icons */
@@ -421,35 +461,38 @@ body[data-font-size="xlarge"] .row .sbtn.s-hot .ico { font-size: 24px; }
 }
 .group--quick{display:flex;gap:10px;align-items:center; margin-right:18px;}
 .group--status{display:flex;gap:12px;align-items:center; margin-right:18px;}
-.group--icons{display:flex;gap:10px;align-items:center}
+.group--icons{display:flex;gap:0;align-items:center}
 
 /* Quick counters */
 .qbtn{
-  position:relative;border:1px solid var(--line);padding:8px 12px;border-radius:12px;
-  background:#fff;font-size:16px;line-height:1;display:inline-flex;align-items:center;justify-content:center;min-width:46px
+  position:relative;border:none;padding:8px 12px;border-radius:12px;
+  background:transparent;font-size:16px;line-height:1;display:inline-flex;align-items:center;justify-content:center;min-width:46px
+}
+.qbtn:hover{
+  transform:translateY(-1px);
 }
 .qbtn .badge{
   position:absolute;right:-6px;bottom:-8px;background:#fff;border:1px solid #cbd5e1;
-  border-radius:10px;font-size:10px;line-height:1;padding:2px 5px; box-shadow:0 2px 6px rgba(15,23,42,.08)
+  border-radius:10px;font-size:10px;line-height:1;padding:2px 5px;
 }
 .badge[data-zero="1"]{display:none}
 .qbtn .last-contact{
   position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);
-  font-size:9px;color:#6b7280;white-space:nowrap;background:rgba(255,255,255,0.9);
+  font-size:9px;color:#6b7280;white-space:nowrap;background:transparent;
   padding:1px 3px;border-radius:4px;
 }
 
 /* Status buttons */
 .sbtn{
-  position:relative; border:1px solid var(--line); padding:8px 10px; border-radius:12px;
-  font-size:11px; background:#fff; white-space:nowrap; display:inline-flex; align-items:center; justify-content:center; opacity:.7;
+  position:relative; border:none; padding:8px 10px; border-radius:12px;
+  font-size:11px; background:transparent; white-space:nowrap; display:inline-flex; align-items:center; justify-content:center; opacity:.7;
   flex-direction:column; min-width:50px; transition:.15s ease;
 }
 .sbtn:hover{opacity:1; transform:translateY(-1px)}
 .sbtn:focus-visible{outline:none; box-shadow:var(--ring)}
 .sbtn .ico{font-size:18px;line-height:1}
 .sbtn .label{display:none;font-size:10px;line-height:1;margin-top:3px;text-align:center}
-.sbtn.active{outline:2px solid var(--green);opacity:1; background:color-mix(in oklab, var(--green-50) 50%, #fff)}
+.sbtn.active{outline:2px solid var(--green);opacity:1; background:transparent}
 .sbtn.active .label{display:block}
 .s-quote{background:#fffdf6;border-color:#fde68a}
 .s-app{background:#f7fdf9;border-color:#ccebd9}
@@ -457,6 +500,14 @@ body[data-font-size="xlarge"] .row .sbtn.s-hot .ico { font-size: 24px; }
 .s-medq{background:#f6f5ff;border-color:#ddd6fe}
 .s-pur{background:#f3fbf6;border-color:#cfe9dc}
 .s-hot{background:#fff7ed;border-color:#fed7aa}
+.sbtn.s-hot{
+  border:1px solid #fed7aa;
+  background:#fff7ed;
+}
+.sbtn.s-hot:hover{
+  background:#fff1e6;
+  opacity:1;
+}
 .sbtn.s-hot.active{
   outline:2px solid #fb923c;
   background:#fff1e6;
@@ -503,8 +554,8 @@ body[data-font-size="xlarge"] .row .sbtn.s-hot .ico { font-size: 24px; }
   top: 50%;
   left: 25px;
   right: 25px;
-  height: 3px;
-  background: var(--line);
+  height: 1px;
+  background: rgba(226, 232, 240, 0.5);
   z-index: 0;
 }
 
@@ -513,8 +564,8 @@ body[data-font-size="xlarge"] .row .sbtn.s-hot .ico { font-size: 24px; }
   position: absolute;
   top: 50%;
   left: 25px;
-  height: 3px;
-  background: var(--green);
+  height: 1px;
+  background: rgba(16, 185, 129, 0.4);
   z-index: 0;
   transition: width 0.3s ease;
   width: 0;
@@ -543,7 +594,7 @@ body[data-font-size="xlarge"] .row .sbtn.s-hot .ico { font-size: 24px; }
   margin: 0 auto 6px;
   border-radius: 50%;
   background: white;
-  border: 3px solid var(--line);
+  border: 1px solid var(--line);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -559,13 +610,13 @@ body[data-font-size="xlarge"] .row .sbtn.s-hot .ico { font-size: 24px; }
 }
 
 .status-tracker .stage.active .stage-icon {
-  border: 3px solid #059669;
+  border: 1px solid #059669;
   background: var(--orange);
   color: white;
 }
 
 .status-tracker .stage.active.purchased .stage-icon {
-  border: 3px solid #059669;
+  border: 1px solid #059669;
   background: #10b981;
   color: white;
 }
@@ -595,7 +646,7 @@ body[data-font-size="xlarge"] .row .sbtn.s-hot .ico { font-size: 24px; }
   top: 22px;
   left: 20px;
   right: 20px;
-  height: 2px;
+  height: 1px;
 }
 
 .status-tracker.compact::after {
@@ -944,7 +995,7 @@ body[data-all-contexts="true"] .context-group {
 
 body[data-all-contexts="true"] .context-group-header {
   padding: 6px 10px;
-  font-size: 12px;
+  font-size: 15px;
 }
 
 body[data-all-contexts="true"] .context-group > div:last-child {
@@ -956,12 +1007,12 @@ body[data-all-contexts="true"] .context-group > div:last-child {
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
-  border: 1px solid #fb923c;
+  background: linear-gradient(90deg, #10b981, #059669);
+  border: 1px solid #10b981;
   border-radius: 12px 12px 0 0;
   margin-bottom: 0;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 15px;
   color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: sticky;
@@ -1113,13 +1164,66 @@ body[data-all-contexts="true"] .context-group > div:last-child {
 .queue-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .queue-title{font-weight:800}
 
+/* Today's section styling */
+#todayBlock {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(37, 99, 235, 0.03) 100%);
+  border: 2px solid rgba(59, 130, 246, 0.25);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.08);
+}
+
+#todayBlock h2 {
+  color: #2563eb;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#todayBlock h2::before {
+  content: "📅";
+  font-size: 20px;
+}
+
+#todayBlock .table-head {
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  color: #1e40af;
+  font-weight: 600;
+}
+
+#todayBlock .row {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(59, 130, 246, 0.12);
+  margin-bottom: 4px;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+}
+
+#todayBlock .row:hover {
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15), 0 2px 4px rgba(59, 130, 246, 0.08);
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}
+
+#todayBlock .row.selected {
+  outline: 2px solid var(--green);
+  outline-offset: -1px;
+}
+
 /* Icon buttons row (📝 📅 📂 🗑) */
 .iconbtn{
-  position:relative;border:1px solid var(--line);background:#fff;
+  position:relative;border:none;background:transparent;
   cursor:pointer;font-size:16px;line-height:1;padding:8px 10px;
   display:inline-flex;align-items:center;justify-content:center;min-width:42px;border-radius:12px
 }
 .iconbtn:focus-visible{outline:none; box-shadow:var(--ring)}
+.group--icons .iconbtn{border:none;background:transparent}
 
 /* Chips */
 .tag-chip{
@@ -1201,11 +1305,7 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
     gap: 12px;
   }
 
-  /* Center the progress line with 53px icons */
-  body[data-density="comfortable"] .status-tracker::before,
-  body[data-density="comfortable"] .status-tracker::after {
-    top: 26px; /* Center line at half of 53px */
-  }
+  /* Progress lines disabled */
 
   /* Scale up further with font size adjustments on large screens */
   body[data-density="comfortable"][data-font-size="xsmall"] .status-tracker .stage-icon { width: 44px; height: 44px; font-size: 16px; }
@@ -1214,18 +1314,7 @@ body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide 
   body[data-density="comfortable"][data-font-size="large"] .status-tracker .stage-icon { width: 58px; height: 58px; font-size: 25px; }
   body[data-density="comfortable"][data-font-size="xlarge"] .status-tracker .stage-icon { width: 64px; height: 64px; font-size: 28px; }
 
-  /* Adjust line position for different font sizes */
-  body[data-density="comfortable"][data-font-size="xsmall"] .status-tracker::before,
-  body[data-density="comfortable"][data-font-size="xsmall"] .status-tracker::after { top: 22px; }
-
-  body[data-density="comfortable"][data-font-size="small"] .status-tracker::before,
-  body[data-density="comfortable"][data-font-size="small"] .status-tracker::after { top: 24px; }
-
-  body[data-density="comfortable"][data-font-size="large"] .status-tracker::before,
-  body[data-density="comfortable"][data-font-size="large"] .status-tracker::after { top: 29px; }
-
-  body[data-density="comfortable"][data-font-size="xlarge"] .status-tracker::before,
-  body[data-density="comfortable"][data-font-size="xlarge"] .status-tracker::after { top: 32px; }
+  /* Line position adjustments disabled */
 
   /* Hot icon sizes for large screens to match stage icons */
   body[data-density="comfortable"] .row .sbtn.s-hot .ico { font-size: 22px; }
@@ -1453,7 +1542,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="widget-head"><h2 class="widget-title">Filters</h2><div class="widget-actions"><button class="btn-min gray collapse-btn" data-collapse title="Collapse"></button></div></div>
       <div class="widget-body"><div style="display:grid;gap:6px">
         <label>Status
-          <select id="statusFilter"><option value="">Any status</option><option>Sent Quote</option><option>Sent Application</option><option>Pending Application Signature</option><option>Pending Medical Questionnaire</option><option>Purchased</option></select>
+          <select id="statusFilter"><option value="">Any status</option><option>Sent Quote</option><option>Sent Application</option><option>Pending Application Signature</option><option>Pending Medical Questionnaire</option><option>Issued</option></select>
         </label>
         <label><input id="showArchived" type="checkbox" /> Show archived</label>
         <label class="small"><input id="groupToggle" type="checkbox" /> Group today's activity by client</label>
@@ -1464,7 +1553,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
 
     <div class="widget" data-key="scheduled" draggable="true">
-      <div class="widget-head"><h2 class="widget-title">Scheduled</h2><div class="widget-actions"><button class="btn-min gray collapse-btn" data-collapse title="Collapse"></button></div></div>
+      <div class="widget-head"><h2 class="widget-title">Scheduled</h2><div class="widget-actions"><button class="btn-min gray" id="calendarViewBtn" title="Calendar View">📅</button><button class="btn-min gray collapse-btn" data-collapse title="Collapse"></button></div></div>
       <div class="widget-body"><div id="followList" class="followups"></div></div>
     </div>
 
@@ -1709,9 +1798,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   // Recent commits from git log
   var CHANGELOG = [
+    { version: '2.3.0', date: '2025-01-21', changes: 'Enhanced scheduling with 30-minute calendar integration and direct Google Calendar support, improved status tracker with 1px borders and cleaner icon styling, distinctive Today\'s queue styling with blue theme, refined UI with shadow-based hover effects, fixed context switching and row selection, changed Commercial "Lead" to "Contact", default clients start with no status' },
     { version: '2.2.0', date: '2025-01-19', changes: 'Add optional cloud sync with Supabase (local storage remains default), add left/right arrow keys for stage navigation' },
     { version: '2.1.1', date: '2025-01-19', changes: 'Improve context selector styling to be more subtle (black/gray instead of orange), fix name preservation when forgetting to select context in All view' },
-    { version: '2.1.0', date: '2025-01-19', changes: 'Replace dropdown with pill-style context switcher, add last contact dates, improve All Contexts view with reorderable groups, enable adding clients in All view, change "Purchased" to "Issued" across all contexts' },
+    { version: '2.1.0', date: '2025-01-19', changes: 'Replace dropdown with pill-style context switcher, add last contact dates, improve All Contexts view with reorderable groups, enable adding clients in All view, change "Issued" to "Issued" across all contexts' },
     { version: '2.0.0', date: '2025-01-18', changes: 'Add multi-context support for Life, Home & Auto, Commercial, Farm, and Networking with context-specific stages' },
     { version: '1.10.9', date: '2025-01-18', changes: 'Fix drag-and-drop in incognito/production by defaulting to no-sort when no cookie exists' },
     { version: '1.10.8', date: '2025-01-18', changes: 'Add Google Tag Manager integration (GTM-N5DXZ4MC) and standardize iconbtn sizes' },
@@ -1766,9 +1856,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     commercial: {
       name: "Commercial",
       icon: "🏢",
-      stages: ['Lead', 'Quoted', 'Proposal', 'Underwriting', 'Issued'],
+      stages: ['Contact', 'Quoted', 'Proposal', 'Underwriting', 'Issued'],
       stageIcons: ['👤', '💵', '📊', '🔍', '✅'],
-      stageAbbr: ['Lead', 'Quoted', 'Proposal', 'U/W', 'Issued']
+      stageAbbr: ['Contact', 'Quoted', 'Proposal', 'U/W', 'Issued']
     },
     farm: {
       name: "Farm",
@@ -1790,9 +1880,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   var currentContext = 'life';
 
   // Legacy mappings for migration
-  var STATUS=['Initial Contact','Sent Quote','Sent Application','Pending Application Signature','Pending Medical Questionnaire','Purchased'];
-  var STATUS_ABBR={'Initial Contact':'Contact','Sent Quote':'Quoted','Sent Application':'App','Pending Application Signature':'SigPend','Pending Medical Questionnaire':'MedQ','Purchased':'Issued'};
-  var STATUS_ICON={'Initial Contact':'\uD83E\uDD1D','Sent Quote':'\uD83E\uDD7E','Sent Application':'\uD83D\uDCDD','Pending Application Signature':'\u270D\uFE0F','Pending Medical Questionnaire':'\uD83E\uDDEA','Purchased':'\u2705'};
+  var STATUS=['Initial Contact','Sent Quote','Sent Application','Pending Application Signature','Pending Medical Questionnaire','Issued'];
+  var STATUS_ABBR={'Initial Contact':'Contact','Sent Quote':'Quoted','Sent Application':'App','Pending Application Signature':'SigPend','Pending Medical Questionnaire':'MedQ','Issued':'Issued'};
+  var STATUS_ICON={'Initial Contact':'\uD83E\uDD1D','Sent Quote':'\uD83E\uDD7E','Sent Application':'\uD83D\uDCDD','Pending Application Signature':'\u270D\uFE0F','Pending Medical Questionnaire':'\uD83E\uDDEA','Issued':'\u2705'};
   var EMOJI_CALL='\uD83D\uDCDE';
   var EMOJI_MSG ='\uD83D\uDCAC';
   var CLAP      ='\uD83D\uDC4F';
@@ -1835,7 +1925,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     sidebar:$('#sidebarWidgets'), leftSidebar:$('#leftSidebar'),
     leftDragZone:$('#leftDragZone'), rightDragZone:$('#rightDragZone'),
     tomorrowList:$('#tomorrowList'),
-    ribbonPurchased:$('#ribbonPurchased'), ribbonWeeklyCalls:$('#ribbonWeeklyCalls'), ribbonStreak:$('#ribbonStreak'),
+    ribbonIssued:$('#ribbonIssued'), ribbonWeeklyCalls:$('#ribbonWeeklyCalls'), ribbonStreak:$('#ribbonStreak'),
     dailyOutreachGoal:$('#dailyOutreachGoal'), dailyOutreachBar:$('#dailyOutreachBar'), 
     dailyOutreachFill:$('#dailyOutreachFill'), dailyOutreachLabel:$('#dailyOutreachLabel'),
     dailyCalls:$('#dailyCalls'), dailyMessages:$('#dailyMessages'), saveDailyGoal:$('#saveDailyGoal'),
@@ -1848,7 +1938,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     toggleSidebarBtn:$('#toggleSidebarBtn'),
     importBtn:$('#importBtn'), exportBtn:$('#exportBtn'), loadDemoBtn:$('#loadDemoBtn'),
     sidebarControls:$('#sidebar-controls'),
-    emptyState:$('#emptyState'), mainTableHead:$('#mainTableHead'), clearDemoSection:$('#clearDemoSection')
+    emptyState:$('#emptyState'), mainTableHead:$('#mainTableHead'), clearDemoSection:$('#clearDemoSection'),
+    calendarViewBtn:$('#calendarViewBtn')
   };
 
   /* IndexedDB Storage Module */
@@ -2349,7 +2440,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           name:name,
           notes:'',
           context: selectedContext,  // Use selected context
-          stage: 0,
+          stage: -1,  // No status activated by default
           status:'',
           lastTouch:nowISO(),
           createdAt:nowISO(),
@@ -2382,7 +2473,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         name:name,
         notes:'',
         context: currentContext,  // Set context for new clients
-        stage: 0,  // Start at first stage
+        stage: -1,  // No status activated by default
         status:'',  // Keep for backwards compatibility
         lastTouch:nowISO(),
         createdAt:nowISO(),
@@ -2406,7 +2497,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     });
   }
   function setStatus(c,newStatus,buttonElement){
-    var wasPurchased = c.status === 'Purchased';
+    var wasIssued = c.status === 'Issued';
     var oldStatus = c.status;
 
     // Only update if status is actually changing
@@ -2433,13 +2524,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       c.lastTouch=when;
       c.history.push({id:uid(), ts:when, action:'status', to:newStatus});
       if(c.queueToday) c.queueToday=false;
-      // Set purchase date when status becomes Purchased
-      if(newStatus === 'Purchased' && !c.purchaseDate){
+      // Set purchase date when status becomes Issued
+      if(newStatus === 'Issued' && !c.purchaseDate){
         c.purchaseDate = when;
       }
     });
     // Trigger epic purchase celebration!
-    if(newStatus === 'Purchased' && !wasPurchased){
+    if(newStatus === 'Issued' && !wasIssued){
       setTimeout(function(){
         startPurchaseCelebration(buttonElement);
       }, 100);
@@ -2452,8 +2543,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     var contextConfig = CONTEXTS[clientContext] || CONTEXTS.life;
     var stages = contextConfig.stages;
 
-    // Validate stage index
-    if(newStage < 0 || newStage >= stages.length) return;
+    // Validate stage index (allow -1 for no stage)
+    if(newStage < -1 || newStage >= stages.length) return;
 
     var oldStage = c.stage;
     var wasFinalStage = oldStage === stages.length - 1;
@@ -2491,7 +2582,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   }
 
   function clearStatus(c){ preserveUIAndRender(function(){ c.status=''; if(c.purchaseDate) delete c.purchaseDate; }); }
-  function clearPurchase(c){ preserveUIAndRender(function(){ if(c.status === 'Purchased') c.status=''; if(c.purchaseDate) delete c.purchaseDate; }); }
+  function clearPurchase(c){ preserveUIAndRender(function(){ if(c.status === 'Issued') c.status=''; if(c.purchaseDate) delete c.purchaseDate; }); }
   function incrementCall(c){
     preserveUIAndRender(function(){
       c.callCount=(c.callCount||0)+1;
@@ -2625,26 +2716,187 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   function toggleQueueToday(c,val){ preserveUIAndRender(function(){ c.queueToday = (typeof val==='boolean') ? val : !c.queueToday; if(c.queueToday) c.queueTomorrow=false; }); }
   function toggleQueueTomorrow(c,val){ preserveUIAndRender(function(){ c.queueTomorrow = (typeof val==='boolean') ? val : !c.queueTomorrow; if(c.queueTomorrow) c.queueToday=false; }); }
 
-  /* Follow-up picker */
+  /* Enhanced Follow-up picker with Calendar */
   var hiddenFollowPicker=document.createElement('input'); hiddenFollowPicker.type='datetime-local'; hiddenFollowPicker.className='hidden'; document.body.appendChild(hiddenFollowPicker); var followTargetClient=null;
-  function setFollowUpViaPicker(c){ followTargetClient=c; var d=c.followUp? new Date(c.followUp) : (function(){ var s=new Date(); s.setDate(s.getDate()+1); s.setHours(8,0,0,0); return s; })(); hiddenFollowPicker.value=toLocalInputValue(d.toISOString()); if(typeof hiddenFollowPicker.showPicker==='function'){ try{ hiddenFollowPicker.showPicker(); return; }catch(e){} } try{ hiddenFollowPicker.focus(); hiddenFollowPicker.click(); return; }catch(e){} var cur=hiddenFollowPicker.value.replace('T',' '); var val=prompt('Follow-up (YYYY-MM-DD HH:MM). Blank to clear:', cur); if(val===null) return; var norm=String(val).trim(); if(!norm){ c.followUp=''; save(state); render(); return; } var iso=new Date(norm.replace(' ','T')); if(isNaN(+iso)){ alert('Invalid date/time'); return; } c.followUp=iso.toISOString(); save(state); render(); }
+
+  function createCalendarModal(client, initialDate) {
+    var modal = document.createElement('div');
+    modal.className = 'calendar-modal';
+    modal.style.cssText = 'position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:var(--card); border-radius:12px; padding:24px; box-shadow:0 10px 30px rgba(0,0,0,0.3); z-index:10001; width:400px;';
+
+    var backdrop = document.createElement('div');
+    backdrop.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:10000;';
+
+    var selectedDate = initialDate || new Date();
+    selectedDate.setHours(9, 0, 0, 0);
+
+    function updateModal() {
+      modal.innerHTML = `
+        <h3 style="margin:0 0 20px 0; color:var(--ink);">Schedule Follow-up for ${client.name}</h3>
+        <div style="display:grid; gap:16px;">
+          <div>
+            <label style="display:block; margin-bottom:8px; color:var(--muted); font-size:12px; font-weight:600;">DATE</label>
+            <input type="date" id="calendarDate" value="${selectedDate.toISOString().split('T')[0]}" style="width:100%; padding:8px 12px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--ink); font-size:14px;">
+          </div>
+          <div>
+            <label style="display:block; margin-bottom:8px; color:var(--muted); font-size:12px; font-weight:600;">TIME (30-minute intervals)</label>
+            <select id="calendarTime" style="width:100%; padding:8px 12px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--ink); font-size:14px;">
+              ${generateTimeOptions(selectedDate)}
+            </select>
+          </div>
+          <div style="display:grid; gap:8px; margin-top:16px;">
+            <button id="confirmSchedule" style="padding:12px 16px; background:var(--green); color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer;">Set Follow-up Only</button>
+            <button id="addToCalendar" style="padding:12px 16px; background:var(--blue); color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+              <span style="font-size:16px;">📅</span> Set Follow-up + Add to Calendar
+            </button>
+            <button id="cancelSchedule" style="padding:10px 16px; background:transparent; color:var(--muted); border:1px solid var(--line); border-radius:8px; cursor:pointer;">Cancel</button>
+          </div>
+        </div>
+      `;
+
+      modal.querySelector('#calendarDate').addEventListener('change', function(e) {
+        selectedDate = new Date(e.target.value + 'T' + modal.querySelector('#calendarTime').value);
+      });
+
+      modal.querySelector('#calendarTime').addEventListener('change', function(e) {
+        var timeStr = e.target.value;
+        selectedDate.setHours(parseInt(timeStr.split(':')[0]), parseInt(timeStr.split(':')[1]), 0, 0);
+      });
+
+      modal.querySelector('#confirmSchedule').addEventListener('click', function() {
+        client.followUp = selectedDate.toISOString();
+        save(state);
+        render();
+        cleanup();
+      });
+
+      modal.querySelector('#addToCalendar').addEventListener('click', function() {
+        client.followUp = selectedDate.toISOString();
+        save(state);
+        createCalendarEvent(client, selectedDate);
+        render();
+        cleanup();
+      });
+
+      modal.querySelector('#cancelSchedule').addEventListener('click', cleanup);
+    }
+
+    function generateTimeOptions(date) {
+      var options = [];
+      var currentHour = date.getHours();
+      var currentMin = Math.floor(date.getMinutes() / 30) * 30;
+
+      for(var h = 0; h < 24; h++) {
+        for(var m = 0; m < 60; m += 30) {
+          var hour12 = h === 0 ? 12 : (h > 12 ? h - 12 : h);
+          var ampm = h < 12 ? 'AM' : 'PM';
+          var timeStr = hour12 + ':' + (m < 10 ? '0' : '') + m + ' ' + ampm;
+          var value = (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+          var selected = (h === currentHour && m === currentMin) ? 'selected' : '';
+          options.push(`<option value="${value}" ${selected}>${timeStr}</option>`);
+        }
+      }
+      return options.join('');
+    }
+
+    function cleanup() {
+      modal.remove();
+      backdrop.remove();
+    }
+
+    backdrop.addEventListener('click', cleanup);
+    document.body.appendChild(backdrop);
+    document.body.appendChild(modal);
+    updateModal();
+  }
+
+  function createCalendarEvent(client, date) {
+    // Get the client's context for the title
+    var clientContext = client.context || 'life';
+    var contextName = CONTEXTS[clientContext] ? CONTEXTS[clientContext].name : 'Life';
+    var title = contextName + ' Follow-up: ' + client.name;
+    var details = 'Follow-up appointment with ' + client.name;
+    if(client.notes) {
+      details += '\n\nNotes: ' + client.notes.substring(0, 200);
+    }
+
+    // Format date for calendar URL
+    var startDate = new Date(date);
+    var endDate = new Date(date);
+    endDate.setMinutes(endDate.getMinutes() + 30); // 30-minute appointment
+
+    // Try to use native calendar URLs based on platform
+    var startStr = startDate.toISOString().replace(/-|:|\.\d\d\d/g, '');
+    var endStr = endDate.toISOString().replace(/-|:|\.\d\d\d/g, '');
+
+    // Create Google Calendar URL (works on most platforms)
+    var googleCalUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+      '&text=' + encodeURIComponent(title) +
+      '&dates=' + startStr + '/' + endStr +
+      '&details=' + encodeURIComponent(details);
+
+    // Try to open in new tab/window
+    var calWindow = window.open(googleCalUrl, '_blank');
+
+    // Fallback to ICS file if popup was blocked
+    if(!calWindow || calWindow.closed || typeof calWindow.closed === 'undefined') {
+      var formatDate = function(d) {
+        return d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      };
+
+      var icsContent = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//Hotlist//EN',
+        'BEGIN:VEVENT',
+        'UID:' + client.id + '-' + Date.now() + '@hotlist',
+        'DTSTAMP:' + formatDate(new Date()),
+        'DTSTART:' + formatDate(startDate),
+        'DTEND:' + formatDate(endDate),
+        'SUMMARY:' + title,
+        'DESCRIPTION:' + details.replace(/\n/g, '\\n'),
+        'END:VEVENT',
+        'END:VCALENDAR'
+      ].join('\r\n');
+
+      var blob = new Blob([icsContent], { type: 'text/calendar' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'followup-' + client.name.replace(/[^a-z0-9]/gi, '-').toLowerCase() + '.ics';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      showNotification('Calendar Event', 'Opening calendar - check for popup blocker if needed');
+    } else {
+      showNotification('Calendar Event', 'Opening in Google Calendar');
+    }
+  }
+
+  function setFollowUpViaPicker(c) {
+    var initialDate = c.followUp ? new Date(c.followUp) : null;
+    createCalendarModal(c, initialDate);
+  }
+
   hiddenFollowPicker.addEventListener('change', function(){ if(!followTargetClient) return; var iso=fromLocalInputValue(hiddenFollowPicker.value); followTargetClient.followUp=iso; save(state); render(); followTargetClient=null; });
 
   /* KPIs / ribbons / pipeline / goals */
-  function computeKPIs(){ if(!state || !state.clients) return {total:0, touchedToday:0, purchased:0, contacted:0, convRate:0, avgCalls:'—'}; var active=state.clients.filter(function(c){return !c.archived;}); var touchedToday=active.filter(function(c){return isToday(c.lastTouch);}); var purchased=state.clients.filter(function(c){return c.status==='Purchased';}); var contacted=state.clients.filter(function(c){return (c.history||[]).length>0 && c.status!=='Purchased';}); var perClient=state.clients.map(function(c){ var fp=(c.history||[]).find(function(h){return h.action==='status' && h.to==='Purchased';}); var firstPur = fp ? fp.ts : null; if(!firstPur) return null; var calls=(c.history||[]).filter(function(h){ return h.action==='status' && h.to==='Called' && new Date(h.ts)<=new Date(firstPur); }).length; return calls; }).filter(function(v){return v!==null;}); var avgCalls = perClient.length ? (perClient.reduce(function(a,b){return a+b;},0)/perClient.length).toFixed(1) : '—'; return {total:active.length, touchedToday:touchedToday.length, purchased:purchased.length, contacted:contacted.length, convRate:(contacted.length? Math.round((purchased.length/Math.max(contacted.length,1))*100) : 0), avgCalls:avgCalls}; }
+  function computeKPIs(){ if(!state || !state.clients) return {total:0, touchedToday:0, purchased:0, contacted:0, convRate:0, avgCalls:'—'}; var active=state.clients.filter(function(c){return !c.archived;}); var touchedToday=active.filter(function(c){return isToday(c.lastTouch);}); var purchased=state.clients.filter(function(c){return c.status==='Issued';}); var contacted=state.clients.filter(function(c){return (c.history||[]).length>0 && c.status!=='Issued';}); var perClient=state.clients.map(function(c){ var fp=(c.history||[]).find(function(h){return h.action==='status' && h.to==='Issued';}); var firstPur = fp ? fp.ts : null; if(!firstPur) return null; var calls=(c.history||[]).filter(function(h){ return h.action==='status' && h.to==='Called' && new Date(h.ts)<=new Date(firstPur); }).length; return calls; }).filter(function(v){return v!==null;}); var avgCalls = perClient.length ? (perClient.reduce(function(a,b){return a+b;},0)/perClient.length).toFixed(1) : '—'; return {total:active.length, touchedToday:touchedToday.length, purchased:purchased.length, contacted:contacted.length, convRate:(contacted.length? Math.round((purchased.length/Math.max(contacted.length,1))*100) : 0), avgCalls:avgCalls}; }
   function renderKPIs(){ 
     var k=computeKPIs(); 
     if(!els.kpis) return;
     els.kpis.innerHTML=''; 
-    [['Active Leads',k.total],['Touched Today',k.touchedToday],['Purchased',k.purchased],['Contacted (not purchased)',k.contacted],['Conv. Rate',(k.convRate||0)+'%'],['Avg Calls→Purchase',k.avgCalls]].forEach(function(pair){ 
+    [['Active Leads',k.total],['Touched Today',k.touchedToday],['Issued',k.purchased],['Contacted (not purchased)',k.contacted],['Conv. Rate',(k.convRate||0)+'%'],['Avg Calls→Purchase',k.avgCalls]].forEach(function(pair){ 
       var row=document.createElement('div'); 
       row.className='kpi-row'; 
       row.innerHTML='<span class="kpi-label">'+pair[0]+'</span><span class="kpi-value">'+pair[1]+'</span>'; 
       els.kpis.appendChild(row); 
     }); 
   }
-  function pipelineStats(){ var counts={Calls:0,Emails:0,Quotes:0,Apps:0,Purchased:0}; if(state && state.clients) state.clients.forEach(function(c){ (c.history||[]).forEach(function(h){ if(h.action!=='status') return; if(h.to==='Called') counts.Calls++; else if(h.to==='Emailed') counts.Emails++; else if(h.to==='Sent Quote') counts.Quotes++; else if(h.to==='Sent Application') counts.Apps++; else if(h.to==='Purchased') counts.Purchased++; }); }); function conv(a,b){ return a? Math.round((b/a)*100) : 0; } return {counts:counts, convCE:conv(counts.Calls,counts.Emails), convEQ:conv(counts.Emails,counts.Quotes), convQA:conv(counts.Quotes,counts.Apps), convAP:conv(counts.Apps,counts.Purchased)}; }
-  function renderPipeline(){ var p=pipelineStats(); els.pipeline.innerHTML = '' +'<div>Calls: <b>'+p.counts.Calls+'</b> → Emails: <b>'+p.counts.Emails+'</b> (<b>'+p.convCE+'%</b>)</div>' +'<div>Emails: <b>'+p.counts.Emails+'</b> → Quotes: <b>'+p.counts.Quotes+'</b> (<b>'+p.convEQ+'%</b>)</div>' +'<div>Quotes: <b>'+p.counts.Quotes+'</b> → Apps: <b>'+p.counts.Apps+'</b> (<b>'+p.convQA+'%</b>)</div>' +'<div>Apps: <b>'+p.counts.Apps+'</b> → Purchased: <b>'+p.counts.Purchased+'</b> (<b>'+p.convAP+'%</b>)</div>'; }
+  function pipelineStats(){ var counts={Calls:0,Emails:0,Quotes:0,Apps:0,Issued:0}; if(state && state.clients) state.clients.forEach(function(c){ (c.history||[]).forEach(function(h){ if(h.action!=='status') return; if(h.to==='Called') counts.Calls++; else if(h.to==='Emailed') counts.Emails++; else if(h.to==='Sent Quote') counts.Quotes++; else if(h.to==='Sent Application') counts.Apps++; else if(h.to==='Issued') counts.Issued++; }); }); function conv(a,b){ return a? Math.round((b/a)*100) : 0; } return {counts:counts, convCE:conv(counts.Calls,counts.Emails), convEQ:conv(counts.Emails,counts.Quotes), convQA:conv(counts.Quotes,counts.Apps), convAP:conv(counts.Apps,counts.Issued)}; }
+  function renderPipeline(){ var p=pipelineStats(); els.pipeline.innerHTML = '' +'<div>Calls: <b>'+p.counts.Calls+'</b> → Emails: <b>'+p.counts.Emails+'</b> (<b>'+p.convCE+'%</b>)</div>' +'<div>Emails: <b>'+p.counts.Emails+'</b> → Quotes: <b>'+p.counts.Quotes+'</b> (<b>'+p.convEQ+'%</b>)</div>' +'<div>Quotes: <b>'+p.counts.Quotes+'</b> → Apps: <b>'+p.counts.Apps+'</b> (<b>'+p.convQA+'%</b>)</div>' +'<div>Apps: <b>'+p.counts.Apps+'</b> → Issued: <b>'+p.counts.Issued+'</b> (<b>'+p.convAP+'%</b>)</div>'; }
   function weekRange(){ var end=startOfDay(new Date()), start=addDays(end,-6); return {start:start, end:addDays(end,1)}; }
   function weeklyCalls(){ var r=weekRange(), cnt=0; if(state && state.clients) state.clients.forEach(function(c){ (c.history||[]).forEach(function(h){ if(h.action==='status' && h.to==='Called' && isWithin(h.ts,r.start,r.end)) cnt++; }); }); return cnt; }
   /* Goals widget removed - functionality now in daily outreach bar */
@@ -2653,7 +2905,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   // Keep collecting KPI data for email summaries
   function getKPIData(){
     return {
-      purchased: (state && state.clients) ? state.clients.filter(function(c){return c.status==='Purchased';}).length : 0,
+      purchased: (state && state.clients) ? state.clients.filter(function(c){return c.status==='Issued';}).length : 0,
       weeklyCalls: weeklyCalls(),
       streak: calcStreak(1)
     };
@@ -2817,7 +3069,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       var contextConfig = CONTEXTS[clientContext];
       var finalStage = contextConfig.stages.length - 1;
 
-      if((c.stage === finalStage || c.status === 'Purchased') && c.purchaseDate){
+      if((c.stage === finalStage || c.status === 'Issued') && c.purchaseDate){
         var purchaseDate = new Date(c.purchaseDate);
         if(purchaseDate >= startOfMonth && purchaseDate < endOfMonth){
           count++;
@@ -3011,6 +3263,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       icon.className = 'stage-icon';
       icon.textContent = stageIcons[index] || '•';
       icon.title = stageName; // Tooltip
+      icon.style.position = 'relative';
 
       // Make clickable to set stage (only if we have a client object)
       if(client && client.id){
@@ -3018,6 +3271,30 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           e.stopPropagation();
           setClientStage(client, index);
         });
+
+        // Add 'x' button to remove status for the first active stage (only shows on hover)
+        if(index === 0 && currentStage === 0){
+          var removeBtn = document.createElement('span');
+          removeBtn.className = 'stage-remove-x';
+          removeBtn.textContent = '×';
+          removeBtn.style.cssText = 'position:absolute; top:-4px; right:-4px; width:14px; height:14px; background:#dc2626; color:white; border-radius:50%; font-size:10px; line-height:14px; text-align:center; cursor:pointer; display:none; z-index:10;';
+          removeBtn.addEventListener('click', function(e){
+            e.stopPropagation();
+            client.stage = -1;
+            client.status = '';
+            save(state);
+            render();
+          });
+          icon.appendChild(removeBtn);
+
+          // Show/hide on hover
+          icon.addEventListener('mouseenter', function(){
+            removeBtn.style.display = 'block';
+          });
+          icon.addEventListener('mouseleave', function(){
+            removeBtn.style.display = 'none';
+          });
+        }
       }
 
       var label = document.createElement('div');
@@ -3068,7 +3345,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     opts=opts||{};
     var thr=getAgeThreshold();
 
-    var row=document.createElement('div'); row.className='row '+(c.status==='Purchased'?'purchased':''); row.dataset.id=c.id;
+    var row=document.createElement('div'); row.className='row '+(c.status==='Issued'?'purchased':''); row.dataset.id=c.id;
     /* Untouched class no longer needed - using green dot instead */
     row.addEventListener('click', function(){ setSelectedRowById(c.id); });
 
@@ -3133,13 +3410,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       if(opts.whenLabel){
         var whenChip=document.createElement('span');
         whenChip.className='tag-chip scheduled';
-        whenChip.innerHTML = opts.whenLabel + '<span class="unschedule-x" data-client-id="' + c.id + '">×</span>';
+        whenChip.innerHTML = opts.whenLabel +
+          '<button class="add-to-cal-btn" data-client-id="' + c.id + '" data-follow-up="' + c.followUp + '" style="margin-left:6px; padding:2px 6px; background:transparent; border:none; cursor:pointer; color:var(--blue); font-size:14px;" title="Add to Calendar">📅</button>' +
+          '<span class="unschedule-x" data-client-id="' + c.id + '">×</span>';
         head.appendChild(whenChip);
       }
       if(c.purchaseDate){
         var purchaseChip=document.createElement('span');
         purchaseChip.className='tag-chip scheduled purchased-chip';
-        var purchaseLabel = 'Purchased: ' + new Date(c.purchaseDate).toLocaleDateString('en-US', {month:'numeric', day:'numeric', year:'2-digit'});
+        var purchaseLabel = 'Issued: ' + new Date(c.purchaseDate).toLocaleDateString('en-US', {month:'numeric', day:'numeric', year:'2-digit'});
         purchaseChip.innerHTML = purchaseLabel + '<span class="unschedule-x clear-purchase" data-client-id="' + c.id + '">×</span>';
         head.appendChild(purchaseChip);
       }
@@ -3226,7 +3505,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       if(c.purchaseDate){
         var purchaseChip=document.createElement('span');
         purchaseChip.className='tag-chip scheduled purchased-chip';
-        var purchaseLabel = 'Purchased: ' + new Date(c.purchaseDate).toLocaleDateString('en-US', {month:'numeric', day:'numeric', year:'2-digit'});
+        var purchaseLabel = 'Issued: ' + new Date(c.purchaseDate).toLocaleDateString('en-US', {month:'numeric', day:'numeric', year:'2-digit'});
         purchaseChip.innerHTML = purchaseLabel + '<span class="unschedule-x clear-purchase" data-client-id="' + c.id + '">×</span>';
         tagsSection.appendChild(purchaseChip);
       }
@@ -3314,7 +3593,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   }
 
   /* Selection */
-  function allRows(){ return $all('#todayList .row, #list .row'); }
+  function allRows(){ return $all('#todayList .row, #list .row, #scheduledList .row'); }
   var selectionIndex=0;
   function setSelectedRowById(id){ var rows=allRows(); var idx=rows.findIndex(function(r){return r.dataset.id===id;}); if(idx>=0){ selectionIndex=idx; restoreSelection(); } }
   function restoreSelection(){ var rows=allRows(); rows.forEach(function(r){ r.classList.remove('selected'); }); if(!rows.length) return; if(selectionIndex<0) selectionIndex=0; if(selectionIndex>=rows.length) selectionIndex=0; rows[selectionIndex].classList.add('selected'); rows[selectionIndex].scrollIntoView({block:'nearest'}); }
@@ -3350,12 +3629,46 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       return;
     }
 
+    // Add a button to add all follow-ups to calendar at once
+    if(items.length > 1){
+      var bulkBtn = document.createElement('button');
+      bulkBtn.className = 'btn-min gray';
+      bulkBtn.style.cssText = 'width: 100%; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 6px;';
+      bulkBtn.innerHTML = '📅 Add All to Calendar (' + items.length + ')';
+      bulkBtn.addEventListener('click', function(){
+        items.forEach(function(item, index){
+          setTimeout(function(){
+            createCalendarEvent(item.c, item.when);
+          }, index * 500); // Stagger to avoid overwhelming the browser
+        });
+      });
+      els.followList.appendChild(bulkBtn);
+    }
+
     items.forEach(function(rec){
       var div=document.createElement('div');
       div.className='followitem';
+      div.style.cursor = 'pointer';
 
       var left=document.createElement('div');
-      left.textContent=rec.c.name;
+      left.style.display = 'flex';
+      left.style.alignItems = 'center';
+      left.style.gap = '6px';
+
+      var nameSpan = document.createElement('span');
+      nameSpan.textContent=rec.c.name;
+      left.appendChild(nameSpan);
+
+      // Add small calendar button for individual items
+      var calBtn = document.createElement('button');
+      calBtn.style.cssText = 'padding: 2px 4px; background: transparent; border: none; cursor: pointer; color: var(--blue); font-size: 12px;';
+      calBtn.textContent = '📅';
+      calBtn.title = 'Add to Calendar';
+      calBtn.addEventListener('click', function(e){
+        e.stopPropagation();
+        createCalendarEvent(rec.c, rec.when);
+      });
+      left.appendChild(calBtn);
 
       var right=document.createElement('div');
       right.className='small muted';
@@ -3544,7 +3857,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     // Handle "all" context separately
     if(currentContext === 'all'){
       var activeAll = state.clients.filter(function(c){return !c.archived;});
-      var todayClients = activeAll.filter(function(c){ return c.queueToday; });
       var scheduled = activeAll.filter(isFutureFollowUp);
 
       renderKPIs(); renderPipeline(); renderTrendRibbons(); renderDailyOutreach(); updateDemoButtons();
@@ -3555,8 +3867,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       // Render grouped list
       renderGroupedList(els.list);
 
-      // Handle today's queue and scheduled
-      renderList(els.todayList, todayClients);
+      // Hide Today's block in "all" context view - clients are shown grouped by context instead
+      if(els.todayBlock){
+        els.todayBlock.classList.add('hidden');
+      }
+      if(els.todayList){
+        els.todayList.innerHTML='';
+      }
+
+      // Hide Scheduled block in "all" context view as well
+      if(els.scheduledBlock){
+        els.scheduledBlock.classList.add('hidden');
+      }
+      if(els.scheduledList){
+        els.scheduledList.innerHTML='';
+      }
+
+      // Handle scheduled items in sidebar
       renderList(els.followList, scheduled.sort(function(a, b) {
         var dateA = new Date(a.followUp);
         var dateB = new Date(b.followUp);
@@ -4246,7 +4573,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
           // Add clear option
           var clearDiv = document.createElement('div');
-          clearDiv.innerHTML = '<kbd>0</kbd> - Reset to first stage';
+          clearDiv.innerHTML = '<kbd>0</kbd> - Clear all status';
           statusContainer.appendChild(clearDiv);
         }
         break;
@@ -4468,9 +4795,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         id: 'demo-' + Date.now() + '-3',
         name: 'Jennifer Martinez',
         context: 'life',
-        status: 'Purchased',
-        stage: 5,  // Purchased/Issued stage
-        notes: 'Purchased whole life policy for $250K.\nEasy client, referred by existing customer.\nInterested in additional coverage for spouse.',
+        status: 'Issued',
+        stage: 5,  // Issued/Issued stage
+        notes: 'Issued whole life policy for $250K.\nEasy client, referred by existing customer.\nInterested in additional coverage for spouse.',
         callCount: 1,
         msgCount: 0,
         lastTouch: yesterday,
@@ -4505,7 +4832,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     // Show success message
     setTimeout(function(){
-      alert('Demo data loaded! 📋\n\n• Sarah Johnson (Sent Quote)\n• Michael Chen (No status - try setting one!)\n• Jennifer Martinez (Purchased)\n\nExplore the features and use keyboard shortcuts 1-6!');
+      alert('Demo data loaded! 📋\n\n• Sarah Johnson (Sent Quote)\n• Michael Chen (No status - try setting one!)\n• Jennifer Martinez (Issued)\n\nExplore the features and use keyboard shortcuts 1-6!');
     }, 100);
   }
 
@@ -4811,8 +5138,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     if(key==='0'){
       var c0=getSelectedClient();
       if(c0){
-        // Clear stage (set to -1 or first stage)
-        setClientStage(c0, 0);
+        // Clear all status (set to no stage)
+        c0.stage = -1;
+        c0.status = '';
+        save(state);
+        render();
         e.preventDefault();
       }
     }
@@ -5179,7 +5509,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       var subject = 'Life Hotlist - Today\'s Activity (' + today + ')';
       var body = 'Today\'s Activity Report\n\n';
       body += '=== KPIs ===\n';
-      body += 'Purchased: ' + kpis.purchased + '\n';
+      body += 'Issued: ' + kpis.purchased + '\n';
       body += 'Weekly Calls: ' + kpis.weeklyCalls + '\n';
       body += 'Streak: ' + kpis.streak + ' day(s)\n\n';
       body += '=== Daily Activity ===\n';
@@ -5208,7 +5538,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       var subject = 'Life Hotlist - ' + rangeDays + ' Day Summary Report';
       var body = rangeDays + ' Day Summary Report\n\n';
       body += '=== KPIs ===\n';
-      body += 'Total Purchased: ' + kpis.purchased + '\n';
+      body += 'Total Issued: ' + kpis.purchased + '\n';
       body += 'Weekly Calls: ' + kpis.weeklyCalls + '\n';
       body += 'Current Streak: ' + kpis.streak + ' day(s)\n\n';
 
@@ -5313,6 +5643,106 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     renderQuote(false);
     scheduleQuoteTimer();
     renderDailyOutreach();
+
+    // Calendar View Button handler
+    if(els.calendarViewBtn){
+      els.calendarViewBtn.addEventListener('click', function(){
+        // Show calendar view modal
+        var modal = document.createElement('div');
+        modal.style.cssText = 'position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:var(--card); border-radius:12px; padding:24px; box-shadow:0 10px 30px rgba(0,0,0,0.3); z-index:10001; width:500px; max-height:600px; overflow-y:auto;';
+
+        var backdrop = document.createElement('div');
+        backdrop.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:10000;';
+
+        modal.innerHTML = '<h3 style="margin:0 0 20px 0; color:var(--ink);">Scheduled Follow-ups Calendar</h3>';
+
+        // Get all scheduled items
+        var items = state.clients.filter(function(c){
+          return !c.archived && c.followUp && !c.queueTomorrow;
+        }).map(function(c){
+          var when = new Date(c.followUp);
+          var clientContext = c.context || 'life';
+          var contextName = CONTEXTS[clientContext] ? CONTEXTS[clientContext].name : 'Life';
+          return {c:c, when:when, context:contextName};
+        }).sort(function(a,b){return +a.when - +b.when;});
+
+        if(items.length === 0){
+          modal.innerHTML += '<p style="color:var(--muted);">No scheduled follow-ups</p>';
+        } else {
+          var listDiv = document.createElement('div');
+          listDiv.style.cssText = 'display:grid; gap:12px;';
+
+          items.forEach(function(item){
+            var itemDiv = document.createElement('div');
+            itemDiv.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--bg); border-radius:8px; border:1px solid var(--line);';
+
+            var leftDiv = document.createElement('div');
+            leftDiv.innerHTML = '<div style="font-weight:600; color:var(--ink);">' + item.context + ' Follow-up: ' + item.c.name + '</div>' +
+                               '<div style="font-size:12px; color:var(--muted); margin-top:4px;">' + item.when.toLocaleString([], {month:'numeric',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'}) + '</div>';
+
+            var calBtn = document.createElement('button');
+            calBtn.style.cssText = 'padding:6px 10px; background:var(--blue); color:white; border:none; border-radius:6px; cursor:pointer; font-size:12px;';
+            calBtn.textContent = '📅 Add to Calendar';
+            calBtn.addEventListener('click', function(){
+              createCalendarEvent(item.c, item.when);
+            });
+
+            itemDiv.appendChild(leftDiv);
+            itemDiv.appendChild(calBtn);
+            listDiv.appendChild(itemDiv);
+          });
+
+          modal.appendChild(listDiv);
+        }
+
+        var closeBtn = document.createElement('button');
+        closeBtn.style.cssText = 'margin-top:20px; padding:8px 16px; background:transparent; color:var(--muted); border:1px solid var(--line); border-radius:8px; cursor:pointer; width:100%;';
+        closeBtn.textContent = 'Close';
+        closeBtn.addEventListener('click', function(){
+          modal.remove();
+          backdrop.remove();
+        });
+        modal.appendChild(closeBtn);
+
+        backdrop.addEventListener('click', function(){
+          modal.remove();
+          backdrop.remove();
+        });
+
+        document.body.appendChild(backdrop);
+        document.body.appendChild(modal);
+      });
+    }
+
+    // Event delegation for dynamically created elements
+    document.addEventListener('click', function(e){
+      // Handle unschedule-x buttons
+      if(e.target.classList.contains('unschedule-x')){
+        e.stopPropagation();
+        var clientId = e.target.getAttribute('data-client-id');
+        var client = state.clients.find(function(c){ return c.id === clientId; });
+        if(client){
+          if(e.target.classList.contains('clear-purchase')){
+            client.purchaseDate = '';
+          } else {
+            client.followUp = '';
+          }
+          save(state);
+          render();
+        }
+      }
+
+      // Handle add-to-cal buttons
+      if(e.target.classList.contains('add-to-cal-btn')){
+        e.stopPropagation();
+        var clientId = e.target.getAttribute('data-client-id');
+        var client = state.clients.find(function(c){ return c.id === clientId; });
+        if(client && client.followUp){
+          createCalendarEvent(client, new Date(client.followUp));
+        }
+      }
+    });
+
     // Initialize Supabase if configured
     initSupabase();
     render();
@@ -5359,7 +5789,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <div><kbd>3</kbd> - Sent Application</div>
           <div><kbd>4</kbd> - Pending Application Signature</div>
           <div><kbd>5</kbd> - Pending Medical Questionnaire</div>
-          <div><kbd>6</kbd> - Purchased</div>
+          <div><kbd>6</kbd> - Issued</div>
           <div><kbd>0</kbd> - Clear status</div>
         </div>
       </div>
