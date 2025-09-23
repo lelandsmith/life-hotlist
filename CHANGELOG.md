@@ -2,6 +2,14 @@
 
 All notable changes to Life Hotlist will be documented in this file.
 
+## [2.5.1] - 2025-01-23
+
+### Added
+- **Client Name Hyperlinks**: Client names now link to Country Passport Navigator search
+  - Opens in new tab with client name pre-populated in search
+  - Preserves all styling - only cursor changes on hover
+  - URL-encodes names for proper special character handling
+
 ## [2.5.0] - 2025-01-23
 
 ### Added
