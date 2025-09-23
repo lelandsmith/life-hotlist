@@ -2,6 +2,38 @@
 
 All notable changes to Life Hotlist will be documented in this file.
 
+## [2.5.0] - 2025-01-23
+
+### Added
+- **Calendar Integration**: Multiple calendar methods for creating follow-up events
+  - Support for Google Calendar, Outlook Calendar, and ICS file download
+  - User preference setting in Settings widget
+  - Default to Outlook Calendar for follow-up scheduling
+- **Enter Key Note Editing**: Improved keyboard shortcuts for notes
+  - Press Enter on selected row to open note editing
+  - Press Enter while editing to save and close notes
+  - Click on notes preview to edit
+  - Added blur event saving for better reliability
+
+### Fixed
+- **Context Persistence Issue**: Fixed critical bug where home and auto context clients would disappear
+  - Added context validation functions to detect and repair missing contexts
+  - Automatic repair of existing corrupted data on startup
+  - Protection against future context loss with proactive monitoring
+- **Notes Saving Issue**: Fixed notes not saving properly or reverting to older versions
+  - Implemented debounced saving (500ms after typing stops)
+  - Added immediate save on Enter key and blur events
+  - Prevents race conditions from rapid consecutive saves
+  - Console logging for debugging save operations
+
+### Changed
+- **Filters Widget**: Renamed to "Settings" for clarity
+- **Follow-up Scheduling**: Default date now 2 days from current date instead of today
+- **Quote Display**: Increased font size from 15px to 18px for better readability
+
+### Removed
+- **Add All to Calendar**: Disabled bulk calendar event creation due to browser popup blocking
+
 ## [1.8.7] - 2025-01-17
 
 ### Fixed

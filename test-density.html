@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        /* Test the titles-only density styles */
+        body[data-density="titles-only"] .qbtn {
+            min-width: 32px;
+            padding: 3px 5px;
+            font-size: 14px;
+            background: red; /* Test color to see if it applies */
+        }
+
+        body[data-density="titles-only"] .sbtn {
+            min-width: 34px;
+            padding: 3px 5px;
+            font-size: 10px;
+            background: blue; /* Test color to see if it applies */
+        }
+
+        body[data-density="titles-only"] .sbtn .ico {
+            font-size: 14px;
+        }
+
+        body[data-density="titles-only"] .iconbtn {
+            min-width: 30px;
+            padding: 3px 5px;
+            font-size: 12px;
+            background: green; /* Test color to see if it applies */
+        }
+
+        /* Default styles for comparison */
+        .qbtn {
+            background: lightgray;
+            padding: 8px 12px;
+            font-size: 16px;
+            min-width: 46px;
+            border: none;
+            margin: 5px;
+        }
+        .sbtn {
+            background: lightblue;
+            padding: 8px 10px;
+            font-size: 11px;
+            min-width: 50px;
+            border: none;
+            margin: 5px;
+        }
+        .iconbtn {
+            background: lightgreen;
+            padding: 8px 10px;
+            font-size: 16px;
+            min-width: 42px;
+            border: none;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body data-density="titles-only">
+    <h1>Testing Titles-Only Density Styles</h1>
+
+    <h2>Normal Mode (should be larger with light colors):</h2>
+    <div style="background: white; padding: 10px;">
+        <button class="qbtn">📞</button>
+        <button class="sbtn">💰<span class="ico">🔥</span></button>
+        <button class="iconbtn">📝</button>
+    </div>
+
+    <h2>Titles-Only Mode (should be smaller with bright colors):</h2>
+    <div style="background: white; padding: 10px;">
+        <button class="qbtn">📞</button>
+        <button class="sbtn">💰<span class="ico">🔥</span></button>
+        <button class="iconbtn">📝</button>
+    </div>
+
+    <script>
+        // Toggle between modes to test
+        function toggleMode() {
+            const body = document.body;
+            if (body.getAttribute('data-density') === 'titles-only') {
+                body.removeAttribute('data-density');
+                document.querySelector('h1').textContent = 'Testing Normal Mode';
+            } else {
+                body.setAttribute('data-density', 'titles-only');
+                document.querySelector('h1').textContent = 'Testing Titles-Only Mode';
+            }
+        }
+
+        // Add toggle button
+        const button = document.createElement('button');
+        button.textContent = 'Toggle Mode';
+        button.onclick = toggleMode;
+        button.style.cssText = 'padding: 10px 20px; font-size: 16px; margin: 20px 0;';
+        document.body.insertBefore(button, document.body.firstElementChild);
+    </script>
+</body>
+</html>

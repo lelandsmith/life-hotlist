@@ -1207,7 +1207,7 @@ body[data-all-contexts="true"] .context-group > div:last-child {
 }
 
 /* Quote */
-.quote{font-style:italic;color:#334155;font-size:15px;padding:8px;border-radius:12px;background:color-mix(in oklab, var(--card) 92%, #f0f4ff)}
+.quote{font-style:italic;color:#334155;font-size:18px;padding:8px;border-radius:12px;background:color-mix(in oklab, var(--card) 92%, #f0f4ff)}
 .quote small{display:block;color:#6b7280;margin-top:4px}
 
 /* Today queue */
@@ -2834,7 +2834,33 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       }
     });
   }
-  function updateNotes(c,notes){ c.notes=notes; save(state); }
+  var notesDebounceTimers = {}; // Store debounce timers for each client
+
+  function updateNotes(c,notes,immediate){
+    c.notes=notes;
+
+    // If immediate save requested (e.g., when pressing Enter), save immediately
+    if(immediate) {
+      // Clear any pending debounced save
+      if(notesDebounceTimers[c.id]) {
+        clearTimeout(notesDebounceTimers[c.id]);
+        delete notesDebounceTimers[c.id];
+      }
+      save(state);
+      return;
+    }
+
+    // Otherwise, debounce the save (wait 500ms after typing stops)
+    if(notesDebounceTimers[c.id]) {
+      clearTimeout(notesDebounceTimers[c.id]);
+    }
+
+    notesDebounceTimers[c.id] = setTimeout(function() {
+      save(state);
+      delete notesDebounceTimers[c.id];
+      console.log('Notes saved for:', c.name);
+    }, 500);
+  }
   function archiveClient(c,flag){ preserveUIAndRender(function(){ c.archived=!!flag; }); }
   var deleteUndoTimeout = null;
   var deletedClient = null;
@@ -3922,13 +3948,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     // Notes textarea (shared by both layouts)
     var notesWrap=document.createElement('div'); notesWrap.className='notes hidden';
     var ta=document.createElement('textarea'); ta.placeholder='Notes…'; ta.value=c.notes||'';
-    ta.addEventListener('input', function(){ updateNotes(c,ta.value); });
+    ta.addEventListener('input', function(){ updateNotes(c,ta.value); }); // Debounced save
+    ta.addEventListener('blur', function(){ updateNotes(c,ta.value, true); }); // Immediate save on blur
     ta.addEventListener('keydown', function(e){
       if(e.key==='Enter' && !e.shiftKey){
         e.preventDefault();
         e.stopPropagation();
 
-        updateNotes(c, ta.value);
+        updateNotes(c, ta.value, true); // Immediate save on Enter
 
         // Update or create notes preview
         var first=(ta.value||'').split('\n')[0] ? (ta.value||'').split('\n')[0].trim() : '';
