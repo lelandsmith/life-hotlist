@@ -1730,7 +1730,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   /* =========================
    *  Version & Changelog
    * ========================= */
-  var VERSION = '2.4.0';
+  var VERSION = '2.5.0';
 
   // Supabase Configuration (will be null until user provides credentials)
   var SUPABASE_URL = null;  // Will be set from localStorage or user input
@@ -1910,6 +1910,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   // Recent commits from git log
   var CHANGELOG = [
+    { version: '2.5.0', date: '2025-01-23', changes: 'Fixed critical context persistence bug (home/auto clients disappearing), fixed notes saving with debounced saves, added calendar integration (Google/Outlook/ICS), added Enter key support for note editing, renamed Filters to Settings, default follow-ups to 2 days out, increased quote font size to 18px' },
     { version: '2.4.0', date: '2025-01-23', changes: 'Added context-specific monthly goals with segmented progress indicators, improved quotes editor with bullet points and better visual spacing, fixed aging threshold saving, added compact mode tooltips for all icons appearing below with high z-index, daily outreach now counts unique clients only, added titles-only density mode with underlined text labels' },
     { version: '2.3.1', date: '2025-01-21', changes: 'Improved All Contexts view layout by removing spacing between context groups for a more compact design' },
     { version: '2.3.0', date: '2025-01-21', changes: 'Enhanced scheduling with 30-minute calendar integration and direct Google Calendar support, improved status tracker with 1px borders and cleaner icon styling, distinctive Today\'s queue styling with blue theme, refined UI with shadow-based hover effects, fixed context switching and row selection, changed Commercial "Lead" to "Contact", default clients start with no status' },
