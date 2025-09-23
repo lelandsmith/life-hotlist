@@ -2017,6 +2017,33 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   function toLocalInputValue(iso){ if(!iso) return ''; var d=new Date(iso); var pad=function(n){return String(n).padStart(2,'0');}; return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'T'+pad(d.getHours())+':'+pad(d.getMinutes()); }
   function fromLocalInputValue(val){ if(!val) return ''; var d=new Date(val); if(isNaN(+d)) return ''; return d.toISOString(); }
 
+  // Context validation functions to prevent data loss
+  function getClientContext(client) {
+    if (!client.context) {
+      console.warn('Client missing context, defaulting to life:', client.name || client.id);
+      client.context = 'life'; // Fix the data, don't just default
+      save(state); // Persist the fix immediately
+    }
+    return client.context;
+  }
+
+  function validateAllContexts() {
+    if (!state || !state.clients) return 0;
+    var fixed = 0;
+    state.clients.forEach(function(c) {
+      if (!c.context) {
+        c.context = 'life';
+        fixed++;
+        console.warn('Fixed missing context for client:', c.name || c.id);
+      }
+    });
+    if (fixed > 0) {
+      console.log('Fixed', fixed, 'clients missing context');
+      save(state);
+    }
+    return fixed;
+  }
+
   /* Elements */
   var els={
     appRoot:$('#appRoot'),
@@ -3361,7 +3388,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     if(state && state.clients) state.clients.forEach(function(c){
       // Check if client is in current context
-      var clientContext = c.context || 'life';
+      var clientContext = getClientContext(c);
       if(clientContext !== currentContext) return;
 
       // Check if client has reached final stage (purchased/issued)
@@ -4248,7 +4275,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       if(!CONTEXTS[contextKey]) return;
 
       var groupClients = state.clients.filter(function(c){
-        var clientContext = c.context || 'life';
+        var clientContext = getClientContext(c);
         if(clientContext !== contextKey) return false;
         if(els.showArchived && els.showArchived.checked ? !c.archived : c.archived) return false;
         if(els.statusFilter && els.statusFilter.value && c.status!==els.statusFilter.value) return false;
@@ -4488,7 +4515,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     // Filter clients by current context
     var contextClients = state.clients.filter(function(c){
-      return (c.context || 'life') === currentContext;
+      return getClientContext(c) === currentContext;
     });
 
     var activeAll=contextClients.filter(function(c){return !c.archived;});
@@ -4634,7 +4661,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       var q=els.globalSearch.value.trim(); if(!q) return;
       // Check for duplicates only within the current context
       var exists=state.clients.some(function(c){
-        return (c.context || 'life') === currentContext && c.name.toLowerCase()===q.toLowerCase();
+        return getClientContext(c) === currentContext && c.name.toLowerCase()===q.toLowerCase();
       });
       if(!exists){
         var added = addClient(q);
@@ -4977,6 +5004,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
               if(importedData.quotes) state.quotes = importedData.quotes;
               if(importedData.quotesSettings) state.quotesSettings = importedData.quotesSettings;
 
+              // Validate contexts after import
+              validateAllContexts();
               save(state);
               render();
               scheduleQuoteTimer(); // Reset quote timer with new settings
@@ -5009,6 +5038,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
               state.quotes = importedData.quotes;
             }
 
+            // Validate contexts after merge
+            validateAllContexts();
             save(state);
             render();
             showNotification('Import Complete', importCount + ' new clients added (duplicates skipped)');
@@ -6525,6 +6556,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   Promise.all([storageReady, uiReady]).then(function() {
     // Now that storage is ready, perform initial setup
 
+    // Validate and fix any clients missing context (data integrity check)
+    validateAllContexts();
+
     // Initialize ageDays dropdown with saved value
     if(els.ageDays) {
       els.ageDays.value = String(ui.ageDays || 4);
@@ -6651,7 +6685,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           return !c.archived && c.followUp && !c.queueTomorrow;
         }).map(function(c){
           var when = new Date(c.followUp);
-          var clientContext = c.context || 'life';
+          var clientContext = getClientContext(c);
           var contextName = CONTEXTS[clientContext] ? CONTEXTS[clientContext].name : 'Life';
           return {c:c, when:when, context:contextName};
         }).sort(function(a,b){return +a.when - +b.when;});
