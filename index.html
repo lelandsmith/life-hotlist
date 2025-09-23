@@ -776,6 +776,25 @@ body[data-font-size="xlarge"] .row .sbtn.s-hot .ico { font-size: 24px; }
   background:#059669;
 }
 
+/* Segmented progress for context goals */
+.segmented-progress {
+  display: flex;
+  gap: 2px;
+}
+.segment {
+  width: 6px;
+  height: 14px;
+  background: #dfdfdf;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+.segment.filled {
+  background: #059669;
+  box-shadow: 0 0 6px rgba(5,150,105,0.4);
+  border: 1px solid rgba(16,185,129,0.3);
+}
+
+
 /* Trophy Icon Fill Progress for Life Apps */
 .icon-progress {
   display: inline-flex;
@@ -1512,17 +1531,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <input type="number" class="goal-input" id="dailyOutreachGoal" value="10" min="1" max="100" style="width:35px; padding:2px 4px; font-size:12px;">
             <button class="btn-save" id="saveDailyGoal" style="padding:2px 6px; margin-left:4px; font-size:11px;">Set</button>
           </div>
-          <div class="stat-separator" id="lifeAppsSeparator">|</div>
-          <div class="stat-group" id="lifeAppsGroup" style="background:#e9f5ee; padding:4px 8px; border-radius:6px;">
-            <strong style="color:#0e7a5a;">Life Apps:</strong>
-            <div class="icon-progress">
-              <div class="trophy-icon" id="monthlyAppsTrophy">
-                <span class="trophy-base">🏆</span>
-                <span class="trophy-fill" style="--fill: 0%;">🏆</span>
-              </div>
-              <span id="monthlyPurchases" style="color:#0e7a5a; font-weight:700;">0 / 5</span>
+          <div class="stat-separator" id="contextGoalSeparator">|</div>
+          <div class="stat-group" id="contextGoalGroup" style="background:#e9f5ee; padding:4px 8px; border-radius:6px; display:flex; align-items:center; gap:8px;">
+            <strong style="color:#0e7a5a;" id="contextGoalLabel">Life Apps Goal:</strong>
+            <span style="color:#0e7a5a; font-weight:700; margin-right:4px;" id="contextGoalCurrent">0</span>
+            <div class="segmented-progress" id="contextGoalSegments" style="display:flex; gap:2px;">
+              <!-- Segments will be dynamically generated -->
             </div>
-            <input type="number" class="goal-input" id="monthlyAppsGoal" value="5" min="1" max="20" style="width:35px; padding:2px 4px; font-size:12px; margin-left:6px;">
+            <span style="color:#0e7a5a; margin-left:4px;" id="contextGoalMax">5</span>
+            <input type="number" class="goal-input" id="monthlyAppsGoal" value="5" min="1" max="20" style="width:35px; padding:2px 4px; font-size:12px; margin-left:8px;">
             <button class="btn-save" id="saveMonthlyGoal" style="padding:2px 6px; margin-left:4px; font-size:11px;">Set</button>
           </div>
         </div>
@@ -1634,7 +1651,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <label><input id="showArchived" type="checkbox" /> Show archived</label>
         <label class="small"><input id="groupToggle" type="checkbox" /> Group today's activity by client</label>
         <label class="small">Aging threshold (business days)
-          <select id="ageDays"><option>2</option><option selected>4</option><option>6</option><option>8</option></select>
+          <select id="ageDays"><option>2</option><option>4</option><option>6</option><option>8</option></select>
         </label>
       </div></div>
     </div>
@@ -1681,7 +1698,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     <div class="widget" data-key="motivation" draggable="true">
       <div class="widget-head"><h2 class="widget-title">Motivation</h2><div class="widget-actions"><button class="btn-min gray" id="quotesEditBtn">Edit quotes</button><button class="btn-min gray" id="quotesNextBtn">Next</button><button class="btn-min gray collapse-btn" data-collapse title="Collapse"></button></div></div>
-      <div class="widget-body"><div id="quoteView" class="quote">Add quotes to get started.</div><div class="small muted" id="quoteMeta" style="margin-top:4px"></div><div id="quoteEditor" class="hidden" style="margin-top:8px"><div class="small muted" style="margin-bottom:4px">One quote per line. Blank lines ignored.</div><textarea id="quotesTextarea" style="width:100%;min-height:120px"></textarea><div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px"><div class="small muted">Rotate every <select id="quoteInterval"><option value="5">5</option><option value="10">10</option><option value="15" selected>15</option><option value="30">30</option><option value="60">60</option></select> min • <label><input type="checkbox" id="quoteRandom" checked> Shuffle</label> • <label><input type="checkbox" id="quoteNoRepeat" checked> Avoid repeats</label></div><div><button class="btn-primary" id="quotesSaveBtn">Save</button><button class="btn-min gray" id="quotesCancelBtn">Cancel</button></div></div></div></div>
+      <div class="widget-body"><div id="quoteView" class="quote">Add quotes to get started.</div><div class="small muted" id="quoteMeta" style="margin-top:4px"></div><div id="quoteEditor" class="hidden" style="margin-top:8px"><div class="small muted" style="margin-bottom:8px; color:#4b5563;">📝 Enter one quote per line • Empty lines will be ignored • <span id="quoteCount" style="font-weight:600;">0 quotes</span></div><div style="position:relative;"><textarea id="quotesTextarea" style="width:100%; min-height:300px; max-height:500px; padding:12px 12px 12px 30px; border:2px solid #e5e7eb; border-radius:8px; font-size:13px; line-height:2.2; resize:vertical; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; white-space:pre-wrap; word-wrap:break-word;"></textarea><div id="quoteBullets" style="position:absolute; left:10px; top:12px; color:#9ca3af; font-size:13px; line-height:2.2; pointer-events:none;"></div></div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px"><div class="small muted">Rotate every <select id="quoteInterval" style="padding:2px 4px; border:1px solid #d1d5db; border-radius:4px;"><option value="5">5</option><option value="10">10</option><option value="15" selected>15</option><option value="30">30</option><option value="60">60</option></select> min • <label style="cursor:pointer;"><input type="checkbox" id="quoteRandom" checked> Shuffle</label> • <label style="cursor:pointer;"><input type="checkbox" id="quoteNoRepeat" checked> Avoid repeats</label></div><div><button class="btn-primary" id="quotesSaveBtn" style="padding:6px 16px;">Save Quotes</button><button class="btn-min gray" id="quotesCancelBtn" style="margin-left:8px;">Cancel</button></div></div></div></div>
     </div>
   </aside>
 </div>
@@ -1705,7 +1722,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   /* =========================
    *  Version & Changelog
    * ========================= */
-  var VERSION = '2.2.0';
+  var VERSION = '2.4.0';
 
   // Supabase Configuration (will be null until user provides credentials)
   var SUPABASE_URL = null;  // Will be set from localStorage or user input
@@ -1885,6 +1902,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   // Recent commits from git log
   var CHANGELOG = [
+    { version: '2.4.0', date: '2025-01-23', changes: 'Added context-specific monthly goals with segmented progress indicators, improved quotes editor with bullet points and better visual spacing, fixed aging threshold saving, added compact mode tooltips for all icons appearing below with high z-index, daily outreach now counts unique clients only, added titles-only density mode with underlined text labels' },
     { version: '2.3.1', date: '2025-01-21', changes: 'Improved All Contexts view layout by removing spacing between context groups for a more compact design' },
     { version: '2.3.0', date: '2025-01-21', changes: 'Enhanced scheduling with 30-minute calendar integration and direct Google Calendar support, improved status tracker with 1px borders and cleaner icon styling, distinctive Today\'s queue styling with blue theme, refined UI with shadow-based hover effects, fixed context switching and row selection, changed Commercial "Lead" to "Contact", default clients start with no status' },
     { version: '2.2.0', date: '2025-01-19', changes: 'Add optional cloud sync with Supabase (local storage remains default), add left/right arrow keys for stage navigation' },
@@ -2018,7 +2036,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     dailyOutreachFill:$('#dailyOutreachFill'), dailyOutreachLabel:$('#dailyOutreachLabel'),
     dailyCalls:$('#dailyCalls'), dailyMessages:$('#dailyMessages'), saveDailyGoal:$('#saveDailyGoal'),
     monthlyPurchases:$('#monthlyPurchases'), monthlyAppsGoal:$('#monthlyAppsGoal'),
-    saveMonthlyGoal:$('#saveMonthlyGoal'), monthlyAppsTrophy:$('#monthlyAppsTrophy'),
+    saveMonthlyGoal:$('#saveMonthlyGoal'),
     celebration:$('#celebration'), confettiContainer:$('#confettiContainer'),
     chachingSound:$('#chachingSound'),
     todayBlock:$('#todayBlock'), todayList:$('#todayList'),
@@ -3260,25 +3278,41 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     if(els.dailyCalls) els.dailyCalls.textContent = String(counts.calls);
     if(els.dailyMessages) els.dailyMessages.textContent = String(counts.messages);
 
-    // Update monthly purchases
-    var monthlyApps = getMonthlyPurchases();
-    var monthlyGoal = ui.monthlyAppsGoal || 5;
+    // Update monthly purchases/goal based on current context
+    var monthlyAchievements = getMonthlyPurchases();
 
-    if(els.monthlyPurchases){
-      els.monthlyPurchases.textContent = monthlyApps + ' / ' + monthlyGoal;
-    }
+    // Get the goal for current context (stored per context)
+    if(!ui.contextGoals) ui.contextGoals = {};
+    var contextGoalKey = currentContext + 'Goal';
+    var monthlyGoal = ui.contextGoals[contextGoalKey] || 5;
 
-    // Update monthly apps goal if it exists
+    // Update the current and max display
+    var contextGoalCurrent = document.getElementById('contextGoalCurrent');
+    var contextGoalMax = document.getElementById('contextGoalMax');
+    if(contextGoalCurrent) contextGoalCurrent.textContent = String(monthlyAchievements);
+    if(contextGoalMax) contextGoalMax.textContent = String(monthlyGoal);
+
+    // Update monthly goal input if it exists
     if(els.monthlyAppsGoal && document.activeElement !== els.monthlyAppsGoal) {
       els.monthlyAppsGoal.value = String(monthlyGoal);
     }
 
-    // Update trophy icon fill
-    if(els.monthlyAppsTrophy) {
-      var fillPercentage = Math.min(100, (monthlyApps / monthlyGoal) * 100);
-      var trophyFill = els.monthlyAppsTrophy.querySelector('.trophy-fill');
-      if(trophyFill) {
-        trophyFill.style.setProperty('--fill', fillPercentage + '%');
+    // Update segmented progress
+    var contextGoalSegments = document.getElementById('contextGoalSegments');
+    if(contextGoalSegments) {
+      // Clear existing segments
+      contextGoalSegments.innerHTML = '';
+
+      // Generate segments up to the goal
+      for(var i = 0; i < monthlyGoal; i++) {
+        var segment = document.createElement('div');
+        segment.className = 'segment';
+
+        if(i < monthlyAchievements) {
+          segment.classList.add('filled');
+        }
+
+        contextGoalSegments.appendChild(segment);
       }
     }
 
@@ -3367,7 +3401,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   if(els.saveMonthlyGoal){
     els.saveMonthlyGoal.addEventListener('click', function(){
       var newGoal = Number(els.monthlyAppsGoal.value || 5);
-      ui.monthlyAppsGoal = newGoal;
+      // Save goal for current context
+      if(!ui.contextGoals) ui.contextGoals = {};
+      var contextGoalKey = currentContext + 'Goal';
+      ui.contextGoals[contextGoalKey] = newGoal;
       saveUI(ui);
       renderDailyOutreach();
     });
@@ -3383,12 +3420,55 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         // Load current quotes
         if(els.quotesTextarea){
           els.quotesTextarea.value = (state.quotes && state.quotes.raw) || '';
+          updateQuoteCount();
         }
         // Load settings
         var settings = state.quotesSettings || {interval:15, random:true, norepeat:true};
         if(els.quoteInterval) els.quoteInterval.value = settings.interval || 15;
         if(els.quoteRandom) els.quoteRandom.checked = settings.random !== false;
         if(els.quoteNoRepeat) els.quoteNoRepeat.checked = settings.norepeat !== false;
+      }
+    });
+  }
+
+  // Update quote count as user types and add bullet points
+  function updateQuoteCount(){
+    if(!els.quotesTextarea) return;
+    var lines = els.quotesTextarea.value.split('\n').filter(function(line){
+      return line.trim().length > 0;
+    });
+    var quoteCountEl = document.getElementById('quoteCount');
+    if(quoteCountEl){
+      var count = lines.length;
+      quoteCountEl.textContent = count + (count === 1 ? ' quote' : ' quotes');
+    }
+
+    // Update bullet points
+    var bulletContainer = document.getElementById('quoteBullets');
+    if(bulletContainer){
+      var allLines = els.quotesTextarea.value.split('\n');
+      var bullets = '';
+      for(var i = 0; i < allLines.length; i++){
+        if(allLines[i].trim().length > 0){
+          bullets += '• ';
+        }
+        if(i < allLines.length - 1){
+          bullets += '<br>';
+        }
+      }
+      bulletContainer.innerHTML = bullets;
+
+      // Make sure bullet container has enough height
+      bulletContainer.style.height = els.quotesTextarea.scrollHeight + 'px';
+    }
+  }
+
+  if(els.quotesTextarea){
+    els.quotesTextarea.addEventListener('input', updateQuoteCount);
+    els.quotesTextarea.addEventListener('scroll', function(){
+      var bulletContainer = document.getElementById('quoteBullets');
+      if(bulletContainer){
+        bulletContainer.style.top = (12 - els.quotesTextarea.scrollTop) + 'px';
       }
     });
   }
@@ -3517,8 +3597,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       var icon = document.createElement('div');
       icon.className = 'stage-icon';
       icon.textContent = stageIcons[index] || '•';
-      icon.title = stageName; // Tooltip
+      icon.title = stageName; // Tooltip for non-compact mode
       icon.style.position = 'relative';
+
+      // Store stage name for tooltip
+      icon.setAttribute('data-stage-name', stageName);
 
       // Make clickable to set stage (only if we have a client object)
       if(client && client.id){
@@ -4108,6 +4191,79 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     restoreSelection();
   }
 
+  // Global tooltip for icons in compact mode
+  var globalIconTooltip = null;
+
+  function initializeCompactTooltips(){
+    // Create global tooltip if it doesn't exist
+    if(!globalIconTooltip){
+      globalIconTooltip = document.createElement('div');
+      globalIconTooltip.style.cssText = 'position:fixed;padding:4px 8px;background:rgba(0,0,0,0.9);color:white;font-size:11px;font-weight:600;white-space:nowrap;border-radius:4px;pointer-events:none;opacity:0;transition:opacity 0.2s;z-index:999999;box-shadow:0 2px 8px rgba(0,0,0,0.3);';
+      document.body.appendChild(globalIconTooltip);
+    }
+
+    // Add event delegation for all tooltippable icons
+    document.addEventListener('mouseover', function(e){
+      if(document.body.getAttribute('data-density') !== 'compact') return;
+
+      var target = e.target;
+      var tooltipText = null;
+
+      // Check for stage icons
+      if(target.classList.contains('stage-icon') && target.getAttribute('data-stage-name')){
+        tooltipText = target.getAttribute('data-stage-name');
+      }
+      // Check for group icons (iconbtn class)
+      else if(target.classList.contains('iconbtn') && target.getAttribute('data-tip')){
+        tooltipText = target.getAttribute('data-tip');
+      }
+      // Check for hot icon
+      else if(target.classList.contains('sbtn') && target.classList.contains('s-hot')){
+        tooltipText = 'Hot';
+      }
+      // Check for hot icon's inner span
+      else if(target.parentElement && target.parentElement.classList.contains('s-hot')){
+        tooltipText = 'Hot';
+        target = target.parentElement; // Use parent for positioning
+      }
+
+      if(tooltipText){
+        var rect = target.getBoundingClientRect();
+
+        globalIconTooltip.textContent = tooltipText;
+        globalIconTooltip.style.opacity = '1';
+
+        // Position below the icon
+        var tooltipRect = globalIconTooltip.getBoundingClientRect();
+        var left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+        var top = rect.bottom + 8;
+
+        // Keep tooltip on screen
+        if(left < 5) left = 5;
+        if(left + tooltipRect.width > window.innerWidth - 5){
+          left = window.innerWidth - tooltipRect.width - 5;
+        }
+        // If no room below, show above
+        if(top + tooltipRect.height > window.innerHeight - 5){
+          top = rect.top - tooltipRect.height - 8;
+        }
+
+        globalIconTooltip.style.left = left + 'px';
+        globalIconTooltip.style.top = top + 'px';
+      }
+    });
+
+    document.addEventListener('mouseout', function(e){
+      var target = e.target;
+      if(target.classList.contains('stage-icon') ||
+         target.classList.contains('iconbtn') ||
+         target.classList.contains('sbtn') ||
+         (target.parentElement && target.parentElement.classList.contains('s-hot'))){
+        if(globalIconTooltip) globalIconTooltip.style.opacity = '0';
+      }
+    });
+  }
+
   function render(){
     if(!state || !state.clients) return;
 
@@ -4118,16 +4274,30 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       document.body.removeAttribute('data-all-contexts');
     }
 
-    // Show/hide Life Apps goal based on context
-    var lifeAppsGroup = document.getElementById('lifeAppsGroup');
-    var lifeAppsSeparator = document.getElementById('lifeAppsSeparator');
-    if(lifeAppsGroup && lifeAppsSeparator){
-      if(currentContext === 'life'){
-        lifeAppsGroup.style.display = 'flex';
-        lifeAppsSeparator.style.display = 'block';
+    // Show/hide context goal and update label based on context
+    var contextGoalGroup = document.getElementById('contextGoalGroup');
+    var contextGoalSeparator = document.getElementById('contextGoalSeparator');
+    var contextGoalLabel = document.getElementById('contextGoalLabel');
+
+    if(contextGoalGroup && contextGoalSeparator && contextGoalLabel){
+      if(currentContext !== 'all'){
+        // Show goal for all contexts except 'all'
+        contextGoalGroup.style.display = '';
+        contextGoalSeparator.style.display = 'block';
+
+        // Update label based on context
+        var contextLabels = {
+          'life': 'Life Apps Goal:',
+          'home_auto': 'Home & Auto Goal:',
+          'commercial': 'Commercial Goal:',
+          'farm': 'Farm Goal:',
+          'networking': 'Networking Goal:'
+        };
+        contextGoalLabel.textContent = contextLabels[currentContext] || 'Monthly Goal:';
       } else {
-        lifeAppsGroup.style.display = 'none';
-        lifeAppsSeparator.style.display = 'none';
+        // Hide for 'all' context
+        contextGoalGroup.style.display = 'none';
+        contextGoalSeparator.style.display = 'none';
       }
     }
 
@@ -4300,10 +4470,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   });
 
   if(els.ageDays){
-    if(ui.ageDays!=null) els.ageDays.value = String(ui.ageDays);
-    els.ageDays.addEventListener('change', function(){ ui.ageDays = Number(els.ageDays.value||4); saveUI(ui); render(); });
+    els.ageDays.addEventListener('change', function(){
+      ui.ageDays = Number(els.ageDays.value||4);
+      saveUI(ui);
+      render();
+    });
   }
-  if(typeof ui.groupTodayByClient==='undefined'){ ui.groupTodayByClient=true; saveUI(ui); }
+  // Event listener only, initialization moved to Promise.all
   if(els.groupToggle) els.groupToggle.addEventListener('change', function(){ ui.groupTodayByClient = !!els.groupToggle.checked; saveUI(ui); renderActivity(); });
 
   if(els.globalSearch) els.globalSearch.addEventListener('keydown', function(e){
@@ -5530,6 +5703,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       }
     }
 
+    // Handle "/" to focus search (but not if already in an input)
+    if(e.key === '/' && tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT'){
+      if(els.globalSearch){
+        els.globalSearch.focus();
+        e.preventDefault();
+        return;
+      }
+    }
+
     if(e.ctrlKey || e.metaKey) return;            // <-- Let browser handle other Ctrl/Cmd shortcuts
     if(tag==='INPUT' || tag==='TEXTAREA' || tag==='SELECT') return;
 
@@ -5906,7 +6088,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     $('#sortBy').value = currentSort || 'none';
   }
 
-  if(els.ageDays){ if(ui.ageDays!=null) els.ageDays.value = String(ui.ageDays); else els.ageDays.value='4'; }
+  // Remove duplicate initialization - handled above with Promise
 
   // ensure widgets are draggable
   $all('#sidebarWidgets .widget').forEach(function(w){ if(!w.getAttribute('draggable')) w.setAttribute('draggable','true'); });
@@ -5914,7 +6096,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   // Initialize dual sidebar system
   if(typeof ui.leftWidgets === 'undefined') ui.leftWidgets = [];
   if(typeof ui.dailyOutreachGoal === 'undefined') ui.dailyOutreachGoal = 10;
-  if(typeof ui.monthlyAppsGoal === 'undefined') ui.monthlyAppsGoal = 5;
+  // Initialize context goals
+  if(typeof ui.contextGoals === 'undefined') {
+    ui.contextGoals = {
+      lifeGoal: 5,
+      home_autoGoal: 5,
+      commercialGoal: 5,
+      farmGoal: 5,
+      networkingGoal: 5
+    };
+  }
   
   // Apply saved left widget positions
   var leftKeys = loadLeftWidgets();
@@ -6035,9 +6226,26 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   var versionEl = document.getElementById('versionNumber');
   if(versionEl) versionEl.textContent = VERSION;
 
+  // Initialize compact mode tooltips
+  initializeCompactTooltips();
+
   /* Wait for storage initialization then render */
   Promise.all([storageReady, uiReady]).then(function() {
     // Now that storage is ready, perform initial setup
+
+    // Initialize ageDays dropdown with saved value
+    if(els.ageDays) {
+      els.ageDays.value = String(ui.ageDays || 4);
+    }
+
+    // Initialize groupTodayByClient if not set
+    if(typeof ui.groupTodayByClient === 'undefined'){
+      ui.groupTodayByClient = true;
+      saveUI(ui);
+    }
+    if(els.groupToggle && ui.groupTodayByClient) {
+      els.groupToggle.checked = ui.groupTodayByClient;
+    }
 
     // Initialize default quotes if none exist
     if(!state.quotes || !state.quotes.list || state.quotes.list.length === 0) {
