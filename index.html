@@ -1643,16 +1643,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="widget-body"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div><span id="hopClock" class="small muted">01:00:00</span></div><div class="small muted">Calls this session: <b id="hopCalls">0</b></div></div><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><button class="btn-primary" id="hopStart">Start</button><button class="btn-min gray" id="hopPause">Pause</button></div></div>
     </div>
 
-    <div class="widget" data-key="filters" draggable="true">
-      <div class="widget-head"><h2 class="widget-title">Filters</h2><div class="widget-actions"><button class="btn-min gray collapse-btn" data-collapse title="Collapse"></button></div></div>
+    <div class="widget" data-key="settings" draggable="true">
+      <div class="widget-head"><h2 class="widget-title">Settings</h2><div class="widget-actions"><button class="btn-min gray collapse-btn" data-collapse title="Collapse"></button></div></div>
       <div class="widget-body"><div style="display:grid;gap:6px">
-        <label>Status
+        <label>Status filter
           <select id="statusFilter"><option value="">Any status</option><option>Sent Quote</option><option>Sent Application</option><option>Pending Application Signature</option><option>Pending Medical Questionnaire</option><option>Issued</option></select>
         </label>
         <label><input id="showArchived" type="checkbox" /> Show archived</label>
         <label class="small"><input id="groupToggle" type="checkbox" /> Group today's activity by client</label>
         <label class="small">Aging threshold (business days)
           <select id="ageDays"><option>2</option><option>4</option><option>6</option><option>8</option></select>
+        </label>
+        <label class="small">Calendar events
+          <select id="calendarMethod">
+            <option value="google">Google Calendar</option>
+            <option value="outlook">Outlook Calendar</option>
+            <option value="ics">Download ICS file</option>
+          </select>
         </label>
       </div></div>
     </div>
@@ -2047,7 +2054,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     importBtn:$('#importBtn'), exportBtn:$('#exportBtn'), essentialQuestionsBtn:$('#essentialQuestionsBtn'),
     sidebarControls:$('#sidebar-controls'),
     emptyState:$('#emptyState'), mainTableHead:$('#mainTableHead'), clearDemoSection:$('#clearDemoSection'),
-    calendarViewBtn:$('#calendarViewBtn')
+    calendarViewBtn:$('#calendarViewBtn'),
+    calendarMethod:$('#calendarMethod')
   };
 
   /* IndexedDB Storage Module */
@@ -2986,21 +2994,37 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     var endDate = new Date(date);
     endDate.setMinutes(endDate.getMinutes() + 30); // 30-minute appointment
 
-    // Try to use native calendar URLs based on platform
-    var startStr = startDate.toISOString().replace(/-|:|\.\d\d\d/g, '');
-    var endStr = endDate.toISOString().replace(/-|:|\.\d\d\d/g, '');
+    // Get user's preferred calendar method
+    var method = ui.calendarMethod || (els.calendarMethod ? els.calendarMethod.value : 'google');
 
-    // Create Google Calendar URL (works on most platforms)
-    var googleCalUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
-      '&text=' + encodeURIComponent(title) +
-      '&dates=' + startStr + '/' + endStr +
-      '&details=' + encodeURIComponent(details);
+    if(method === 'google') {
+      // Google Calendar URL
+      var startStr = startDate.toISOString().replace(/-|:|\.\d\d\d/g, '');
+      var endStr = endDate.toISOString().replace(/-|:|\.\d\d\d/g, '');
 
-    // Try to open in new tab/window
-    var calWindow = window.open(googleCalUrl, '_blank');
+      var googleCalUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+        '&text=' + encodeURIComponent(title) +
+        '&dates=' + startStr + '/' + endStr +
+        '&details=' + encodeURIComponent(details);
 
-    // Fallback to ICS file if popup was blocked
-    if(!calWindow || calWindow.closed || typeof calWindow.closed === 'undefined') {
+      window.open(googleCalUrl, '_blank');
+    }
+    else if(method === 'outlook') {
+      // Outlook Web Calendar URL
+      var startStr = startDate.toISOString();
+      var endStr = endDate.toISOString();
+
+      var outlookUrl = 'https://outlook.live.com/calendar/0/deeplink/compose?' +
+        'subject=' + encodeURIComponent(title) +
+        '&startdt=' + encodeURIComponent(startStr) +
+        '&enddt=' + encodeURIComponent(endStr) +
+        '&body=' + encodeURIComponent(details) +
+        '&allday=false';
+
+      window.open(outlookUrl, '_blank');
+    }
+    else {
+      // ICS file download (default fallback)
       var formatDate = function(d) {
         return d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
       };
@@ -3030,9 +3054,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      showNotification('Calendar Event', 'Opening calendar - check for popup blocker if needed');
-    } else {
-      showNotification('Calendar Event', 'Opening in Google Calendar');
+      showNotification('Calendar Event', 'ICS file downloaded - check your downloads folder');
     }
   }
 
@@ -4477,6 +4499,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       render();
     });
   }
+
+  if(els.calendarMethod){
+    els.calendarMethod.addEventListener('change', function(){
+      ui.calendarMethod = els.calendarMethod.value;
+      saveUI(ui);
+    });
+  }
+
   // Event listener only, initialization moved to Promise.all
   if(els.groupToggle) els.groupToggle.addEventListener('change', function(){ ui.groupTodayByClient = !!els.groupToggle.checked; saveUI(ui); renderActivity(); });
 
@@ -6369,6 +6399,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     // Initialize ageDays dropdown with saved value
     if(els.ageDays) {
       els.ageDays.value = String(ui.ageDays || 4);
+    }
+
+    // Initialize calendarMethod dropdown with saved value
+    if(els.calendarMethod && ui.calendarMethod) {
+      els.calendarMethod.value = ui.calendarMethod;
     }
 
     // Initialize groupTodayByClient if not set
