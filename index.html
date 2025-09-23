@@ -3827,11 +3827,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       var tcount=document.createElement('span'); tcount.className='touchCount'; tcount.textContent='('+( (c.history||[]).length )+')';
       
       var firstLine=(c.notes||'').split('\n')[0] ? (c.notes||'').split('\n')[0].trim() : '';
-      var preview=null; 
-      if(firstLine){ 
-        preview=document.createElement('div'); 
-        preview.className='notes-preview'; 
-        preview.textContent='"'+firstLine.slice(0,80)+'..."'; 
+      var preview=null;
+      if(firstLine){
+        preview=document.createElement('div');
+        preview.className='notes-preview';
+        preview.textContent='"'+firstLine.slice(0,80)+'..."';
+        preview.style.cursor='pointer';
+        preview.addEventListener('click', function(){ notesWrap.classList.remove('hidden'); ta.focus(); });
       }
       
       nameSection.appendChild(icons); nameSection.appendChild(name); nameSection.appendChild(tcount);
@@ -3887,14 +3889,45 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       mid.appendChild(head);
 
       var firstLine=(c.notes||'').split('\n')[0] ? (c.notes||'').split('\n')[0].trim() : '';
-      var preview=null; if(firstLine){ preview=document.createElement('div'); preview.className='notes-preview'; preview.textContent=firstLine.slice(0,120); mid.appendChild(preview); }
+      var preview=null; if(firstLine){ preview=document.createElement('div'); preview.className='notes-preview'; preview.textContent=firstLine.slice(0,120); preview.style.cursor='pointer'; preview.addEventListener('click', function(){ notesWrap.classList.remove('hidden'); ta.focus(); }); mid.appendChild(preview); }
     }
     
     // Notes textarea (shared by both layouts)
     var notesWrap=document.createElement('div'); notesWrap.className='notes hidden';
     var ta=document.createElement('textarea'); ta.placeholder='Notes…'; ta.value=c.notes||'';
     ta.addEventListener('input', function(){ updateNotes(c,ta.value); });
-    ta.addEventListener('keydown', function(e){ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); updateNotes(c, ta.value); var first=(ta.value||'').split('\n')[0] ? (ta.value||'').split('\n')[0].trim() : ''; if(first){ var existingPreview = mid.querySelector('.notes-preview'); if(!existingPreview){ var newPreview=document.createElement('div'); newPreview.className='notes-preview'; newPreview.textContent=first.slice(0,120); mid.insertBefore(newPreview, notesWrap); } else if(existingPreview) { existingPreview.textContent = first.slice(0,120); } } else { var existingPreview = mid.querySelector('.notes-preview'); if(existingPreview){ existingPreview.parentNode.removeChild(existingPreview); } } notesWrap.classList.add('hidden'); ta.blur(); }});
+    ta.addEventListener('keydown', function(e){
+      if(e.key==='Enter' && !e.shiftKey){
+        e.preventDefault();
+        e.stopPropagation();
+
+        updateNotes(c, ta.value);
+
+        // Update or create notes preview
+        var first=(ta.value||'').split('\n')[0] ? (ta.value||'').split('\n')[0].trim() : '';
+        var existingPreview = mid.querySelector('.notes-preview');
+
+        if(first){
+          if(!existingPreview){
+            var newPreview=document.createElement('div');
+            newPreview.className='notes-preview';
+            newPreview.textContent=first.slice(0,120);
+            newPreview.style.cursor='pointer';
+            newPreview.addEventListener('click', function(){ notesWrap.classList.remove('hidden'); ta.focus(); });
+            mid.insertBefore(newPreview, notesWrap);
+          } else {
+            existingPreview.textContent = first.slice(0,120);
+          }
+        } else {
+          if(existingPreview){
+            existingPreview.parentNode.removeChild(existingPreview);
+          }
+        }
+
+        notesWrap.classList.add('hidden');
+        ta.blur();
+      }
+    });
     notesWrap.appendChild(ta); mid.appendChild(notesWrap);
 
     if(false) { // Removed ultra-compact logic
@@ -6037,6 +6070,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       } 
     }
     if(key==='n' || key==='N'){ var rows2=allRows(); var row=rows2[selectionIndex]; if(!row) return; var ta=row.querySelector('textarea'); var wrap=row.querySelector('.notes'); if(wrap){ wrap.classList.toggle('hidden'); if(!wrap.classList.contains('hidden') && ta) ta.focus(); } e.preventDefault(); }
+    if(key==='Enter'){
+      // Don't interfere if user is already typing in a textarea
+      var activeEl = document.activeElement;
+      if(activeEl && activeEl.tagName === 'TEXTAREA') return;
+
+      var rows2=allRows(); var row=rows2[selectionIndex]; if(!row) return;
+      var ta=row.querySelector('textarea'); var wrap=row.querySelector('.notes');
+      if(wrap){ wrap.classList.remove('hidden'); if(ta) ta.focus(); }
+      e.preventDefault();
+    }
     if(key==='h' || key==='H'){
       var cHot=getSelectedClient();
       if(cHot){
