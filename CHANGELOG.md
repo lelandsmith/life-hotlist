@@ -2,6 +2,15 @@
 
 All notable changes to Life Hotlist will be documented in this file.
 
+## [2.5.2] - 2025-01-23
+
+### Fixed
+- **Edit Icon Visibility for Client Names**: Fixed edit pencil icon display when notes are open
+  - Changed from absolute positioning to inline-block display for proper visibility
+  - Modified name anchor link to use inline-block with calculated width to allow space for edit icon
+  - Edit pencil icon (✏️) now correctly appears when hovering over client names while notes are open
+  - Improved CSS specificity for better cross-browser compatibility
+
 ## [2.5.1] - 2025-01-23
 
 ### Added

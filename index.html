@@ -444,9 +444,28 @@ body[data-font-size="xlarge"] .row .sbtn.s-hot .ico { font-size: 24px; }
 .lastmeta{font-size:11px;color:#6b7390}
 
 .name-line{display:flex;gap:10px;align-items:center;min-width:0;overflow:hidden}
-.name{font-weight:850;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:none}
-.name a{color:inherit;text-decoration:none;display:block}
+.name{font-weight:850;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:none;position:relative}
+.name a{color:inherit;text-decoration:none;display:inline-block;max-width:calc(100% - 20px)}
 .name a:hover{color:inherit;text-decoration:none}
+.name-edit-icon{
+  display:none;
+  margin-left:4px;
+  cursor:pointer;
+  font-size:14px;
+  opacity:0.7;
+  vertical-align:middle;
+}
+.name-edit-icon:hover{opacity:1}
+.row.notes-open .name:hover .name-edit-icon{display:inline-block}
+.name-edit-input{
+  font-weight:850;
+  font-size:16px;
+  border:1px solid #3b82f6;
+  border-radius:4px;
+  padding:2px 6px;
+  width:200px;
+  font-family:inherit;
+}
 .touchCount{opacity:.55;font-size:11px;margin-left:4px;flex:0 0 auto}
 .status-icons{display:flex;gap:6px;align-items:center;flex:0 0 auto}
 .status-icon{font-size:22px;line-height:1}
@@ -1912,6 +1931,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   // Recent commits from git log
   var CHANGELOG = [
+    { version: '2.5.2', date: '2025-01-23', changes: 'Fixed edit icon visibility for client names in notes mode - changed from absolute positioning to inline-block display, modified anchor link to inline-block with calculated width, edit pencil icon now appears correctly when hovering over client names while notes are open' },
     { version: '2.5.1', date: '2025-01-23', changes: 'Added client name hyperlinks to Country Passport Navigator search - opens in new tab with name pre-populated, preserves all styling with only cursor change on hover' },
     { version: '2.5.0', date: '2025-01-23', changes: 'Fixed critical context persistence bug (home/auto clients disappearing), fixed notes saving with debounced saves, added calendar integration (Google/Outlook/ICS), added Enter key support for note editing, renamed Filters to Settings, default follow-ups to 2 days out, increased quote font size to 18px' },
     { version: '2.4.0', date: '2025-01-23', changes: 'Added context-specific monthly goals with segmented progress indicators, improved quotes editor with bullet points and better visual spacing, fixed aging threshold saving, added compact mode tooltips for all icons appearing below with high z-index, daily outreach now counts unique clients only, added titles-only density mode with underlined text labels' },
@@ -2839,6 +2859,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     });
   }
   var notesDebounceTimers = {}; // Store debounce timers for each client
+
+  function updateClientName(c, newName) {
+    if(newName && newName.trim()) {
+      c.name = newName.trim();
+      save(state);
+      render();
+    }
+  }
 
   function updateNotes(c,notes,immediate){
     c.notes=notes;
@@ -3839,7 +3867,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     function icon(label,key,tip){ var b=document.createElement('button'); b.className='iconbtn'; b.dataset.act=key; b.textContent=label; setTip(b, tip); return b; }
     var bNotes=icon('📝','notes','Notes'), bSched=icon('📅','schedule','Schedule'), bArch=icon('📂','archive','Archive'), bDel=icon('🗑','delete','Delete');
     bar.appendChild(bNotes); bar.appendChild(bSched); bar.appendChild(bArch); bar.appendChild(bDel);
-    bNotes.addEventListener('click', function(){ notesWrap.classList.toggle('hidden'); if(!notesWrap.classList.contains('hidden')) ta.focus(); });
+    bNotes.addEventListener('click', function(){
+      notesWrap.classList.toggle('hidden');
+      row.classList.toggle('notes-open', !notesWrap.classList.contains('hidden'));
+      if(!notesWrap.classList.contains('hidden')) ta.focus();
+    });
     bArch.addEventListener('click', function(){ archiveClient(c,!c.archived); });
     bDel.addEventListener('click', function(){ deleteClient(c); });
     bSched.addEventListener('click', function(e){ openScheduleMenu(e.currentTarget, c); });
@@ -3880,12 +3912,61 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       /* Status icon removed - replaced by progress tracker */
       
       var name=document.createElement('div'); name.className='name';
+
+      // Create name link
       var nameLink=document.createElement('a');
       nameLink.href='https://navigator.countrypassport.com/search?q=' + encodeURIComponent(c.name) + '&po=false';
       nameLink.target='_blank';
       nameLink.rel='noopener noreferrer';
       nameLink.textContent=c.name;
       name.appendChild(nameLink);
+
+      // Create edit icon
+      var editIcon=document.createElement('span');
+      editIcon.className='name-edit-icon';
+      editIcon.textContent='✏️';
+      editIcon.title='Edit name';
+      editIcon.addEventListener('click', function(e){
+        e.stopPropagation();
+        e.preventDefault();
+
+        // Replace link with input
+        var input=document.createElement('input');
+        input.type='text';
+        input.className='name-edit-input';
+        input.value=c.name;
+
+        // Clear name div and add input
+        name.innerHTML='';
+        name.appendChild(input);
+
+        // Focus and select text
+        input.focus();
+        input.select();
+
+        // Handle save on Enter or blur
+        function saveEdit(){
+          var newName=input.value.trim();
+          if(newName && newName !== c.name){
+            updateClientName(c, newName);
+          } else {
+            render(); // Just re-render if no change or empty
+          }
+        }
+
+        input.addEventListener('keydown', function(e){
+          if(e.key === 'Enter'){
+            e.preventDefault();
+            saveEdit();
+          } else if(e.key === 'Escape'){
+            e.preventDefault();
+            render(); // Cancel edit
+          }
+        });
+
+        input.addEventListener('blur', saveEdit);
+      });
+      name.appendChild(editIcon);
       var tcount=document.createElement('span'); tcount.className='touchCount'; tcount.textContent='('+( (c.history||[]).length )+')';
       
       var firstLine=(c.notes||'').split('\n')[0] ? (c.notes||'').split('\n')[0].trim() : '';
@@ -3895,7 +3976,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         preview.className='notes-preview';
         preview.textContent='"'+firstLine.slice(0,80)+'..."';
         preview.style.cursor='pointer';
-        preview.addEventListener('click', function(){ notesWrap.classList.remove('hidden'); ta.focus(); });
+        preview.addEventListener('click', function(){
+          notesWrap.classList.remove('hidden');
+          row.classList.add('notes-open');
+          ta.focus();
+        });
       }
       
       nameSection.appendChild(icons); nameSection.appendChild(name); nameSection.appendChild(tcount);
@@ -3921,12 +4006,61 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       /* Status icon removed - replaced by progress tracker below */
 
       var name=document.createElement('div'); name.className='name';
+
+      // Create name link
       var nameLink=document.createElement('a');
       nameLink.href='https://navigator.countrypassport.com/search?q=' + encodeURIComponent(c.name) + '&po=false';
       nameLink.target='_blank';
       nameLink.rel='noopener noreferrer';
       nameLink.textContent=c.name;
       name.appendChild(nameLink);
+
+      // Create edit icon
+      var editIcon=document.createElement('span');
+      editIcon.className='name-edit-icon';
+      editIcon.textContent='✏️';
+      editIcon.title='Edit name';
+      editIcon.addEventListener('click', function(e){
+        e.stopPropagation();
+        e.preventDefault();
+
+        // Replace link with input
+        var input=document.createElement('input');
+        input.type='text';
+        input.className='name-edit-input';
+        input.value=c.name;
+
+        // Clear name div and add input
+        name.innerHTML='';
+        name.appendChild(input);
+
+        // Focus and select text
+        input.focus();
+        input.select();
+
+        // Handle save on Enter or blur
+        function saveEdit(){
+          var newName=input.value.trim();
+          if(newName && newName !== c.name){
+            updateClientName(c, newName);
+          } else {
+            render(); // Just re-render if no change or empty
+          }
+        }
+
+        input.addEventListener('keydown', function(e){
+          if(e.key === 'Enter'){
+            e.preventDefault();
+            saveEdit();
+          } else if(e.key === 'Escape'){
+            e.preventDefault();
+            render(); // Cancel edit
+          }
+        });
+
+        input.addEventListener('blur', saveEdit);
+      });
+      name.appendChild(editIcon);
 
       head.appendChild(icons); head.appendChild(name);
       var tcount=document.createElement('span'); tcount.className='touchCount'; tcount.textContent='('+( (c.history||[]).length )+')'; head.appendChild(tcount);
@@ -3956,7 +4090,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       mid.appendChild(head);
 
       var firstLine=(c.notes||'').split('\n')[0] ? (c.notes||'').split('\n')[0].trim() : '';
-      var preview=null; if(firstLine){ preview=document.createElement('div'); preview.className='notes-preview'; preview.textContent=firstLine.slice(0,120); preview.style.cursor='pointer'; preview.addEventListener('click', function(){ notesWrap.classList.remove('hidden'); ta.focus(); }); mid.appendChild(preview); }
+      var preview=null; if(firstLine){ preview=document.createElement('div'); preview.className='notes-preview'; preview.textContent=firstLine.slice(0,120); preview.style.cursor='pointer'; preview.addEventListener('click', function(){ notesWrap.classList.remove('hidden'); row.classList.add('notes-open'); ta.focus(); }); mid.appendChild(preview); }
     }
     
     // Notes textarea (shared by both layouts)
@@ -3981,7 +4115,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             newPreview.className='notes-preview';
             newPreview.textContent=first.slice(0,120);
             newPreview.style.cursor='pointer';
-            newPreview.addEventListener('click', function(){ notesWrap.classList.remove('hidden'); ta.focus(); });
+            newPreview.addEventListener('click', function(){ notesWrap.classList.remove('hidden'); row.classList.add('notes-open'); ta.focus(); });
             mid.insertBefore(newPreview, notesWrap);
           } else {
             existingPreview.textContent = first.slice(0,120);
@@ -3993,6 +4127,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         }
 
         notesWrap.classList.add('hidden');
+        row.classList.remove('notes-open');
         ta.blur();
       }
     });
@@ -6141,7 +6276,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         e.preventDefault(); 
       } 
     }
-    if(key==='n' || key==='N'){ var rows2=allRows(); var row=rows2[selectionIndex]; if(!row) return; var ta=row.querySelector('textarea'); var wrap=row.querySelector('.notes'); if(wrap){ wrap.classList.toggle('hidden'); if(!wrap.classList.contains('hidden') && ta) ta.focus(); } e.preventDefault(); }
+    if(key==='n' || key==='N'){ var rows2=allRows(); var row=rows2[selectionIndex]; if(!row) return; var ta=row.querySelector('textarea'); var wrap=row.querySelector('.notes'); if(wrap){ wrap.classList.toggle('hidden'); row.classList.toggle('notes-open', !wrap.classList.contains('hidden')); if(!wrap.classList.contains('hidden') && ta) ta.focus(); } e.preventDefault(); }
     if(key==='Enter'){
       // Don't interfere if user is already typing in a textarea
       var activeEl = document.activeElement;
@@ -6149,7 +6284,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
       var rows2=allRows(); var row=rows2[selectionIndex]; if(!row) return;
       var ta=row.querySelector('textarea'); var wrap=row.querySelector('.notes');
-      if(wrap){ wrap.classList.remove('hidden'); if(ta) ta.focus(); }
+      if(wrap){ wrap.classList.remove('hidden'); row.classList.add('notes-open'); if(ta) ta.focus(); }
       e.preventDefault();
     }
     if(key==='h' || key==='H'){
