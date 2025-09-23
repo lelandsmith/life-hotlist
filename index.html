@@ -348,7 +348,7 @@ body[data-font-size="small"] .row .stage-label { font-size: 9px; }
 
 body[data-font-size="medium"] .row { font-size: 14px; }
 body[data-font-size="medium"] .row .name { font-size: 15px; }
-body[data-font-size="medium"] .row .qbtn { font-size: 22px; padding: 5px 9px; }
+body[data-font-size="medium"] .row .qbtn { font-size: 22px; padding: 0 9px 5px 9px; }
 body[data-font-size="medium"] .row .sbtn { font-size: 13px; padding: 5px 8px; }
 body[data-font-size="medium"] .row .sbtn .ico { font-size: 16px; }
 body[data-font-size="medium"] .row .iconbtn { font-size: 22px; padding: 6px 9px; }
@@ -761,7 +761,7 @@ body[data-font-size="xlarge"] .row .sbtn.s-hot .ico { font-size: 24px; }
   width:60px; padding:4px 8px; border:1px solid #d1d5db; border-radius:4px;
   font-size:14px; text-align:center; margin-left:6px;
   background:#ffffff; transition:border-color 0.2s; flex-shrink:0;
-  min-width:60px;
+  min-width:40px;
 }
 .goal-input:focus{
   border-color:#3b82f6; outline:none; box-shadow:0 0 0 2px rgba(59,130,246,0.1);
@@ -774,6 +774,38 @@ body[data-font-size="xlarge"] .row .sbtn.s-hot .ico { font-size: 24px; }
 }
 .btn-save:hover{
   background:#059669;
+}
+
+/* Trophy Icon Fill Progress for Life Apps */
+.icon-progress {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.trophy-icon {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trophy-base {
+  position: absolute;
+  font-size: 20px;
+  opacity: 0.3;
+}
+
+.trophy-fill {
+  position: absolute;
+  font-size: 20px;
+  background: linear-gradient(to top, #fbbf24 0%, #fbbf24 var(--fill), transparent var(--fill));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: saturate(1.5);
 }
 
 /* 7-Day Outreach History */
@@ -1276,6 +1308,52 @@ body[data-density="compact"] .sbtn .ico{font-size:16px}
 body[data-density="compact"] .sbtn .label{display:none} /* Hide labels in compact mode */
 body[data-density="compact"] .status-tracker .stage-label{display:none} /* Hide status tracker labels in compact */
 
+/* Titles-only density mode */
+body[data-density="titles-only"] .row{padding:3px 8px}
+body[data-density="titles-only"] .name{font-size:14px}
+body[data-density="titles-only"] .notes-preview{display:none}
+body[data-density="titles-only"] .lastmeta{display:none}
+body[data-density="titles-only"] .stamp{display:none}
+body[data-density="titles-only"] .group--quick{gap:6px; margin-right:10px}
+body[data-density="titles-only"] .group--status{gap:6px; margin-right:10px}
+body[data-density="titles-only"] .qbtn{min-width:32px; padding:3px 5px; font-size:14px}
+body[data-density="titles-only"] .sbtn{min-width:34px; padding:3px 5px; font-size:10px}
+body[data-density="titles-only"] .sbtn .ico{font-size:14px}
+body[data-density="titles-only"] .iconbtn{min-width:30px; padding:3px 5px; font-size:12px}
+body[data-density="titles-only"] .sbtn .label{display:none}
+body[data-density="titles-only"] .qbtn .badge{font-size:8px; padding:1px 3px}
+body[data-density="titles-only"] .qbtn .last-contact{display:none}
+body[data-density="titles-only"] .touchCount{display:none}
+body[data-density="titles-only"] .status-tracker{gap:10px}
+body[data-density="titles-only"] .status-tracker::before{display:none} /* Hide background line */
+body[data-density="titles-only"] .status-tracker::after{display:none} /* Hide progress line */
+body[data-density="titles-only"] .status-tracker .stage-icon{display:none} /* Hide icons in titles-only */
+body[data-density="titles-only"] .status-tracker .stage-label{
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-block;
+  min-width: 60px;
+  text-align: center;
+  cursor: pointer;
+}
+
+/* Stage label styles for titles-only mode */
+body[data-density="titles-only"] .stage-label {
+  border-bottom: 2px solid #e5e7eb; /* Light gray underline for inactive */
+  padding: 2px 4px 4px 4px;
+  font-weight: 600;
+  color: #6b7280;
+  transition: all 0.2s ease;
+}
+
+/* Active/completed stage labels */
+body[data-density="titles-only"] .stage.active .stage-label,
+body[data-density="titles-only"] .stage.completed .stage-label {
+  border-bottom: 2px solid #ffd93d; /* Yellow underline for active/completed */
+  color: #1e293b;
+  font-weight: 700;
+}
+
 
 /* Responsive */
 /* Medium screens - better layout for 1400x900 */
@@ -1431,13 +1509,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <div class="stat-separator">|</div>
           <div class="stat-group">
             <strong>Goal:</strong>
-            <input type="number" class="goal-input" id="dailyOutreachGoal" value="10" min="1" max="100">
-            <button class="btn-save" id="saveDailyGoal">Save</button>
+            <input type="number" class="goal-input" id="dailyOutreachGoal" value="10" min="1" max="100" style="width:35px; padding:2px 4px; font-size:12px;">
+            <button class="btn-save" id="saveDailyGoal" style="padding:2px 6px; margin-left:4px; font-size:11px;">Set</button>
           </div>
-          <div class="stat-separator">|</div>
-          <div class="stat-group" style="background:#e9f5ee; padding:4px 8px; border-radius:6px;">
-            <strong style="color:#0e7a5a;"><span id="contextLabel">Life</span> Apps This Month:</strong>
-            <span id="monthlyPurchases" style="color:#0e7a5a; font-weight:700;">0</span>
+          <div class="stat-separator" id="lifeAppsSeparator">|</div>
+          <div class="stat-group" id="lifeAppsGroup" style="background:#e9f5ee; padding:4px 8px; border-radius:6px;">
+            <strong style="color:#0e7a5a;">Life Apps:</strong>
+            <div class="icon-progress">
+              <div class="trophy-icon" id="monthlyAppsTrophy">
+                <span class="trophy-base">🏆</span>
+                <span class="trophy-fill" style="--fill: 0%;">🏆</span>
+              </div>
+              <span id="monthlyPurchases" style="color:#0e7a5a; font-weight:700;">0 / 5</span>
+            </div>
+            <input type="number" class="goal-input" id="monthlyAppsGoal" value="5" min="1" max="20" style="width:35px; padding:2px 4px; font-size:12px; margin-left:6px;">
+            <button class="btn-save" id="saveMonthlyGoal" style="padding:2px 6px; margin-left:4px; font-size:11px;">Set</button>
           </div>
         </div>
 
@@ -1465,6 +1551,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
               <select id="densitySelect">
                 <option value="comfortable">Comfortable</option>
                 <option value="compact">Compact</option>
+                <option value="titles-only">Titles only</option>
               </select>
             </label>
             <div style="display:flex;gap:2px;align-items:center;">
@@ -1476,7 +1563,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <div id="sidebar-controls" style="display:flex; gap:2px;"></div>
             <button id="importBtn" class="btn-min gray" title="Import Clients" style="padding:4px 8px;">📥</button>
             <button id="exportBtn" class="btn-min gray" title="Export Clients" style="padding:4px 8px;">📤</button>
-            <button id="loadDemoBtn" class="btn-min gray" title="Load Demo Data" style="padding:4px 8px;">📋</button>
+            <button id="lifeEssentialBtn" class="btn-min gray" title="Life Essential Questions" style="padding:4px 8px;">💡</button>
           </div>
         </div>
       </div>
@@ -1927,17 +2014,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     leftDragZone:$('#leftDragZone'), rightDragZone:$('#rightDragZone'),
     tomorrowList:$('#tomorrowList'),
     ribbonIssued:$('#ribbonIssued'), ribbonWeeklyCalls:$('#ribbonWeeklyCalls'), ribbonStreak:$('#ribbonStreak'),
-    dailyOutreachGoal:$('#dailyOutreachGoal'), dailyOutreachBar:$('#dailyOutreachBar'), 
+    dailyOutreachGoal:$('#dailyOutreachGoal'), dailyOutreachBar:$('#dailyOutreachBar'),
     dailyOutreachFill:$('#dailyOutreachFill'), dailyOutreachLabel:$('#dailyOutreachLabel'),
     dailyCalls:$('#dailyCalls'), dailyMessages:$('#dailyMessages'), saveDailyGoal:$('#saveDailyGoal'),
-    monthlyPurchases:$('#monthlyPurchases'),
+    monthlyPurchases:$('#monthlyPurchases'), monthlyAppsGoal:$('#monthlyAppsGoal'),
+    saveMonthlyGoal:$('#saveMonthlyGoal'), monthlyAppsTrophy:$('#monthlyAppsTrophy'),
     celebration:$('#celebration'), confettiContainer:$('#confettiContainer'),
     chachingSound:$('#chachingSound'),
     todayBlock:$('#todayBlock'), todayList:$('#todayList'),
     scheduledBlock:$('#scheduledBlock'), scheduledList:$('#scheduledList'),
     densitySelect:$('#densitySelect'),
     toggleSidebarBtn:$('#toggleSidebarBtn'),
-    importBtn:$('#importBtn'), exportBtn:$('#exportBtn'), loadDemoBtn:$('#loadDemoBtn'),
+    importBtn:$('#importBtn'), exportBtn:$('#exportBtn'), lifeEssentialBtn:$('#lifeEssentialBtn'),
     sidebarControls:$('#sidebar-controls'),
     emptyState:$('#emptyState'), mainTableHead:$('#mainTableHead'), clearDemoSection:$('#clearDemoSection'),
     calendarViewBtn:$('#calendarViewBtn')
@@ -2586,10 +2674,33 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   function clearPurchase(c){ preserveUIAndRender(function(){ if(c.status === 'Issued') c.status=''; if(c.purchaseDate) delete c.purchaseDate; }); }
   function incrementCall(c){
     preserveUIAndRender(function(){
+      // Check if already contacted today for daily outreach purposes
+      var today = new Date().toDateString();
+      var alreadyContactedToday = false;
+
+      if(c.history && c.history.length > 0){
+        for(var i = c.history.length - 1; i >= 0; i--){
+          var h = c.history[i];
+          if(h.action === 'status' && (h.to === 'Called' || h.to === 'Emailed')){
+            var histDate = new Date(h.ts).toDateString();
+            if(histDate === today){
+              alreadyContactedToday = true;
+              break;
+            }
+          }
+        }
+      }
+
+      // Always increment the call count and add to history
       c.callCount=(c.callCount||0)+1;
       c.lastTouch=nowISO();
       c.history.push({id:uid(), ts:nowISO(), action:'status', to:'Called'});
       if(c.queueToday) c.queueToday=false;
+
+      // Mark if this is the first contact today (for daily outreach tracking)
+      if(!alreadyContactedToday){
+        c._firstContactToday = true;
+      }
     });
     // Update Power Hour call counter if timer is running
     if(hopRunning){
@@ -2620,7 +2731,37 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       updateHopCalls(hopCallCount);
     }
   }
-  function incrementMsg(c){ preserveUIAndRender(function(){ c.msgCount=(c.msgCount||0)+1; c.lastTouch=nowISO(); c.history.push({id:uid(), ts:nowISO(), action:'status', to:'Emailed'}); if(c.queueToday) c.queueToday=false; }); }
+  function incrementMsg(c){
+    preserveUIAndRender(function(){
+      // Check if already contacted today for daily outreach purposes
+      var today = new Date().toDateString();
+      var alreadyContactedToday = false;
+
+      if(c.history && c.history.length > 0){
+        for(var i = c.history.length - 1; i >= 0; i--){
+          var h = c.history[i];
+          if(h.action === 'status' && (h.to === 'Called' || h.to === 'Emailed')){
+            var histDate = new Date(h.ts).toDateString();
+            if(histDate === today){
+              alreadyContactedToday = true;
+              break;
+            }
+          }
+        }
+      }
+
+      // Always increment the message count and add to history
+      c.msgCount=(c.msgCount||0)+1;
+      c.lastTouch=nowISO();
+      c.history.push({id:uid(), ts:nowISO(), action:'status', to:'Emailed'});
+      if(c.queueToday) c.queueToday=false;
+
+      // Mark if this is the first contact today (for daily outreach tracking)
+      if(!alreadyContactedToday){
+        c._firstContactToday = true;
+      }
+    });
+  }
   function decrementMsg(c){
     preserveUIAndRender(function(){
       c.msgCount=Math.max(0,(c.msgCount||0)-1);
@@ -3018,21 +3159,47 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     var todayEnd = new Date();
     todayEnd.setHours(23,59,59,999);
 
-    var calls = 0, messages = 0;
+    var totalCalls = 0, totalMessages = 0;
+    var uniqueClientsContacted = {}; // Track unique clients contacted today
+
     if(state && state.clients) state.clients.forEach(function(c){
+      if(!c.id) return; // Skip clients without ID
+
+      var clientContactedToday = false;
+      var clientCalls = 0;
+      var clientMessages = 0;
+
       if(c.history){
         c.history.forEach(function(h){
           if(!h.ts) return;
           var hTime = new Date(h.ts);
           // Check if the history entry is from today (in local time)
           if(hTime >= todayStart && hTime <= todayEnd){
-            if(h.to === 'Called' || h.action === 'call') calls++;
-            else if(h.to === 'Emailed' || h.action === 'message') messages++;
+            if(h.to === 'Called' || h.action === 'call'){
+              clientCalls++;
+              clientContactedToday = true;
+            } else if(h.to === 'Emailed' || h.action === 'message'){
+              clientMessages++;
+              clientContactedToday = true;
+            }
           }
         });
       }
+
+      // Track unique client if contacted today
+      if(clientContactedToday && c.id){
+        uniqueClientsContacted[c.id] = true;
+      }
+
+      // Add to total calls/messages
+      totalCalls += clientCalls;
+      totalMessages += clientMessages;
     });
-    return {calls: calls, messages: messages, total: calls + messages};
+
+    var uniqueOutreach = Object.keys(uniqueClientsContacted).length;
+
+    // Return unique client count as total for daily outreach
+    return {calls: totalCalls, messages: totalMessages, total: uniqueOutreach};
   }
   
   function getOutreachCountForDate(date){
@@ -3094,8 +3261,25 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     if(els.dailyMessages) els.dailyMessages.textContent = String(counts.messages);
 
     // Update monthly purchases
+    var monthlyApps = getMonthlyPurchases();
+    var monthlyGoal = ui.monthlyAppsGoal || 5;
+
     if(els.monthlyPurchases){
-      els.monthlyPurchases.textContent = String(getMonthlyPurchases());
+      els.monthlyPurchases.textContent = monthlyApps + ' / ' + monthlyGoal;
+    }
+
+    // Update monthly apps goal if it exists
+    if(els.monthlyAppsGoal && document.activeElement !== els.monthlyAppsGoal) {
+      els.monthlyAppsGoal.value = String(monthlyGoal);
+    }
+
+    // Update trophy icon fill
+    if(els.monthlyAppsTrophy) {
+      var fillPercentage = Math.min(100, (monthlyApps / monthlyGoal) * 100);
+      var trophyFill = els.monthlyAppsTrophy.querySelector('.trophy-fill');
+      if(trophyFill) {
+        trophyFill.style.setProperty('--fill', fillPercentage + '%');
+      }
     }
 
     // Update goal input if it exists
@@ -3177,6 +3361,76 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
       saveUI(ui);
       renderDailyOutreach();
+    });
+  }
+
+  if(els.saveMonthlyGoal){
+    els.saveMonthlyGoal.addEventListener('click', function(){
+      var newGoal = Number(els.monthlyAppsGoal.value || 5);
+      ui.monthlyAppsGoal = newGoal;
+      saveUI(ui);
+      renderDailyOutreach();
+    });
+  }
+
+  // Quotes edit functionality
+  if(els.quotesEditBtn){
+    els.quotesEditBtn.addEventListener('click', function(){
+      if(els.quoteEditor && els.quoteView){
+        els.quoteEditor.classList.remove('hidden');
+        els.quoteView.classList.add('hidden');
+        if(els.quoteMeta) els.quoteMeta.classList.add('hidden');
+        // Load current quotes
+        if(els.quotesTextarea){
+          els.quotesTextarea.value = (state.quotes && state.quotes.raw) || '';
+        }
+        // Load settings
+        var settings = state.quotesSettings || {interval:15, random:true, norepeat:true};
+        if(els.quoteInterval) els.quoteInterval.value = settings.interval || 15;
+        if(els.quoteRandom) els.quoteRandom.checked = settings.random !== false;
+        if(els.quoteNoRepeat) els.quoteNoRepeat.checked = settings.norepeat !== false;
+      }
+    });
+  }
+
+  if(els.quotesNextBtn){
+    els.quotesNextBtn.addEventListener('click', function(){
+      renderQuote(true);
+    });
+  }
+
+  if(els.quotesSaveBtn){
+    els.quotesSaveBtn.addEventListener('click', function(){
+      if(!els.quotesTextarea) return;
+      var raw = els.quotesTextarea.value || '';
+      var lines = raw.split('\n').map(function(x){return x.trim();}).filter(function(x){return x;});
+      state.quotes = {raw:raw, list:lines};
+
+      // Save settings
+      state.quotesSettings = {
+        interval: els.quoteInterval ? Number(els.quoteInterval.value || 15) : 15,
+        random: els.quoteRandom ? els.quoteRandom.checked : true,
+        norepeat: els.quoteNoRepeat ? els.quoteNoRepeat.checked : true,
+        recent: state.quotesSettings ? state.quotesSettings.recent : []
+      };
+
+      save(state);
+      scheduleQuoteTimer();
+      renderQuote(true);
+
+      // Hide editor
+      if(els.quoteEditor) els.quoteEditor.classList.add('hidden');
+      if(els.quoteView) els.quoteView.classList.remove('hidden');
+      if(els.quoteMeta) els.quoteMeta.classList.remove('hidden');
+    });
+  }
+
+  if(els.quotesCancelBtn){
+    els.quotesCancelBtn.addEventListener('click', function(){
+      // Hide editor without saving
+      if(els.quoteEditor) els.quoteEditor.classList.add('hidden');
+      if(els.quoteView) els.quoteView.classList.remove('hidden');
+      if(els.quoteMeta) els.quoteMeta.classList.remove('hidden');
     });
   }
 
@@ -3303,6 +3557,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       // Use abbreviated names if available
       var shortName = (contextConfig.stageAbbr && contextConfig.stageAbbr[index]) || stageName;
       label.textContent = shortName;
+
+      // Make label clickable in titles-only mode (same as icon)
+      if(client && client.id){
+        label.style.cursor = 'pointer';
+        label.addEventListener('click', function(e){
+          e.stopPropagation();
+          setClientStage(client, index);
+        });
+      }
 
       stage.appendChild(icon);
       stage.appendChild(label);
@@ -3855,6 +4118,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       document.body.removeAttribute('data-all-contexts');
     }
 
+    // Show/hide Life Apps goal based on context
+    var lifeAppsGroup = document.getElementById('lifeAppsGroup');
+    var lifeAppsSeparator = document.getElementById('lifeAppsSeparator');
+    if(lifeAppsGroup && lifeAppsSeparator){
+      if(currentContext === 'life'){
+        lifeAppsGroup.style.display = 'flex';
+        lifeAppsSeparator.style.display = 'block';
+      } else {
+        lifeAppsGroup.style.display = 'none';
+        lifeAppsSeparator.style.display = 'none';
+      }
+    }
+
     // Handle "all" context separately
     if(currentContext === 'all'){
       var activeAll = state.clients.filter(function(c){return !c.archived;});
@@ -4289,48 +4565,162 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   /* Import/Export functionality */
   if(els.importBtn){
     els.importBtn.addEventListener('click', function(){
-      var textarea = document.createElement('textarea');
-      textarea.style.cssText = 'position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); width:400px; height:300px; padding:10px; z-index:10000; border:2px solid var(--green); border-radius:8px; font-size:14px;';
-      textarea.placeholder = 'Paste client names here, one per line.\nExample:\nJohn Smith\nJane Doe\nBob Johnson';
-      document.body.appendChild(textarea);
+      showImportDialog();
+    });
+  }
 
-      var importDiv = document.createElement('div');
-      importDiv.style.cssText = 'position:fixed; left:50%; top:calc(50% + 170px); transform:translateX(-50%); z-index:10000; display:flex; gap:8px;';
-      importDiv.innerHTML = '<button id="confirmImport" class="btn-primary">Import</button><button id="cancelImport" class="btn-min gray">Cancel</button>';
-      document.body.appendChild(importDiv);
+  function showImportDialog(){
+    // Create modal background
+    var modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10000; display:flex; align-items:center; justify-content:center;';
 
-      var backdrop = document.createElement('div');
-      backdrop.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999;';
-      document.body.appendChild(backdrop);
+    // Create modal content
+    var content = document.createElement('div');
+    content.style.cssText = 'background:white; border-radius:12px; padding:24px; max-width:500px; width:90%; box-shadow:0 10px 40px rgba(0,0,0,0.2);';
 
-      textarea.focus();
+    var html = '<h2 style="margin-top:0;">Import Data</h2>';
+    html += '<p style="color:#666; margin-bottom:20px;">Import JSON backup or a list of client names.</p>';
 
-      function cleanup(){
-        textarea.remove();
-        importDiv.remove();
-        backdrop.remove();
+    html += '<div style="margin-bottom:15px;">';
+    html += '<label style="display:flex; align-items:center; margin-bottom:10px; cursor:pointer;">';
+    html += '<input type="radio" name="importType" value="json" checked style="margin-right:8px;">';
+    html += '<span><strong>JSON Export</strong> - Full backup with all client details, quotes, and settings</span>';
+    html += '</label>';
+    html += '<label style="display:flex; align-items:center; cursor:pointer;">';
+    html += '<input type="radio" name="importType" value="names" style="margin-right:8px;">';
+    html += '<span><strong>Client Names</strong> - Simple list (one name per line)</span>';
+    html += '</label>';
+    html += '</div>';
+
+    html += '<textarea id="importData" style="width:100%; height:200px; padding:10px; border:1px solid #d1d5db; border-radius:6px; font-family:monospace; font-size:12px; box-sizing:border-box;" placeholder="Paste your JSON export here..."></textarea>';
+
+    html += '<div id="importOptions" style="margin-top:15px; padding:15px; background:#f3f4f6; border-radius:6px;">';
+    html += '<strong style="display:block; margin-bottom:10px;">Import Mode:</strong>';
+    html += '<label style="display:flex; align-items:center; margin-bottom:8px; cursor:pointer;">';
+    html += '<input type="radio" name="mergeMode" value="replace" checked style="margin-right:8px;">';
+    html += '<span><strong>Replace All</strong> - Clear existing data and import fresh</span>';
+    html += '</label>';
+    html += '<label style="display:flex; align-items:center; cursor:pointer;">';
+    html += '<input type="radio" name="mergeMode" value="merge" style="margin-right:8px;">';
+    html += '<span><strong>Merge</strong> - Add to existing data (avoids duplicate names)</span>';
+    html += '</label>';
+    html += '</div>';
+
+    html += '<div style="margin-top:20px; display:flex; gap:10px; justify-content:flex-end;">';
+    html += '<button id="confirmImport" style="padding:8px 20px; background:#10b981; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:600;">Import</button>';
+    html += '<button id="cancelImport" style="padding:8px 20px; background:#6b7280; color:white; border:none; border-radius:6px; cursor:pointer;">Cancel</button>';
+    html += '</div>';
+
+    content.innerHTML = html;
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+
+    // Handle import type change
+    var importTypeRadios = modal.querySelectorAll('input[name="importType"]');
+    var importOptions = modal.querySelector('#importOptions');
+    var importData = modal.querySelector('#importData');
+
+    importTypeRadios.forEach(function(radio){
+      radio.addEventListener('change', function(){
+        if(this.value === 'json'){
+          importOptions.style.display = 'block';
+          importData.placeholder = 'Paste your JSON export here...';
+        } else {
+          importOptions.style.display = 'none';
+          importData.placeholder = 'Paste client names here, one per line.\nExample:\nJohn Smith\nJane Doe\nBob Johnson';
+        }
+      });
+    });
+
+    // Confirm button
+    modal.querySelector('#confirmImport').addEventListener('click', function(){
+      var importType = modal.querySelector('input[name="importType"]:checked').value;
+      var data = importData.value.trim();
+
+      if(!data){
+        alert('Please paste some data to import');
+        return;
       }
 
-      document.getElementById('confirmImport').addEventListener('click', function(){
-        var lines = textarea.value.split('\n').map(function(line){ return line.trim(); }).filter(Boolean);
-        if(lines.length){
-          lines.forEach(function(name){
-            state.clients.push({
-              id:uid(), name:name, notes:'', status:'', lastTouch:nowISO(),
-              createdAt:nowISO(), archived:false, followUp:'', callCount:0,
-              msgCount:0, queueToday:false, queueTomorrow:false, hot:false, history:[]
-            });
-          });
-          save(state);
-          render();
-          showNotification('Import Complete', 'Imported ' + lines.length + ' clients successfully');
-        }
-        cleanup();
-      });
+      if(importType === 'json'){
+        try {
+          var importedData = JSON.parse(data);
+          var mergeMode = modal.querySelector('input[name="mergeMode"]:checked').value;
 
-      document.getElementById('cancelImport').addEventListener('click', cleanup);
-      backdrop.addEventListener('click', cleanup);
+          if(mergeMode === 'replace'){
+            // Replace all data
+            if(confirm('This will replace ALL your current data. Are you sure?')){
+              if(importedData.clients) state.clients = importedData.clients;
+              if(importedData.quotes) state.quotes = importedData.quotes;
+              if(importedData.quotesSettings) state.quotesSettings = importedData.quotesSettings;
+
+              save(state);
+              render();
+              scheduleQuoteTimer(); // Reset quote timer with new settings
+              showNotification('Import Complete', 'All data has been replaced successfully');
+              document.body.removeChild(modal);
+            }
+          } else {
+            // Merge with existing
+            var importCount = 0;
+            if(importedData.clients){
+              // Add imported clients, avoiding duplicates by name
+              var existingNames = {};
+              state.clients.forEach(function(c){
+                existingNames[c.name.toLowerCase()] = true;
+              });
+
+              importedData.clients.forEach(function(client){
+                if(!existingNames[client.name.toLowerCase()]){
+                  // Ensure client has required fields
+                  if(!client.id) client.id = uid();
+                  if(!client.context) client.context = currentContext;
+                  state.clients.push(client);
+                  importCount++;
+                }
+              });
+            }
+
+            // Merge quotes if empty
+            if(importedData.quotes && (!state.quotes || !state.quotes.list || state.quotes.list.length === 0)){
+              state.quotes = importedData.quotes;
+            }
+
+            save(state);
+            render();
+            showNotification('Import Complete', importCount + ' new clients added (duplicates skipped)');
+            document.body.removeChild(modal);
+          }
+        } catch(e){
+          alert('Invalid JSON format. Please check your data and try again.\n\nError: ' + e.message);
+        }
+      } else {
+        // Import names only
+        var names = data.split('\n').map(function(n){return n.trim();}).filter(function(n){return n;});
+        if(names.length > 0){
+          names.forEach(function(name){
+            addClient(name);
+          });
+          showNotification('Import Complete', names.length + ' clients imported successfully');
+          document.body.removeChild(modal);
+        }
+      }
     });
+
+    // Cancel button
+    modal.querySelector('#cancelImport').addEventListener('click', function(){
+      document.body.removeChild(modal);
+    });
+
+    // Close on background click
+    modal.addEventListener('click', function(e){
+      if(e.target === modal){
+        document.body.removeChild(modal);
+      }
+    });
+
+    // Focus textarea
+    importData.focus();
   }
 
   if(els.exportBtn){
@@ -4354,10 +4744,64 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     });
   }
 
-  /* Load Demo Data Button */
-  if(els.loadDemoBtn){
-    els.loadDemoBtn.addEventListener('click', function(){
-      loadDemoData();
+  /* Life Essential Questions Button */
+  if(els.lifeEssentialBtn){
+    els.lifeEssentialBtn.addEventListener('click', function(){
+      showLifeEssentialQuestions();
+    });
+  }
+
+  function showLifeEssentialQuestions(){
+    var modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10001; display:flex; align-items:center; justify-content:center;';
+
+    var content = document.createElement('div');
+    content.style.cssText = 'background:white; border-radius:12px; padding:24px; max-width:700px; max-height:85vh; overflow-y:auto; box-shadow:0 10px 40px rgba(0,0,0,0.2);';
+
+    var questions = [
+      {icon: '💵', text: 'How much life insurance coverage are you requesting?'},
+      {icon: '🔢', text: 'What is your Social Security Number?'},
+      {icon: '🎂', text: 'What is your date of birth?'},
+      {icon: '🗺️', text: 'In which state were you born?'},
+      {icon: '🪪', text: 'What is your driver\'s license number?'},
+      {icon: '💼', text: 'What is your current occupation and Company Name?'},
+      {icon: '💰', text: 'What is your annual income?'},
+      {icon: '👫', text: 'What is your spouse\'s income?'},
+      {icon: '📊', text: 'What is your estimated net worth?'},
+      {icon: '❤️', text: 'Does your spouse currently have life insurance?'},
+      {icon: '📄', text: 'Do you have any current personal life insurance policies?'},
+      {icon: '🏥', text: 'Any medical issues or diagnoses in the past 12 months?'},
+      {icon: '📆', text: 'Would you prefer monthly or annual premium payments?'},
+      {icon: '✅', text: 'Are you ready to bind coverage today?'},
+      {icon: '👨‍⚕️', text: 'Who is your primary care physician? (Optional — or use County Health Department instead.)'}
+    ];
+
+    var html = '<h2 style="margin-top:0; color:#333; font-size:20px;">Life Application Essential Questions</h2>';
+    html += '<p style="color:#666; margin-bottom:20px; font-size:14px;">💡 Essential questions to gather during your client conversation:</p>';
+    html += '<div style="line-height:1.8;">';
+    questions.forEach(function(q){
+      html += '<div style="margin-bottom:12px; display:flex; align-items:start; gap:10px;">';
+      html += '<span style="font-size:20px; flex-shrink:0;">' + q.icon + '</span>';
+      html += '<span style="color:#444; flex:1; padding-top:2px;">' + q.text + '</span>';
+      html += '</div>';
+    });
+    html += '</div>';
+    html += '<button id="closeEssentialQuestions" style="margin-top:24px; padding:10px 24px; background:#3b82f6; color:white; border:none; border-radius:6px; cursor:pointer; font-size:14px; width:100%;">Close</button>';
+
+    content.innerHTML = html;
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+
+    // Close button handler
+    document.getElementById('closeEssentialQuestions').addEventListener('click', function(){
+      document.body.removeChild(modal);
+    });
+
+    // Close on background click
+    modal.addEventListener('click', function(e){
+      if(e.target === modal){
+        document.body.removeChild(modal);
+      }
     });
   }
 
@@ -4372,10 +4816,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       return client.id && client.id.startsWith('demo-');
     });
 
-    // Show/hide load demo button (only for Life context when no demo clients exist)
-    if(els.loadDemoBtn){
-      els.loadDemoBtn.style.display = (isLifeContext && !hasDemoClients) ? 'block' : 'none';
-    }
+    // Life Essential Questions button is always visible
+    // (removed old demo button logic)
 
     // Show/hide clear demo section (only for Life context when demo clients exist)
     if(els.clearDemoSection){
@@ -5472,6 +5914,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   // Initialize dual sidebar system
   if(typeof ui.leftWidgets === 'undefined') ui.leftWidgets = [];
   if(typeof ui.dailyOutreachGoal === 'undefined') ui.dailyOutreachGoal = 10;
+  if(typeof ui.monthlyAppsGoal === 'undefined') ui.monthlyAppsGoal = 5;
   
   // Apply saved left widget positions
   var leftKeys = loadLeftWidgets();
@@ -5595,6 +6038,46 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   /* Wait for storage initialization then render */
   Promise.all([storageReady, uiReady]).then(function() {
     // Now that storage is ready, perform initial setup
+
+    // Initialize default quotes if none exist
+    if(!state.quotes || !state.quotes.list || state.quotes.list.length === 0) {
+      var defaultQuotes = [
+        "Intentional means, I've got a list in front of me, and I am going to improve this list somehow today.",
+        "You have to have a conviction about the product.",
+        "I hate walking away from a family without life insurance.",
+        "If it doesn't bug you, why doesn't it bug you?",
+        "If you're just winging it, you're not gonna sell life insurance.",
+        "You have to have a system and it has to be dialed in.",
+        "You have to be bold.",
+        "You need to protect your family.",
+        "Right now, you don't have a safety net.",
+        "How much is Spotify now? How much is Netflix? You can do all that, but not provide protection for your family.",
+        "On the worst day of their lives, when our clients may have lost someone dear, imagine the impact you've made—because of your help, you completely changed the future for that family and their children.",
+        "What if we flip the script on GoFundMe and we call life insurance, I funded me.",
+        "Life insurance is simply the stacking of paychecks.",
+        "When is the last time you've had someone review your household for total asset protection?",
+        "Protect today so those you love can breathe tomorrow",
+        "Love isn't just words—it's the protection you leave behind",
+        "A policy is a promise that hardship won't steal their future",
+        "Plan now so grief doesn't also bring financial strain",
+        "Invest in certainty when life hands out uncertainty",
+        "A small premium buys a lasting safety net",
+        "Insurance turns worry into a manageable cost",
+        "Leave more than memories—leave a stable tomorrow"
+      ];
+
+      state.quotes = {
+        raw: defaultQuotes.join('\n'),
+        list: defaultQuotes
+      };
+
+      // Only save if this is truly the first time
+      if(!ui.quotesHaveBeenInitialized) {
+        ui.quotesHaveBeenInitialized = true;
+        save(state);
+        saveUI(ui);
+      }
+    }
 
     // Density is now handled by cookies and applied immediately on page load
 
