@@ -2896,7 +2896,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     var backdrop = document.createElement('div');
     backdrop.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:10000;';
 
-    var selectedDate = initialDate || new Date();
+    var selectedDate = initialDate;
+    if (!selectedDate) {
+      // Default to 2 days from now
+      selectedDate = new Date();
+      selectedDate.setDate(selectedDate.getDate() + 2);
+    }
     selectedDate.setHours(9, 0, 0, 0);
 
     function updateModal() {
@@ -2979,6 +2984,84 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     updateModal();
   }
 
+  function createMultipleCalendarEvents(clientsWithDates) {
+    // Get user's preferred calendar method
+    var method = ui.calendarMethod || (els.calendarMethod ? els.calendarMethod.value : 'outlook');
+
+    if(method === 'ics') {
+      // For ICS, we can create a single file with multiple events
+      var formatDate = function(d) {
+        return d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      };
+
+      var icsEvents = clientsWithDates.map(function(item) {
+        var client = item.c || item.client || item;
+        var date = item.when || item.date || item.followUp;
+
+        var clientContext = client.context || 'life';
+        var contextName = CONTEXTS[clientContext] ? CONTEXTS[clientContext].name : 'Life';
+        var title = contextName + ' Follow-up: ' + client.name;
+        var details = 'Follow-up appointment with ' + client.name;
+        if(client.notes) {
+          details += '\n\nNotes: ' + client.notes.substring(0, 200);
+        }
+
+        var startDate = new Date(date);
+        var endDate = new Date(date);
+        endDate.setMinutes(endDate.getMinutes() + 30);
+
+        return [
+          'BEGIN:VEVENT',
+          'UID:' + client.id + '-' + Date.now() + '-' + Math.random() + '@hotlist',
+          'DTSTAMP:' + formatDate(new Date()),
+          'DTSTART:' + formatDate(startDate),
+          'DTEND:' + formatDate(endDate),
+          'SUMMARY:' + title,
+          'DESCRIPTION:' + details.replace(/\n/g, '\\n'),
+          'END:VEVENT'
+        ].join('\r\n');
+      });
+
+      var icsContent = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//Hotlist//EN'
+      ].concat(icsEvents).concat(['END:VCALENDAR']).join('\r\n');
+
+      var blob = new Blob([icsContent], { type: 'text/calendar' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'hotlist-followups.ics';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      showNotification('Calendar Events', 'ICS file with ' + clientsWithDates.length + ' events downloaded');
+    } else {
+      // For web calendars, we need to open them one at a time with user interaction
+      var currentIndex = 0;
+
+      function openNext() {
+        if(currentIndex < clientsWithDates.length) {
+          var item = clientsWithDates[currentIndex];
+          var client = item.c || item.client || item;
+          var date = item.when || item.date || item.followUp;
+          createCalendarEvent(client, date);
+          currentIndex++;
+
+          if(currentIndex < clientsWithDates.length) {
+            // Show notification about remaining events
+            showNotification('Calendar Events', 'Event ' + currentIndex + ' of ' + clientsWithDates.length + ' opened. Click "Add All to Calendar" again for the next event.');
+          }
+        }
+      }
+
+      openNext();
+    }
+  }
+
   function createCalendarEvent(client, date) {
     // Get the client's context for the title
     var clientContext = client.context || 'life';
@@ -3059,7 +3142,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   }
 
   function setFollowUpViaPicker(c) {
-    var initialDate = c.followUp ? new Date(c.followUp) : null;
+    var initialDate;
+    if (c.followUp) {
+      initialDate = new Date(c.followUp);
+    } else {
+      // Default to 2 days from now
+      initialDate = new Date();
+      initialDate.setDate(initialDate.getDate() + 2);
+    }
     createCalendarModal(c, initialDate);
   }
 
@@ -3999,21 +4089,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       return;
     }
 
-    // Add a button to add all follow-ups to calendar at once
-    if(items.length > 1){
-      var bulkBtn = document.createElement('button');
-      bulkBtn.className = 'btn-min gray';
-      bulkBtn.style.cssText = 'width: 100%; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 6px;';
-      bulkBtn.innerHTML = '📅 Add All to Calendar (' + items.length + ')';
-      bulkBtn.addEventListener('click', function(){
-        items.forEach(function(item, index){
-          setTimeout(function(){
-            createCalendarEvent(item.c, item.when);
-          }, index * 500); // Stagger to avoid overwhelming the browser
-        });
-      });
-      els.followList.appendChild(bulkBtn);
-    }
+    // Add All to Calendar button disabled - only adds one event due to popup blocking
+    // if(items.length > 1){
+    //   var bulkBtn = document.createElement('button');
+    //   bulkBtn.className = 'btn-min gray';
+    //   bulkBtn.style.cssText = 'width: 100%; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 6px;';
+    //   bulkBtn.innerHTML = '📅 Add All to Calendar (' + items.length + ')';
+    //   bulkBtn.addEventListener('click', function(){
+    //     createMultipleCalendarEvents(items);
+    //   });
+    //   els.followList.appendChild(bulkBtn);
+    // }
 
     items.forEach(function(rec){
       var div=document.createElement('div');
