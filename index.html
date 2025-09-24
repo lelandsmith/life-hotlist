@@ -1822,6 +1822,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   var supabase = null;  // Supabase client instance
   var currentUser = null;  // Current authenticated user
   var syncEnabled = false;  // Whether to sync to cloud
+  window.currentUser = null;  // Global reference for Teams page
 
   // Initialize Supabase
   function initSupabase() {
@@ -1837,6 +1838,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       setTimeout(initSupabase, 500);
       return;
     }
+
+    console.log('🚀 Starting Supabase initialization...');
 
     if (SUPABASE_URL && SUPABASE_URL !== 'https://YOUR_PROJECT_ID.supabase.co' && SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== 'YOUR_ANON_KEY') {
       try {
@@ -1855,9 +1858,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           console.log('Auth state changed:', event, session ? session.user.email : 'no session');
 
           if (event === 'SIGNED_IN' && session) {
-            console.log('Processing SIGNED_IN event for:', session.user.email);
+            console.log('🟢 Processing SIGNED_IN event for:', session.user.email);
+            console.log('Auth provider:', session.user.app_metadata?.provider || 'email');
             currentUser = session.user;
+            window.currentUser = session.user;  // Set global for Teams page
             syncEnabled = true;
+            console.log('Auth state set - currentUser:', !!currentUser, 'syncEnabled:', syncEnabled);
 
             // Show success banner for new sign-ins (both magic link and OAuth)
             // Check if we just signed in (URL has auth params or we don't have a stored session flag)
@@ -1891,7 +1897,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             await handleInitialSync();
 
           } else if (event === 'SIGNED_OUT') {
+            console.log('🔴 Processing SIGNED_OUT event');
             currentUser = null;
+            window.currentUser = null;  // Clear global
             syncEnabled = false;
 
             // Clear sync interval
@@ -1906,7 +1914,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             console.log('Token refreshed successfully');
           } else if (event === 'USER_UPDATED') {
             console.log('User updated:', session ? session.user.email : 'no session');
-            if (session) currentUser = session.user;
+            if (session) {
+              currentUser = session.user;
+              window.currentUser = session.user;  // Update global
+            }
           }
         });
 
@@ -1935,18 +1946,62 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       // The onAuthStateChange listener will handle the SIGNED_IN event
       // For OAuth, Supabase needs a moment to exchange the tokens
       // Wait a bit longer for OAuth to complete, then check for session
-      setTimeout(async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user && !currentUser) {
-          // OAuth completed but onAuthStateChange might not have fired yet
-          currentUser = user;
-          syncEnabled = true;
-          document.getElementById('teamsLink').style.display = 'inline';
-          document.getElementById('teamsSeparator').style.display = 'inline';
-          updateAuthUI();
-          await handleInitialSync();
+      let retryCount = 0;
+      const maxRetries = 5;
+
+      const checkOAuthSession = async () => {
+        retryCount++;
+        console.log(`🔄 OAuth check attempt ${retryCount}/${maxRetries}`);
+
+        try {
+          const { data: { user }, error } = await supabase.auth.getUser();
+
+          if (error) {
+            console.error('Error getting user during OAuth check:', error);
+            if (retryCount < maxRetries) {
+              setTimeout(checkOAuthSession, 1000);
+            }
+            return;
+          }
+
+          if (user && !currentUser) {
+            // OAuth completed but onAuthStateChange might not have fired yet
+            console.log('🟡 OAuth fallback: Found user via getUser()', user.email);
+            currentUser = user;
+            window.currentUser = user;  // Set global for Teams page
+            syncEnabled = true;
+
+            // Clear the URL hash
+            if (window.location.hash) {
+              window.history.replaceState(null, null, window.location.pathname);
+            }
+
+            // Update all UI elements
+            const teamsLink = document.getElementById('teamsLink');
+            const teamsSeparator = document.getElementById('teamsSeparator');
+            if (teamsLink) teamsLink.style.display = 'inline';
+            if (teamsSeparator) teamsSeparator.style.display = 'inline';
+
+            updateAuthUI();
+
+            // Show success banner for OAuth users
+            if (!sessionStorage.getItem('authenticated')) {
+              showAuthSuccessBanner(user.email);
+              sessionStorage.setItem('authenticated', 'true');
+            }
+
+            await handleInitialSync();
+          } else if (!user && retryCount < maxRetries) {
+            // No user yet, keep trying
+            console.log('No user found yet, retrying...');
+            setTimeout(checkOAuthSession, 1000);
+          }
+        } catch (err) {
+          console.error('Unexpected error in OAuth check:', err);
         }
-      }, 1500);
+      };
+
+      setTimeout(checkOAuthSession, 1500);
       return;
     }
 
@@ -1975,7 +2030,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      console.log('🔍 checkAuthStatus: Found user:', user ? user.email : 'none');
       currentUser = user;
+      window.currentUser = user;  // Set global for Teams page
       if (user) {
         syncEnabled = true;
         // Show Teams link when authenticated
@@ -2226,13 +2283,25 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   // Update UI based on auth status
   function updateAuthUI() {
+    console.log('🎨 updateAuthUI called - currentUser:', !!currentUser, currentUser?.email);
+
     // This will be called to update the UI when auth status changes
     var authStatus = document.getElementById('authStatus');
     var cloudSyncLink = document.getElementById('cloudSyncLink');
     var teamsLink = document.getElementById('teamsLink');
     var teamsSeparator = document.getElementById('teamsSeparator');
 
+    // Log element existence
+    console.log('UI Elements found:', {
+      authStatus: !!authStatus,
+      cloudSyncLink: !!cloudSyncLink,
+      teamsLink: !!teamsLink,
+      teamsSeparator: !!teamsSeparator
+    });
+
     if (currentUser) {
+      console.log('🟢 Updating UI for authenticated user:', currentUser.email);
+
       // Update header status with user email
       if (authStatus) {
         var userEmail = currentUser.email || 'Signed in';
@@ -2254,11 +2323,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         teamsLink.style.display = 'inline';
         teamsLink.style.fontWeight = 'bold';
         teamsLink.style.color = '#10b981';
+        console.log('✅ Teams link shown');
       }
       if (teamsSeparator) {
         teamsSeparator.style.display = 'inline';
       }
     } else {
+      console.log('🔴 Updating UI for unauthenticated state');
+
       // Clear header status
       if (authStatus) {
         authStatus.innerHTML = '';
@@ -2277,10 +2349,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         teamsLink.style.display = 'none';
         teamsLink.style.fontWeight = 'normal';
         teamsLink.style.color = '#3b82f6';
+        console.log('❌ Teams link hidden');
       }
       if (teamsSeparator) {
         teamsSeparator.style.display = 'none';
       }
+    }
+
+    // Force a re-render of the footer in case DOM wasn't ready
+    if (!teamsLink || !teamsSeparator) {
+      console.log('⚠️ Some UI elements not found, scheduling retry...');
+      setTimeout(updateAuthUI, 1000);
     }
   }
 
@@ -7266,6 +7345,26 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     // Validate and fix any clients missing context (data integrity check)
     validateAllContexts();
+
+    // Verify auth state after page load
+    setTimeout(async function() {
+      if (supabase && !currentUser) {
+        console.log('🔍 Verifying auth state after page load...');
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user && !currentUser) {
+            console.log('🟢 Late auth verification: Found authenticated user', user.email);
+            currentUser = user;
+            window.currentUser = user;
+            syncEnabled = true;
+            updateAuthUI();
+            handleInitialSync();
+          }
+        } catch (error) {
+          console.log('Auth verification error:', error);
+        }
+      }
+    }, 2000);
 
     // Initialize ageDays dropdown with saved value
     if(els.ageDays) {
