@@ -694,6 +694,44 @@ body[data-font-size="xlarge"] .row .sbtn.s-hot .ico { font-size: 24px; }
   line-height: 1.1;
 }
 
+/* Time-in-stage metric styling */
+.stage-time-metric {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  background: #6b7280;
+  color: white;
+  border-radius: 50%;
+  font-size: 9px;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  z-index: 5;
+  border: 1px solid white;
+}
+
+/* Adjust metric size for different font sizes */
+body[data-font-size="xsmall"] .stage-time-metric { font-size: 8px; width: 14px; height: 14px; }
+body[data-font-size="small"] .stage-time-metric { font-size: 8px; width: 15px; height: 15px; }
+body[data-font-size="medium"] .stage-time-metric { font-size: 9px; width: 16px; height: 16px; }
+body[data-font-size="large"] .stage-time-metric { font-size: 10px; width: 18px; height: 18px; }
+body[data-font-size="xlarge"] .stage-time-metric { font-size: 11px; width: 20px; height: 20px; }
+
+/* Adjust for compact mode */
+.status-tracker.compact .stage-time-metric {
+  font-size: 8px;
+  width: 14px;
+  height: 14px;
+  bottom: -1px;
+  right: -1px;
+}
+
+/* Hide metrics in titles-only mode */
+body[data-density="titles-only"] .stage-time-metric { display: none; }
+
 /* Notes area */
 .notes{display:grid;margin-top:6px}
 .notes textarea{
@@ -1649,9 +1687,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div style="display:flex; align-items:center; gap:16px; font-size:12px; color:#64748b;">
         <a href="#" onclick="showChangelogModal(); return false;" style="color:#3b82f6; text-decoration:none; hover:text-decoration:underline;">v<span id="versionNumber">1.0.0</span></a>
         <span style="color:#cbd5e1;">|</span>
-        <!-- Cloud sync hidden for now -->
-        <a href="#" onclick="showSignInDialog(); return false;" style="color:#3b82f6; text-decoration:none; hover:text-decoration:underline; display:none;" id="cloudSyncLink">Cloud sync</a>
-        <span style="color:#cbd5e1; display:none;" id="cloudSyncSeparator">|</span>
+        <a href="#" onclick="showSignInDialog(); return false;" style="color:#3b82f6; text-decoration:none; hover:text-decoration:underline;" id="cloudSyncLink">Cloud sync</a>
+        <span style="color:#cbd5e1;" id="cloudSyncSeparator">|</span>
         <a href="#" onclick="openSuggestEmail(); return false;" style="color:#3b82f6; text-decoration:none; hover:text-decoration:underline;">Suggest a change</a>
       </div>
     </div>
@@ -1824,15 +1861,24 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       const { error } = await supabase.auth.signInWithOtp({
         email: email,
         options: {
-          emailRedirectTo: window.location.origin
+          emailRedirectTo: window.location.href
         }
       });
 
       if (error) throw error;
-      alert('Check your email for the login link!');
+
+      alert('✅ Magic Link Sent!\n\nCheck your email for the sign-in link.\n\n📧 Check spam folder if not in inbox\n⏰ Link expires in 1 hour\n🔄 Refresh this page after clicking the link');
     } catch (error) {
       console.error('Sign in error:', error);
-      alert('Sign in failed: ' + error.message);
+
+      // Provide helpful error messages
+      if (error.message && error.message.includes('Email provider is not enabled')) {
+        alert('⚠️ Email Sign-In Not Enabled\n\nTo fix:\n1. Go to your Supabase dashboard\n2. Navigate to Authentication → Providers\n3. Enable "Email" provider\n4. Try again');
+      } else if (error.message && error.message.includes('Invalid API key')) {
+        alert('❌ Invalid Supabase Credentials\n\nPlease check:\n• Project URL is correct\n• Anon Key is correct\n\nFind these in Settings → API in your Supabase dashboard');
+      } else {
+        alert('Sign in failed: ' + error.message);
+      }
     }
   }
 
@@ -1867,7 +1913,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           onConflict: 'user_id'
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Cloud save error:', error);
+        if (error.message && (error.message.includes('hotlist_data') || error.message.includes('relation'))) {
+          console.error('Note: Run SQL from supabase_setup.sql in Supabase SQL Editor');
+        }
+      } else {
+        console.log('Cloud saved:', new Date().toLocaleTimeString());
+      }
     } catch (error) {
       console.error('Cloud save failed:', error);
     }
@@ -3714,6 +3767,45 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   function colorClass(st){ return st==='Initial Contact'?'s-contact' : st==='Sent Quote'?'s-quote' : st==='Sent Application'?'s-app' : st==='Pending Application Signature'?'s-sig' : st==='Pending Medical Questionnaire'?'s-medq' : 's-pur'; }
 
+  /* Calculate days in current stage */
+  function calculateDaysInCurrentStage(client, currentStage) {
+    if(!client || !client.history || currentStage < 0) return 0;
+
+    // Find the most recent stage transition to the current stage
+    var stageHistory = client.history.filter(function(h){
+      return h.action === 'stage' && h.to === currentStage;
+    }).sort(function(a,b){
+      return new Date(b.ts) - new Date(a.ts);
+    });
+
+    // Also check for status history (for backward compatibility)
+    var statusHistory = client.history.filter(function(h){
+      return h.action === 'status';
+    }).sort(function(a,b){
+      return new Date(b.ts) - new Date(a.ts);
+    });
+
+    var lastTransition = stageHistory[0];
+
+    // If no stage history, try to use status history or creation date
+    if(!lastTransition) {
+      if(statusHistory.length > 0) {
+        lastTransition = statusHistory[0];
+      } else if(client.created) {
+        lastTransition = { ts: client.created };
+      } else {
+        return 0;
+      }
+    }
+
+    var transitionDate = new Date(lastTransition.ts);
+    var now = new Date();
+    var diffTime = Math.abs(now - transitionDate);
+    var diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    return diffDays;
+  }
+
   /* Render Status Progress Tracker */
   // Get stages for current context (or client's context)
   function getContextStages(clientContext) {
@@ -3800,6 +3892,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
       // Store stage name for tooltip
       icon.setAttribute('data-stage-name', stageName);
+
+      // Calculate and display time in stage (days)
+      if(client && client.history && index === currentStage && currentStage >= 0){
+        var daysInStage = calculateDaysInCurrentStage(client, currentStage);
+        if(daysInStage > 0){
+          var timeMetric = document.createElement('span');
+          timeMetric.className = 'stage-time-metric';
+          timeMetric.textContent = daysInStage;
+          timeMetric.title = daysInStage + ' day' + (daysInStage > 1 ? 's' : '') + ' in this stage';
+          icon.appendChild(timeMetric);
+        }
+      }
 
       // Make clickable to set stage (only if we have a client object)
       if(client && client.id){
@@ -5735,23 +5839,31 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       '<input type="email" id="signInEmail" placeholder="your@email.com" style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:6px; font-size:14px;">' +
       '</div>' +
 
-      '<div style="background:#f8fafc; padding:15px; border-radius:8px; margin-bottom:20px; font-size:12px; color:var(--muted);">' +
-      '<strong>First time?</strong> Create a free Supabase account at ' +
-      '<a href="https://supabase.com" target="_blank" style="color:var(--green); text-decoration:underline;">supabase.com</a> ' +
-      'and create a new project. Then add your project URL and anon key below.' +
+      '<div style="background:#e8f5e9; padding:15px; border-radius:8px; margin-bottom:20px; font-size:13px; color:#2e7d32; border:1px solid #4caf50;">' +
+      '<strong>🚀 Quick Setup (5 minutes):</strong><br>' +
+      '1. Create free account at <a href="https://supabase.com" target="_blank" style="color:#1976d2; font-weight:600;">supabase.com</a><br>' +
+      '2. Create a new project (wait 2 mins for setup)<br>' +
+      '3. Run the SQL from <code style="background:#f5f5f5; padding:2px 4px; border-radius:3px;">supabase_setup.sql</code> in SQL Editor<br>' +
+      '4. Get credentials from Settings → API<br>' +
+      '5. Paste them below → Sign in with email' +
       '</div>' +
 
-      '<details style="margin-bottom:20px;">' +
-      '<summary style="cursor:pointer; color:var(--muted); font-size:12px; margin-bottom:10px;">Advanced: Configure Supabase (optional)</summary>' +
-      '<div style="margin-top:10px;">' +
-      '<input type="text" id="supabaseUrl" placeholder="Project URL (optional)" style="width:100%; padding:8px; margin-bottom:10px; border:1px solid #e2e8f0; border-radius:6px; font-size:12px;">' +
-      '<input type="text" id="supabaseKey" placeholder="Anon Key (optional)" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:6px; font-size:12px;">' +
+      '<details open style="margin-bottom:20px; background:#f8f9fa; padding:15px; border-radius:8px; border:1px solid #dee2e6;">' +
+      '<summary style="cursor:pointer; color:#495057; font-weight:600; font-size:14px; margin-bottom:10px;">🔑 Supabase Credentials (Required)</summary>' +
+      '<div style="margin-top:15px;">' +
+      '<label style="display:block; margin-bottom:5px; font-size:12px; color:#6c757d; font-weight:500;">Project URL</label>' +
+      '<input type="text" id="supabaseUrl" placeholder="https://xxxxxxxxxxxxx.supabase.co" style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #ced4da; border-radius:6px; font-size:13px; font-family:monospace;">' +
+      '<label style="display:block; margin-bottom:5px; font-size:12px; color:#6c757d; font-weight:500;">Anon/Public Key</label>' +
+      '<input type="text" id="supabaseKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." style="width:100%; padding:10px; border:1px solid #ced4da; border-radius:6px; font-size:13px; font-family:monospace;">' +
+      '<div style="margin-top:10px; padding:10px; background:#fff3cd; border-radius:4px; font-size:11px; color:#856404;">' +
+      '💡 <strong>Where to find:</strong> Supabase Dashboard → Settings → API' +
+      '</div>' +
       '</div>' +
       '</details>' +
 
       '<div style="display:flex; gap:10px; justify-content:flex-end;">' +
       '<button id="cancelSignIn" style="padding:8px 16px; border:1px solid #e2e8f0; background:white; border-radius:6px; cursor:pointer;">Cancel</button>' +
-      '<button id="signInButton" style="padding:8px 16px; background:var(--green); color:white; border:none; border-radius:6px; cursor:pointer;">Send Login Link</button>' +
+      '<button id="signInButton" style="padding:10px 20px; background:var(--green); color:white; border:none; border-radius:6px; cursor:pointer; font-weight:600;">Send Magic Link 🪄</button>' +
       '</div>';
 
     dialog.appendChild(content);
@@ -5763,23 +5875,49 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     });
 
     // Handle sign in
-    document.getElementById('signInButton').addEventListener('click', function() {
-      var email = document.getElementById('signInEmail').value;
-      var url = document.getElementById('supabaseUrl').value;
-      var key = document.getElementById('supabaseKey').value;
+    document.getElementById('signInButton').addEventListener('click', async function() {
+      var email = document.getElementById('signInEmail').value.trim();
+      var url = document.getElementById('supabaseUrl').value.trim();
+      var key = document.getElementById('supabaseKey').value.trim();
 
-      // Save Supabase config if provided
+      // Validate inputs
+      if (!email) {
+        alert('Please enter your email address');
+        return;
+      }
+
+      // Check if we need Supabase config
+      if (!SUPABASE_URL && (!url || !key)) {
+        alert('⚠️ Missing Supabase Credentials\n\nPlease add both:\n• Project URL\n• Anon Key\n\nFind these in Supabase Dashboard → Settings → API');
+        return;
+      }
+
+      // Save and initialize Supabase config if provided
       if (url && key) {
         localStorage.setItem('hotlistSupabaseUrl', url);
         localStorage.setItem('hotlistSupabaseAnonKey', key);
-        initSupabase();
+        SUPABASE_URL = url;
+        SUPABASE_ANON_KEY = key;
+
+        // Initialize Supabase client
+        if (window.supabase) {
+          supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+          console.log('Supabase client initialized');
+        } else {
+          alert('Error: Supabase SDK not loaded. Please refresh the page.');
+          return;
+        }
       }
 
-      if (email) {
-        signInWithEmail(email);
+      // Send magic link
+      try {
+        this.disabled = true;
+        this.textContent = 'Sending...';
+        await signInWithEmail(email);
         dialog.remove();
-      } else {
-        alert('Please enter your email address');
+      } catch(error) {
+        this.disabled = false;
+        this.textContent = 'Send Magic Link 🪄';
       }
     });
 

@@ -13,6 +13,12 @@ CREATE TABLE IF NOT EXISTS hotlist_data (
 -- Enable Row Level Security
 ALTER TABLE hotlist_data ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if they exist (to allow re-running this script)
+DROP POLICY IF EXISTS "Users can view their own data" ON hotlist_data;
+DROP POLICY IF EXISTS "Users can insert their own data" ON hotlist_data;
+DROP POLICY IF EXISTS "Users can update their own data" ON hotlist_data;
+DROP POLICY IF EXISTS "Users can delete their own data" ON hotlist_data;
+
 -- Create policy to allow users to only see and modify their own data
 CREATE POLICY "Users can view their own data" ON hotlist_data
   FOR SELECT USING (auth.uid() = user_id);
