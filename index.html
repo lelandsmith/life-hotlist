@@ -1855,6 +1855,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           console.log('Auth state changed:', event, session ? session.user.email : 'no session');
 
           if (event === 'SIGNED_IN' && session) {
+            console.log('Processing SIGNED_IN event for:', session.user.email);
             currentUser = session.user;
             syncEnabled = true;
 
@@ -1877,8 +1878,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
               sessionStorage.setItem('authenticated', 'true');
             }
 
-            document.getElementById('teamsLink').style.display = 'inline';
-            document.getElementById('teamsSeparator').style.display = 'inline';
+            // Ensure UI elements are updated
+            const teamsLink = document.getElementById('teamsLink');
+            const teamsSeparator = document.getElementById('teamsSeparator');
+            if (teamsLink) teamsLink.style.display = 'inline';
+            if (teamsSeparator) teamsSeparator.style.display = 'inline';
+
+            // Force UI update
             updateAuthUI();
 
             // Handle initial sync and load cloud data
@@ -1928,6 +1934,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       console.log('Auth tokens detected in URL, waiting for Supabase to process...');
       // The onAuthStateChange listener will handle the SIGNED_IN event
       // For OAuth, Supabase needs a moment to exchange the tokens
+      // Wait a bit longer for OAuth to complete, then check for session
+      setTimeout(async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user && !currentUser) {
+          // OAuth completed but onAuthStateChange might not have fired yet
+          currentUser = user;
+          syncEnabled = true;
+          document.getElementById('teamsLink').style.display = 'inline';
+          document.getElementById('teamsSeparator').style.display = 'inline';
+          updateAuthUI();
+          await handleInitialSync();
+        }
+      }, 1500);
       return;
     }
 
