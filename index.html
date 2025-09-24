@@ -5909,9 +5909,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     }
     document.addEventListener('keydown', handleEscape);
 
-    // Focus email field
+    // Focus email field if it exists
     setTimeout(function() {
-      document.getElementById('signInEmail').focus();
+      var emailField = document.getElementById('signInEmail');
+      if (emailField) {
+        emailField.focus();
+      }
     }, 100);
   }
 
