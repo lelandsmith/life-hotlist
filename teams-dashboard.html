@@ -924,26 +924,100 @@ body {
     const SUPABASE_URL = 'https://yoxzlejphrhtuisnptor.supabase.co';  // Replace with your Supabase project URL
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlveHpsZWpwaHJodHVpc25wdG9yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1NjIwNDIsImV4cCI6MjA3NDEzODA0Mn0.azXNn6AQQcB5iJzn7ebhAh5cSBESgKwEV2aSviX8yeY';  // Replace with your Supabase anon/public key
 
-    if (SUPABASE_URL && SUPABASE_URL !== 'https://YOUR_PROJECT_ID.supabase.co' && SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== 'YOUR_ANON_KEY') {
-      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      checkAuth();
-    } else {
-      showToast('Supabase not configured. Please update credentials in the code.', 'error');
-      setTimeout(() => {
-        window.location.href = 'index.html';
-      }, 3000);
+    // Function to initialize Supabase with retry logic
+    function initSupabase() {
+      // Check if the Supabase library is loaded
+      if (!window.supabase || !window.supabase.createClient) {
+        console.log('Supabase library not loaded yet. Retrying...');
+        setTimeout(initSupabase, 500);
+        return;
+      }
+
+      if (SUPABASE_URL && SUPABASE_URL !== 'https://YOUR_PROJECT_ID.supabase.co' && SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== 'YOUR_ANON_KEY') {
+        try {
+          supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+          console.log('Supabase client initialized successfully on teams page');
+
+          // Listen for auth state changes
+          supabase.auth.onAuthStateChange((event, session) => {
+            console.log('Teams page - Auth state changed:', event);
+            if (event === 'SIGNED_IN' && session) {
+              currentUser = session.user;
+              console.log('User signed in on teams page:', currentUser.email);
+              // Refresh the dashboard if not already initialized
+              if (document.querySelector('.dashboard-container').style.display === 'none') {
+                initializeDashboard();
+              }
+            } else if (event === 'SIGNED_OUT') {
+              currentUser = null;
+              showToast('You have been signed out', 'info');
+              setTimeout(() => {
+                window.location.href = '/';
+              }, 1500);
+            }
+          });
+
+          checkAuth();
+        } catch (error) {
+          console.error('Failed to initialize Supabase client:', error);
+          showToast('Failed to initialize authentication', 'error');
+        }
+      } else {
+        showToast('Supabase not configured. Please update credentials in the code.', 'error');
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 3000);
+      }
     }
+
+    // Start initialization
+    initSupabase();
 
     // Check authentication
     async function checkAuth() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        currentUser = user;
-        initializeDashboard();
-      } else {
-        showToast('Please sign in through the main Hotlist app', 'error');
+      try {
+        console.log('Checking authentication status...');
+        const { data: { user }, error } = await supabase.auth.getUser();
+
+        if (error) {
+          console.error('Auth check error:', error);
+          // Check if there's a session in the URL (just signed in)
+          const hashParams = new URLSearchParams(window.location.hash.substring(1));
+          const accessToken = hashParams.get('access_token');
+
+          if (accessToken) {
+            console.log('Found access token in URL, attempting to get session...');
+            const { data: { user: sessionUser }, error: sessionError } = await supabase.auth.getUser(accessToken);
+            if (sessionUser && !sessionError) {
+              currentUser = sessionUser;
+              initializeDashboard();
+              return;
+            }
+          }
+
+          showToast('Authentication error. Please sign in again.', 'error');
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 2000);
+          return;
+        }
+
+        if (user) {
+          console.log('User authenticated:', user.email);
+          currentUser = user;
+          initializeDashboard();
+        } else {
+          console.log('No authenticated user found');
+          showToast('Please sign in through the main Hotlist app', 'error');
+          setTimeout(() => {
+            // Redirect to the base URL without .html extension
+            window.location.href = '/';
+          }, 2000);
+        }
+      } catch (error) {
+        console.error('Unexpected error during auth check:', error);
+        showToast('An error occurred. Please try again.', 'error');
         setTimeout(() => {
-          // Redirect to the base URL without .html extension
           window.location.href = '/';
         }, 2000);
       }
