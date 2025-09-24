@@ -1858,6 +1858,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         document.getElementById('teamsSeparator').style.display = 'inline';
         updateAuthUI();
 
+        // Show success notification if just logged in
+        if (window.location.hash && window.location.hash.includes('access_token')) {
+          // Clear the auth tokens from URL
+          window.history.replaceState(null, null, window.location.pathname + window.location.search);
+
+          // Show welcome banner
+          showAuthSuccessBanner(user.email);
+        }
+
         // Check if this is first sync - if cloud is empty, migrate local data
         const cloudData = await loadFromCloud();
         if (!cloudData) {
@@ -1986,26 +1995,77 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     }
   }
 
+  // Show success banner when authenticated
+  function showAuthSuccessBanner(email) {
+    var banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed; top:20px; right:20px; background:linear-gradient(135deg, #10b981, #059669); color:white; padding:20px 24px; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.2); z-index:10000; max-width:400px; animation:slideIn 0.3s ease-out;';
+
+    banner.innerHTML =
+      '<div style="display:flex; align-items:flex-start; gap:12px;">' +
+        '<div style="font-size:24px;">✅</div>' +
+        '<div style="flex:1;">' +
+          '<h3 style="margin:0 0 8px; font-size:16px; font-weight:bold;">Successfully Signed In!</h3>' +
+          '<p style="margin:0 0 12px; font-size:14px; opacity:0.95;">' + email + '</p>' +
+          '<div style="display:flex; flex-direction:column; gap:8px; font-size:13px;">' +
+            '<div>☁️ Your data now syncs across all devices</div>' +
+            '<div>👥 <a href="teams-dashboard.html" style="color:white; font-weight:bold; text-decoration:underline;">Open Teams Dashboard</a> to collaborate</div>' +
+            '<div>🏆 Share progress & compete with colleagues</div>' +
+          '</div>' +
+        '</div>' +
+        '<button onclick="this.parentElement.parentElement.remove()" style="background:transparent; border:none; color:white; font-size:20px; cursor:pointer; padding:0; margin-left:8px;">×</button>' +
+      '</div>';
+
+    // Add animation keyframes
+    var style = document.createElement('style');
+    style.textContent = '@keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }';
+    document.head.appendChild(style);
+
+    document.body.appendChild(banner);
+
+    // Auto-remove after 8 seconds
+    setTimeout(function() {
+      if (banner.parentNode) {
+        banner.style.animation = 'slideIn 0.3s ease-out reverse';
+        setTimeout(function() {
+          if (banner.parentNode) banner.remove();
+        }, 300);
+      }
+    }, 8000);
+  }
+
   // Update UI based on auth status
   function updateAuthUI() {
     // This will be called to update the UI when auth status changes
     var authStatus = document.getElementById('authStatus');
     var cloudSyncLink = document.getElementById('cloudSyncLink');
+    var teamsLink = document.getElementById('teamsLink');
+    var teamsSeparator = document.getElementById('teamsSeparator');
 
     if (currentUser) {
-      // Update header status
+      // Update header status with user email
       if (authStatus) {
-        authStatus.innerHTML = '☁️ Synced • <a href="#" onclick="signOut(); return false;" style="color:var(--muted); text-decoration:underline;">Sign out</a>';
+        var userEmail = currentUser.email || 'Signed in';
+        authStatus.innerHTML = '☁️ <span style="color:var(--green);">' + userEmail + '</span> • <a href="#" onclick="signOut(); return false;" style="color:var(--muted); text-decoration:underline;">Sign out</a>';
       }
       // Update footer link
       if (cloudSyncLink) {
-        cloudSyncLink.innerHTML = '☁️ Synced';
+        cloudSyncLink.innerHTML = '☁️ Synced (' + (currentUser.email || 'signed in') + ')';
+        cloudSyncLink.style.color = '#10b981';  // Green color to indicate active
         cloudSyncLink.onclick = function() {
-          if (confirm('Sign out from cloud sync?')) {
+          if (confirm('Sign out from cloud sync?\n\n' + (currentUser.email || ''))) {
             signOut();
           }
           return false;
         };
+      }
+      // Show Teams link prominently
+      if (teamsLink) {
+        teamsLink.style.display = 'inline';
+        teamsLink.style.fontWeight = 'bold';
+        teamsLink.style.color = '#10b981';
+      }
+      if (teamsSeparator) {
+        teamsSeparator.style.display = 'inline';
       }
     } else {
       // Clear header status
@@ -2015,10 +2075,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       // Reset footer link
       if (cloudSyncLink) {
         cloudSyncLink.innerHTML = 'Cloud sync';
+        cloudSyncLink.style.color = '#3b82f6';  // Default blue
         cloudSyncLink.onclick = function() {
           showSignInDialog();
           return false;
         };
+      }
+      // Hide Teams link
+      if (teamsLink) {
+        teamsLink.style.display = 'none';
+        teamsLink.style.fontWeight = 'normal';
+        teamsLink.style.color = '#3b82f6';
+      }
+      if (teamsSeparator) {
+        teamsSeparator.style.display = 'none';
       }
     }
   }
