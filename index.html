@@ -1881,23 +1881,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             document.getElementById('teamsSeparator').style.display = 'inline';
             updateAuthUI();
 
-            // For OAuth returns, we might need to reload state and re-render
-            if (event === 'SIGNED_IN') {
-              if (!state) {
-                console.log('Loading state after OAuth sign-in...');
-                await load();
-              }
-              // Always re-render after sign-in to ensure UI is up to date
-              if (typeof render === 'function') {
-                console.log('Re-rendering UI after sign-in...');
-                render();
-              }
-            }
+            // Handle initial sync and load cloud data
+            await handleInitialSync();
 
-            handleInitialSync();
           } else if (event === 'SIGNED_OUT') {
             currentUser = null;
             syncEnabled = false;
+
+            // Clear sync interval
+            if (window.syncInterval) {
+              clearInterval(window.syncInterval);
+              window.syncInterval = null;
+            }
+
             sessionStorage.removeItem('authenticated');
             updateAuthUI();
           } else if (event === 'TOKEN_REFRESHED') {
@@ -2014,50 +2010,83 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   // Handle initial sync when user is authenticated
   async function handleInitialSync() {
-    // Check if we've already synced this session
-    var hasSyncedThisSession = sessionStorage.getItem('hasSynced');
+    console.log('Handling initial sync...');
+    try {
+      // Load cloud data
+      const cloudData = await loadFromCloud();
 
-    if (!hasSyncedThisSession) {
-      // Mark that we're syncing this session
-      sessionStorage.setItem('hasSynced', 'true');
+      if (cloudData && Object.keys(cloudData).length > 0) {
+        // Cloud has data - use it as the source of truth
+        console.log('Loading data from cloud');
+        state = coerceState(cloudData);
 
-      try {
-        // Check if this is first sync - if cloud is empty, migrate local data
-        const cloudData = await loadFromCloud();
-        if (!cloudData) {
-          console.log('First sync - migrating local data to cloud');
-          // Get existing local data
-          var localData = localStorage.getItem(STABLE_KEY);
-          if (localData) {
-            try {
-              var parsedData = JSON.parse(localData);
-              await saveToCloud(parsedData);
-              console.log('Local data migrated to cloud successfully');
-            } catch (e) {
-              console.error('Failed to migrate local data:', e);
-            }
-          }
-        } else {
-          // Cloud has data - only ask once per browser (not per session)
-          var hasChosenDataSource = localStorage.getItem('hasChosenDataSource');
-          if (!hasChosenDataSource) {
-            if (confirm('Cloud data found. Use cloud data? (Cancel to keep local data)')) {
+        // Save to local for offline access
+        var dataStr = JSON.stringify(state);
+        localStorage.setItem(STABLE_KEY, dataStr);
+        if (storageDB) {
+          await saveToIndexedDB(STABLE_KEY, dataStr);
+        }
+
+        // Re-render with cloud data
+        render();
+      } else {
+        // No cloud data - migrate local data to cloud
+        console.log('No cloud data found, migrating local data to cloud');
+        if (state && state.clients && state.clients.length > 0) {
+          await saveToCloud(state);
+          console.log('Local data migrated to cloud');
+        }
+      }
+
+      // Set up real-time sync
+      setupRealtimeSync();
+
+    } catch (error) {
+      console.error('Error during initial sync:', error);
+    }
+  }
+
+  // Set up real-time sync to detect changes from other devices
+  function setupRealtimeSync() {
+    if (!supabase || !currentUser) return;
+
+    console.log('Setting up real-time sync...');
+
+    // Clear any existing interval
+    if (window.syncInterval) {
+      clearInterval(window.syncInterval);
+    }
+
+    // Poll for changes every 5 seconds
+    window.syncInterval = setInterval(async () => {
+      if (currentUser && syncEnabled) {
+        try {
+          const cloudData = await loadFromCloud();
+          if (cloudData && cloudData.lastModified) {
+            // Check if cloud data is newer than our current data
+            const cloudTime = new Date(cloudData.lastModified).getTime();
+            const localTime = state.lastModified ? new Date(state.lastModified).getTime() : 0;
+
+            if (cloudTime > localTime) {
+              console.log('Detected newer data from cloud, syncing...');
               state = coerceState(cloudData);
-              save(state);
+
+              // Save to local for offline access
+              var dataStr = JSON.stringify(state);
+              localStorage.setItem(STABLE_KEY, dataStr);
+              if (storageDB) {
+                await saveToIndexedDB(STABLE_KEY, dataStr);
+              }
+
+              // Re-render UI
               render();
             }
-            // Remember that we've made this choice
-            localStorage.setItem('hasChosenDataSource', 'true');
-          } else {
-            // User has already chosen before - just load cloud data
-            state = coerceState(cloudData);
-            save(state);
           }
+        } catch (error) {
+          console.error('Error checking for cloud updates:', error);
         }
-      } catch (error) {
-        console.error('Error during initial sync:', error);
       }
-    }
+    }, 5000); // Check every 5 seconds
   }
 
   // Sign out
@@ -2065,12 +2094,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     if (!supabase) return;
 
     try {
+      // Clear sync interval
+      if (window.syncInterval) {
+        clearInterval(window.syncInterval);
+        window.syncInterval = null;
+      }
+
       await supabase.auth.signOut();
       currentUser = null;
       syncEnabled = false;
 
       // Clear session storage flags
       sessionStorage.removeItem('hasSynced');
+      sessionStorage.removeItem('authenticated');
 
       // Hide teams link immediately
       document.getElementById('teamsLink').style.display = 'none';
@@ -2747,23 +2783,49 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   }
 
   /* Enhanced load/save with IndexedDB and localStorage fallback */
-  function load() {
-    if (storageDB) {
-      return loadFromIndexedDB(STABLE_KEY).then(function(data) {
-        if (data) {
-          try {
-            return coerceState(JSON.parse(data));
-          } catch(e) {
-            console.error('Failed to parse IndexedDB data:', e);
+  async function load() {
+    // If user is signed in and sync is enabled, always prioritize cloud data
+    if (currentUser && syncEnabled) {
+      console.log('User is signed in, loading from cloud...');
+      try {
+        const cloudData = await loadFromCloud();
+        if (cloudData && Object.keys(cloudData).length > 0) {
+          console.log('Loaded data from cloud');
+          // Save to local storage for offline access
+          const dataStr = JSON.stringify(cloudData);
+          localStorage.setItem(STABLE_KEY, dataStr);
+          if (storageDB) {
+            await saveToIndexedDB(STABLE_KEY, dataStr);
           }
+          return coerceState(cloudData);
         }
-        return loadFromLocalStorage();
-      }).catch(function(e) {
-        console.error('IndexedDB load failed, using localStorage:', e);
-        return loadFromLocalStorage();
-      });
+      } catch(e) {
+        console.error('Failed to load from cloud:', e);
+        // Even if cloud fails, we should still try to use cloud on next save
+      }
     }
-    return loadFromLocalStorage();
+
+    // Fall back to local storage only if not signed in
+    if (!currentUser) {
+      if (storageDB) {
+        return loadFromIndexedDB(STABLE_KEY).then(function(data) {
+          if (data) {
+            try {
+              return coerceState(JSON.parse(data));
+            } catch(e) {
+              console.error('Failed to parse IndexedDB data:', e);
+            }
+          }
+          return loadFromLocalStorage();
+        }).catch(function(e) {
+          console.error('IndexedDB load failed, using localStorage:', e);
+          return loadFromLocalStorage();
+        });
+      }
+      return loadFromLocalStorage();
+    }
+
+    return null;
   }
 
   function loadFromLocalStorage() {
@@ -2779,30 +2841,55 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   }
 
   function save(data) {
+    // Add timestamp for sync tracking
+    data.lastModified = new Date().toISOString();
     var dataStr = JSON.stringify(data);
 
-    // Always save to localStorage first (synchronous, immediate)
+    // Save to cloud first if user is signed in
+    if (currentUser && syncEnabled) {
+      saveToCloud(data).then(function() {
+        console.log('Successfully saved to cloud');
+        // Also save locally for offline access
+        saveLocally(dataStr);
+      }).catch(function(e) {
+        console.error('Failed to save to cloud:', e);
+        // Still save locally on cloud failure
+        saveLocally(dataStr);
+      });
+    } else {
+      // Only save locally if not signed in
+      saveLocally(dataStr);
+    }
+  }
+
+  function saveLocally(dataStr) {
+    // Save to localStorage first (synchronous, immediate)
     localStorage.setItem(STABLE_KEY, dataStr);
 
     // Then attempt to save to IndexedDB (asynchronous)
-    saveToIndexedDB(STABLE_KEY, dataStr).then(function() {
-      console.log('Successfully saved to IndexedDB');
-    }).catch(function(e) {
-      console.error('Failed to save to IndexedDB, but localStorage save succeeded:', e);
-      // Try to reinitialize DB for next save
-      storageDB = null;
-    });
-
-    // Also save to cloud if user is signed in
-    if (currentUser && syncEnabled) {
-      saveToCloud(data);
+    if (storageDB) {
+      saveToIndexedDB(STABLE_KEY, dataStr).then(function() {
+        console.log('Successfully saved to IndexedDB');
+      }).catch(function(e) {
+        console.error('Failed to save to IndexedDB, but localStorage save succeeded:', e);
+        // Try to reinitialize DB for next save
+        storageDB = null;
+      });
     }
   }
   /* Initialize storage and load state */
   var state = {clients:[], quotes:{raw:'', list:[]}, quotesSettings:{interval:15, random:true, norepeat:true, recent:[]}}; // Default state to prevent null errors
   var storageReady = initDB().then(function() {
     return migrateData();
-  }).then(function() {
+  }).then(async function() {
+    // Initialize Supabase first if configured
+    if (SUPABASE_URL && SUPABASE_URL !== 'https://YOUR_PROJECT_ID.supabase.co' &&
+        SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== 'YOUR_ANON_KEY') {
+      initSupabase();
+      // Wait a bit for auth state to be established
+      await new Promise(function(resolve) { setTimeout(resolve, 1000); });
+    }
+
     var result = load();
     if (result && result.then) {
       return result.then(function(loadedState) {
