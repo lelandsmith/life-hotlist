@@ -1810,24 +1810,48 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     if (SUPABASE_URL && SUPABASE_URL !== 'https://YOUR_PROJECT_ID.supabase.co' && SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== 'YOUR_ANON_KEY') {
       try {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log('Supabase client initialized successfully');
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+          auth: {
+            autoRefreshToken: true,
+            persistSession: true,
+            detectSessionInUrl: true  // This is key for magic links
+          }
+        });
+        console.log('Supabase client initialized successfully with detectSessionInUrl enabled');
 
         // Listen for auth state changes
         supabase.auth.onAuthStateChange((event, session) => {
-          console.log('Auth state changed:', event);
+          console.log('Auth state changed:', event, session ? session.user.email : 'no session');
+
           if (event === 'SIGNED_IN' && session) {
             currentUser = session.user;
             syncEnabled = true;
+
+            // Show success if this is from a magic link
+            if (window.location.hash && window.location.hash.includes('access_token')) {
+              // Clear the tokens from URL
+              window.history.replaceState(null, null, window.location.pathname);
+              showAuthSuccessBanner(session.user.email);
+            }
+
+            document.getElementById('teamsLink').style.display = 'inline';
+            document.getElementById('teamsSeparator').style.display = 'inline';
             updateAuthUI();
+            handleInitialSync();
           } else if (event === 'SIGNED_OUT') {
             currentUser = null;
             syncEnabled = false;
             updateAuthUI();
+          } else if (event === 'TOKEN_REFRESHED') {
+            console.log('Token refreshed successfully');
+          } else if (event === 'USER_UPDATED') {
+            console.log('User updated:', session ? session.user.email : 'no session');
+            if (session) currentUser = session.user;
           }
         });
 
-        checkAuthStatus();
+        // Check for existing session after a short delay to let Supabase process any URL tokens
+        setTimeout(checkAuthStatus, 100);
       } catch (error) {
         console.error('Failed to initialize Supabase client:', error);
       }
@@ -1840,107 +1864,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   async function checkAuthStatus() {
     if (!supabase) return;
 
-    // First check if we have an access token in the URL (from magic link)
+    // Don't manually process magic links - Supabase handles them with detectSessionInUrl
+    // Just wait a moment for Supabase to process any URL tokens
     if (window.location.hash && window.location.hash.includes('access_token')) {
-      console.log('Processing magic link authentication...');
-      console.log('URL hash:', window.location.hash);
-
-      try {
-        // Parse the URL hash to get tokens - handle both formats
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const access_token = hashParams.get('access_token');
-        const refresh_token = hashParams.get('refresh_token');
-        const type = hashParams.get('type');
-
-        console.log('Parsed tokens:', {
-          access_token: access_token ? 'present' : 'missing',
-          refresh_token: refresh_token ? 'present' : 'missing',
-          type: type
-        });
-
-        if (access_token) {
-          // If this is from a magic link, Supabase should handle it automatically
-          if (type === 'magiclink') {
-            console.log('Magic link detected, letting Supabase handle authentication...');
-
-            // For magic links, we should use the built-in handler
-            const { data: { session }, error } = await supabase.auth.getSession();
-
-            if (!error && session) {
-              console.log('Magic link session established:', session.user.email);
-              currentUser = session.user;
-              syncEnabled = true;
-
-              // Clear the tokens from URL
-              window.history.replaceState(null, null, window.location.pathname);
-
-              // Show success banner and update UI
-              showAuthSuccessBanner(session.user.email);
-              document.getElementById('teamsLink').style.display = 'inline';
-              document.getElementById('teamsSeparator').style.display = 'inline';
-              updateAuthUI();
-
-              // Handle initial sync
-              handleInitialSync();
-              return;
-            }
-          }
-
-          // Fallback to manual session setting if refresh token is present
-          if (refresh_token) {
-            console.log('Attempting manual session setting...');
-            const { data: { session }, error } = await supabase.auth.setSession({
-              access_token: access_token,
-              refresh_token: refresh_token
-            });
-
-            if (error) {
-              console.error('Error setting session from tokens:', error);
-              console.error('Error details:', error.message, error.status);
-
-              // Try one more time with just getting the session
-              const { data: { session: fallbackSession } } = await supabase.auth.getSession();
-              if (fallbackSession) {
-                console.log('Fallback session found:', fallbackSession.user.email);
-                currentUser = fallbackSession.user;
-                syncEnabled = true;
-                window.history.replaceState(null, null, window.location.pathname);
-                showAuthSuccessBanner(fallbackSession.user.email);
-                document.getElementById('teamsLink').style.display = 'inline';
-                document.getElementById('teamsSeparator').style.display = 'inline';
-                updateAuthUI();
-                handleInitialSync();
-                return;
-              }
-
-              alert('Error processing sign-in link. Please request a new magic link.');
-              window.history.replaceState(null, null, window.location.pathname);
-              return;
-            }
-
-            if (session) {
-              console.log('Session established via setSession:', session.user.email);
-              currentUser = session.user;
-              syncEnabled = true;
-
-              // Clear the tokens from URL
-              window.history.replaceState(null, null, window.location.pathname);
-
-              // Show success banner and update UI
-              showAuthSuccessBanner(session.user.email);
-              document.getElementById('teamsLink').style.display = 'inline';
-              document.getElementById('teamsSeparator').style.display = 'inline';
-              updateAuthUI();
-
-              // Handle initial sync
-              handleInitialSync();
-              return;
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Unexpected error processing magic link:', error);
-      }
+      console.log('Magic link detected in URL, waiting for Supabase to process...');
+      // The onAuthStateChange listener will handle the SIGNED_IN event
+      return;
     }
 
     // Check for auth errors in the URL
