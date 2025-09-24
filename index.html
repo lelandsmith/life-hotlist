@@ -1845,33 +1845,43 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       console.log('Processing magic link authentication...');
 
       try {
-        // Let Supabase handle the magic link authentication
-        const { data: { session }, error } = await supabase.auth.getSession();
+        // Parse the URL hash to get tokens
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const access_token = hashParams.get('access_token');
+        const refresh_token = hashParams.get('refresh_token');
 
-        if (error) {
-          console.error('Error processing magic link:', error);
-          alert('Error processing sign-in link. Please try again.');
-          window.history.replaceState(null, null, window.location.pathname);
-          return;
-        }
+        if (access_token && refresh_token) {
+          // Set the session with the tokens from the URL
+          const { data: { session }, error } = await supabase.auth.setSession({
+            access_token: access_token,
+            refresh_token: refresh_token
+          });
 
-        if (session) {
-          console.log('Magic link authentication successful:', session.user.email);
-          currentUser = session.user;
-          syncEnabled = true;
+          if (error) {
+            console.error('Error setting session from magic link:', error);
+            alert('Error processing sign-in link. Please try again.');
+            window.history.replaceState(null, null, window.location.pathname);
+            return;
+          }
 
-          // Clear the tokens from URL
-          window.history.replaceState(null, null, window.location.pathname);
+          if (session) {
+            console.log('Magic link authentication successful:', session.user.email);
+            currentUser = session.user;
+            syncEnabled = true;
 
-          // Show success banner and update UI
-          showAuthSuccessBanner(session.user.email);
-          document.getElementById('teamsLink').style.display = 'inline';
-          document.getElementById('teamsSeparator').style.display = 'inline';
-          updateAuthUI();
+            // Clear the tokens from URL
+            window.history.replaceState(null, null, window.location.pathname);
 
-          // Handle initial sync
-          handleInitialSync();
-          return;
+            // Show success banner and update UI
+            showAuthSuccessBanner(session.user.email);
+            document.getElementById('teamsLink').style.display = 'inline';
+            document.getElementById('teamsSeparator').style.display = 'inline';
+            updateAuthUI();
+
+            // Handle initial sync
+            handleInitialSync();
+            return;
+          }
         }
       } catch (error) {
         console.error('Unexpected error processing magic link:', error);

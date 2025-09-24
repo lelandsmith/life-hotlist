@@ -976,29 +976,43 @@ body {
     // Check authentication
     async function checkAuth() {
       try {
-        console.log('Checking authentication status...');
+        console.log('Checking authentication status on teams dashboard...');
+
+        // First try to get the current session (this should work across pages)
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+        if (sessionError) {
+          console.error('Session check error:', sessionError);
+        }
+
+        if (session && session.user) {
+          console.log('Session found:', session.user.email);
+          currentUser = session.user;
+          initializeDashboard();
+          return;
+        }
+
+        // If no session, try getting the user (might be cached)
         const { data: { user }, error } = await supabase.auth.getUser();
 
         if (error) {
           console.error('Auth check error:', error);
-          // Check if there's a session in the URL (just signed in)
-          const hashParams = new URLSearchParams(window.location.hash.substring(1));
-          const accessToken = hashParams.get('access_token');
 
-          if (accessToken) {
-            console.log('Found access token in URL, attempting to get session...');
-            const { data: { user: sessionUser }, error: sessionError } = await supabase.auth.getUser(accessToken);
-            if (sessionUser && !sessionError) {
-              currentUser = sessionUser;
+          // Give it one more second for auth to stabilize
+          console.log('Waiting for auth to stabilize...');
+          setTimeout(async () => {
+            const { data: { user: retryUser } } = await supabase.auth.getUser();
+            if (retryUser) {
+              console.log('User authenticated on retry:', retryUser.email);
+              currentUser = retryUser;
               initializeDashboard();
-              return;
+            } else {
+              showToast('Please sign in through the main Hotlist app', 'error');
+              setTimeout(() => {
+                window.location.href = '/';
+              }, 2000);
             }
-          }
-
-          showToast('Authentication error. Please sign in again.', 'error');
-          setTimeout(() => {
-            window.location.href = '/';
-          }, 2000);
+          }, 1000);
           return;
         }
 
@@ -1008,11 +1022,22 @@ body {
           initializeDashboard();
         } else {
           console.log('No authenticated user found');
-          showToast('Please sign in through the main Hotlist app', 'error');
-          setTimeout(() => {
-            // Redirect to the base URL without .html extension
-            window.location.href = '/';
-          }, 2000);
+
+          // Give it one more second for auth to stabilize
+          console.log('Waiting for auth to stabilize...');
+          setTimeout(async () => {
+            const { data: { user: retryUser } } = await supabase.auth.getUser();
+            if (retryUser) {
+              console.log('User authenticated on retry:', retryUser.email);
+              currentUser = retryUser;
+              initializeDashboard();
+            } else {
+              showToast('Please sign in through the main Hotlist app', 'error');
+              setTimeout(() => {
+                window.location.href = '/';
+              }, 2000);
+            }
+          }, 1000);
         }
       } catch (error) {
         console.error('Unexpected error during auth check:', error);
