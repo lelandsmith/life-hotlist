@@ -1851,27 +1851,54 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         console.log('Supabase client initialized successfully with detectSessionInUrl enabled');
 
         // Listen for auth state changes
-        supabase.auth.onAuthStateChange((event, session) => {
+        supabase.auth.onAuthStateChange(async (event, session) => {
           console.log('Auth state changed:', event, session ? session.user.email : 'no session');
 
           if (event === 'SIGNED_IN' && session) {
             currentUser = session.user;
             syncEnabled = true;
 
-            // Show success if this is from a magic link
-            if (window.location.hash && window.location.hash.includes('access_token')) {
+            // Show success banner for new sign-ins (both magic link and OAuth)
+            // Check if we just signed in (URL has auth params or we don't have a stored session flag)
+            const isNewSignIn = window.location.hash && (
+              window.location.hash.includes('access_token') ||
+              window.location.hash.includes('token_type') ||
+              window.location.hash.includes('provider_token')
+            );
+
+            const justSignedIn = !sessionStorage.getItem('authenticated');
+
+            if (isNewSignIn || justSignedIn) {
               // Clear the tokens from URL
-              window.history.replaceState(null, null, window.location.pathname);
+              if (window.location.hash) {
+                window.history.replaceState(null, null, window.location.pathname);
+              }
               showAuthSuccessBanner(session.user.email);
+              sessionStorage.setItem('authenticated', 'true');
             }
 
             document.getElementById('teamsLink').style.display = 'inline';
             document.getElementById('teamsSeparator').style.display = 'inline';
             updateAuthUI();
+
+            // For OAuth returns, we might need to reload state and re-render
+            if (event === 'SIGNED_IN') {
+              if (!state) {
+                console.log('Loading state after OAuth sign-in...');
+                await load();
+              }
+              // Always re-render after sign-in to ensure UI is up to date
+              if (typeof render === 'function') {
+                console.log('Re-rendering UI after sign-in...');
+                render();
+              }
+            }
+
             handleInitialSync();
           } else if (event === 'SIGNED_OUT') {
             currentUser = null;
             syncEnabled = false;
+            sessionStorage.removeItem('authenticated');
             updateAuthUI();
           } else if (event === 'TOKEN_REFRESHED') {
             console.log('Token refreshed successfully');
@@ -1895,11 +1922,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   async function checkAuthStatus() {
     if (!supabase) return;
 
-    // Don't manually process magic links - Supabase handles them with detectSessionInUrl
-    // Just wait a moment for Supabase to process any URL tokens
-    if (window.location.hash && window.location.hash.includes('access_token')) {
-      console.log('Magic link detected in URL, waiting for Supabase to process...');
+    // Don't manually process auth tokens - Supabase handles them with detectSessionInUrl
+    // This includes both magic links and OAuth returns
+    if (window.location.hash && (
+      window.location.hash.includes('access_token') ||
+      window.location.hash.includes('token_type') ||
+      window.location.hash.includes('provider_token')
+    )) {
+      console.log('Auth tokens detected in URL, waiting for Supabase to process...');
       // The onAuthStateChange listener will handle the SIGNED_IN event
+      // For OAuth, Supabase needs a moment to exchange the tokens
       return;
     }
 
