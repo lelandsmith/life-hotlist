@@ -1801,6 +1801,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   // Initialize Supabase
   function initSupabase() {
+    // Prevent double initialization
+    if (supabase) {
+      console.log('Supabase already initialized');
+      return;
+    }
+
     // Check if the Supabase library is loaded
     if (!window.supabase || !window.supabase.createClient) {
       console.log('Supabase library not loaded yet. Retrying...');
@@ -1810,6 +1816,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     if (SUPABASE_URL && SUPABASE_URL !== 'https://YOUR_PROJECT_ID.supabase.co' && SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== 'YOUR_ANON_KEY') {
       try {
+        console.log('Creating Supabase client with URL:', SUPABASE_URL);
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
           auth: {
             autoRefreshToken: true,
@@ -6009,8 +6016,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   // Sign-in dialog function
   function showSignInDialog() {
     // Try to initialize Supabase first if not already done
-    if (!supabase && window.supabase && window.supabase.createClient) {
-      initSupabase();
+    if (!supabase) {
+      if (window.supabase && window.supabase.createClient) {
+        console.log('Initializing Supabase before showing sign-in dialog...');
+        initSupabase();
+        // Wait a moment for initialization to complete
+        setTimeout(function() {
+          showSignInDialog();
+        }, 500);
+        return;
+      }
     }
 
     var dialog = document.createElement('div');
