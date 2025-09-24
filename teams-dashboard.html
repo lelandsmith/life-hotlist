@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teams Dashboard - Hotlist</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --primary: #3b82f6;
+  --primary-dark: #2563eb;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --dark: #1f2937;
+  --gray: #6b7280;
+  --light-gray: #f3f4f6;
+  --white: #ffffff;
+  --border: #e5e7eb;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background: var(--light-gray);
+  color: var(--dark);
+  line-height: 1.6;
+}
+
+/* Header */
+.header {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 1rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--dark);
+}
+
+.header-nav {
+  display: flex;
+  gap: 1rem;
+}
+
+.nav-btn {
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.nav-btn:hover {
+  background: var(--light-gray);
+}
+
+.nav-btn.active {
+  background: var(--primary);
+  color: var(--white);
+  border-color: var(--primary);
+}
+
+/* Main Container */
+.container {
+  max-width: 1400px;
+  margin: 2rem auto;
+  padding: 0 2rem;
+}
+
+/* Dashboard Grid */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+/* Cards */
+.card {
+  background: var(--white);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--dark);
+}
+
+.card-badge {
+  padding: 0.25rem 0.75rem;
+  background: var(--light-gray);
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Stats Cards */
+.stat-card {
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 0.5rem 0;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-change {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--light-gray);
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+.stat-change.positive {
+  color: var(--success);
+}
+
+.stat-change.negative {
+  color: var(--danger);
+}
+
+/* Activity Feed */
+.activity-feed {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.feed-item {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.2s;
+}
+
+.feed-item:hover {
+  background: var(--light-gray);
+}
+
+.feed-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.feed-content {
+  flex: 1;
+}
+
+.feed-text {
+  font-size: 0.875rem;
+  color: var(--dark);
+  margin-bottom: 0.25rem;
+}
+
+.feed-time {
+  font-size: 0.75rem;
+  color: var(--gray);
+}
+
+.feed-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.feed-action-btn {
+  padding: 0.25rem 0.5rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.feed-action-btn:hover {
+  background: var(--light-gray);
+}
+
+/* Leaderboard */
+.leaderboard {
+  list-style: none;
+}
+
+.leaderboard-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.2s;
+}
+
+.leaderboard-item:hover {
+  background: var(--light-gray);
+}
+
+.leaderboard-rank {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--light-gray);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.leaderboard-rank.gold {
+  background: #fbbf24;
+  color: var(--white);
+}
+
+.leaderboard-rank.silver {
+  background: #cbd5e1;
+  color: var(--white);
+}
+
+.leaderboard-rank.bronze {
+  background: #fb923c;
+  color: var(--white);
+}
+
+.leaderboard-user {
+  flex: 1;
+}
+
+.leaderboard-name {
+  font-weight: 500;
+  color: var(--dark);
+}
+
+.leaderboard-score {
+  font-size: 0.75rem;
+  color: var(--gray);
+}
+
+.leaderboard-value {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+/* Badges */
+.badges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 1rem;
+}
+
+.badge-item {
+  text-align: center;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: transform 0.2s;
+  cursor: pointer;
+}
+
+.badge-item:hover {
+  transform: scale(1.05);
+}
+
+.badge-icon {
+  font-size: 2rem;
+  margin-bottom: 0.25rem;
+}
+
+.badge-name {
+  font-size: 0.625rem;
+  color: var(--gray);
+}
+
+.badge-locked {
+  opacity: 0.3;
+  filter: grayscale(100%);
+}
+
+/* Partner Management */
+.partner-list {
+  list-style: none;
+}
+
+.partner-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.partner-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.partner-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+.partner-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.partner-name {
+  font-weight: 500;
+  color: var(--dark);
+}
+
+.partner-status {
+  font-size: 0.75rem;
+  color: var(--gray);
+}
+
+.partner-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Buttons */
+.btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: var(--white);
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark);
+}
+
+.btn-secondary {
+  background: var(--light-gray);
+  color: var(--dark);
+}
+
+.btn-secondary:hover {
+  background: var(--border);
+}
+
+.btn-success {
+  background: var(--success);
+  color: var(--white);
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: var(--white);
+}
+
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+/* Modals */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal.show {
+  display: flex;
+}
+
+.modal-content {
+  background: var(--white);
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  margin-bottom: 1.5rem;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--dark);
+}
+
+.modal-body {
+  margin-bottom: 1.5rem;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+/* Forms */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--dark);
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.875rem;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Checkboxes */
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+}
+
+/* Streaks */
+.streak-display {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  color: var(--white);
+}
+
+.streak-icon {
+  font-size: 2rem;
+}
+
+.streak-info {
+  flex: 1;
+}
+
+.streak-number {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.streak-label {
+  font-size: 0.875rem;
+  opacity: 0.9;
+}
+
+/* Progress Bars */
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 1rem;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 1.5rem;
+}
+
+.tab-btn {
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gray);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-btn:hover {
+  color: var(--dark);
+}
+
+.tab-btn.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .container {
+    padding: 0 1rem;
+  }
+}
+
+/* Loading States */
+.loading {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid var(--border);
+  border-radius: 50%;
+  border-top-color: var(--primary);
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Toast Notifications */
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: var(--dark);
+  color: var(--white);
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  display: none;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 2000;
+}
+
+.toast.show {
+  display: flex;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.toast.success {
+  background: var(--success);
+}
+
+.toast.error {
+  background: var(--danger);
+}
+</style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+      <h1>Teams Dashboard</h1>
+      <nav class="header-nav">
+        <button class="nav-btn active" onclick="showView('dashboard')">Dashboard</button>
+        <button class="nav-btn" onclick="showView('partners')">Partners</button>
+        <button class="nav-btn" onclick="showView('leaderboard')">Leaderboard</button>
+        <button class="nav-btn" onclick="showView('badges')">Badges</button>
+        <button class="nav-btn" onclick="window.location.href='index.html'">Back to Hotlist</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="container">
+    <!-- Dashboard View -->
+    <div id="dashboardView" class="view">
+      <!-- Stats Grid -->
+      <div class="dashboard-grid">
+        <!-- Today's Activity -->
+        <div class="card stat-card">
+          <div class="card-header">
+            <h3 class="card-title">Today's Activity</h3>
+            <span class="card-badge">Live</span>
+          </div>
+          <div class="stat-value" id="todayActivity">0</div>
+          <div class="stat-label">Activities</div>
+          <div class="stat-change positive">+12% from yesterday</div>
+        </div>
+
+        <!-- Weekly Streak -->
+        <div class="card stat-card">
+          <div class="card-header">
+            <h3 class="card-title">Current Streak</h3>
+            <span class="card-badge">🔥</span>
+          </div>
+          <div class="stat-value" id="currentStreak">0</div>
+          <div class="stat-label">Days</div>
+          <div class="stat-change positive">Personal best: 14 days</div>
+        </div>
+
+        <!-- Pipeline Value -->
+        <div class="card stat-card">
+          <div class="card-header">
+            <h3 class="card-title">Active Pipeline</h3>
+            <span class="card-badge">📊</span>
+          </div>
+          <div class="stat-value" id="pipelineCount">0</div>
+          <div class="stat-label">Prospects</div>
+          <div class="stat-change positive">+3 this week</div>
+        </div>
+      </div>
+
+      <!-- Activity Feed & Partner Updates -->
+      <div class="dashboard-grid">
+        <!-- My Activity Feed -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Recent Activity</h3>
+            <button class="btn btn-sm btn-primary" onclick="showAllActivity()">View All</button>
+          </div>
+          <div class="activity-feed" id="myActivityFeed">
+            <!-- Activity items will be populated here -->
+          </div>
+        </div>
+
+        <!-- Partner Activity Feed -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Partner Updates</h3>
+            <button class="btn btn-sm btn-secondary" onclick="sendEncouragement()">Send Cheer</button>
+          </div>
+          <div class="activity-feed" id="partnerActivityFeed">
+            <!-- Partner activity items will be populated here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress & Goals -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Weekly Progress</h3>
+          <span class="card-badge">72% Complete</span>
+        </div>
+        <div class="tabs">
+          <button class="tab-btn active" onclick="showTab('calls')">Calls</button>
+          <button class="tab-btn" onclick="showTab('applications')">Applications</button>
+          <button class="tab-btn" onclick="showTab('followups')">Follow-ups</button>
+        </div>
+        <div class="tab-content active" id="callsTab">
+          <div style="margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+              <span>36 / 50 calls</span>
+              <span style="color: var(--gray);">72%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 72%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-content" id="applicationsTab">
+          <div style="margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+              <span>8 / 10 applications</span>
+              <span style="color: var(--gray);">80%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 80%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-content" id="followupsTab">
+          <div style="margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+              <span>12 / 15 follow-ups</span>
+              <span style="color: var(--gray);">80%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 80%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Partners View -->
+    <div id="partnersView" class="view" style="display: none;">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Accountability Partners</h3>
+          <button class="btn btn-primary" onclick="showInviteModal()">Invite Partner</button>
+        </div>
+        <ul class="partner-list" id="partnerList">
+          <!-- Partner items will be populated here -->
+        </ul>
+      </div>
+
+      <!-- Sharing Settings -->
+      <div class="card" style="margin-top: 1.5rem;">
+        <div class="card-header">
+          <h3 class="card-title">Sharing Settings</h3>
+          <button class="btn btn-sm btn-secondary" onclick="saveSettings()">Save Changes</button>
+        </div>
+        <div class="checkbox-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="shareActivity" checked>
+            <span>Share Activity Metrics</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="sharePipeline" checked>
+            <span>Share Pipeline Data</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="shareService">
+            <span>Share Service Metrics</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="shareStreaks" checked>
+            <span>Share Streak Information</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Leaderboard View -->
+    <div id="leaderboardView" class="view" style="display: none;">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Weekly Leaderboard</h3>
+          <select class="form-input" style="width: auto;" onchange="changeLeaderboardMetric(this.value)">
+            <option value="calls">Calls Made</option>
+            <option value="applications">Applications</option>
+            <option value="conversions">Conversion Rate</option>
+            <option value="streaks">Longest Streak</option>
+          </select>
+        </div>
+        <ul class="leaderboard" id="leaderboardList">
+          <!-- Leaderboard items will be populated here -->
+        </ul>
+      </div>
+    </div>
+
+    <!-- Badges View -->
+    <div id="badgesView" class="view" style="display: none;">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">My Badges</h3>
+          <span class="card-badge">12 Earned</span>
+        </div>
+        <div class="badges-grid" id="badgesGrid">
+          <!-- Badge items will be populated here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Invite Partner Modal -->
+  <div id="inviteModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">Invite Accountability Partner</h2>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Partner's Email</label>
+          <input type="email" class="form-input" id="partnerEmail" placeholder="partner@example.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Personal Message (Optional)</label>
+          <textarea class="form-input" id="inviteMessage" rows="3" placeholder="Let's help each other stay accountable!"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Share Settings</label>
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" checked>
+              <span>Share my activity metrics</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" checked>
+              <span>Share my pipeline data</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" checked>
+              <span>Share my streaks</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('inviteModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="sendInvite()">Send Invite</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast">
+    <span id="toastMessage">Message</span>
+  </div>
+
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    // Initialize Supabase - Use the same credentials as in index.html
+    let supabase;
+    let currentUser = null;
+
+    // Supabase Configuration - These should match what's in index.html
+    const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';  // Replace with your Supabase project URL
+    const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';  // Replace with your Supabase anon/public key
+
+    if (SUPABASE_URL && SUPABASE_URL !== 'https://YOUR_PROJECT_ID.supabase.co' && SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== 'YOUR_ANON_KEY') {
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      checkAuth();
+    } else {
+      showToast('Supabase not configured. Please update credentials in the code.', 'error');
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 3000);
+    }
+
+    // Check authentication
+    async function checkAuth() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        currentUser = user;
+        initializeDashboard();
+      } else {
+        showToast('Please sign in through the main Hotlist app', 'error');
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 2000);
+      }
+    }
+
+    // Initialize Dashboard
+    async function initializeDashboard() {
+      await loadUserProfile();
+      await loadActivityMetrics();
+      await loadPartners();
+      await loadActivityFeed();
+      await loadLeaderboard();
+      await loadBadges();
+      subscribeToUpdates();
+    }
+
+    // Load User Profile
+    async function loadUserProfile() {
+      try {
+        const { data, error } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('id', currentUser.id)
+          .single();
+
+        if (error && error.code === 'PGRST116') {
+          // Profile doesn't exist, create it
+          const { data: newProfile } = await supabase
+            .from('user_profiles')
+            .insert({
+              id: currentUser.id,
+              email: currentUser.email,
+              display_name: currentUser.email.split('@')[0]
+            })
+            .select()
+            .single();
+        }
+      } catch (error) {
+        console.error('Error loading profile:', error);
+      }
+    }
+
+    // Load Activity Metrics
+    async function loadActivityMetrics() {
+      try {
+        const today = new Date().toISOString().split('T')[0];
+
+        // Get today's metrics
+        const { data: todayData } = await supabase
+          .from('activity_metrics')
+          .select('*')
+          .eq('user_id', currentUser.id)
+          .eq('date', today)
+          .single();
+
+        if (todayData) {
+          document.getElementById('todayActivity').textContent =
+            (todayData.calls_made || 0) +
+            (todayData.quotes_sent || 0) +
+            (todayData.applications_sent || 0);
+        }
+
+        // Get current streak
+        const { data: streakData } = await supabase
+          .from('user_streaks')
+          .select('*')
+          .eq('user_id', currentUser.id)
+          .eq('streak_type', 'daily_activity')
+          .single();
+
+        if (streakData) {
+          document.getElementById('currentStreak').textContent = streakData.current_streak || 0;
+        }
+
+        // Get pipeline count from main hotlist data
+        const { data: hotlistData } = await supabase
+          .from('hotlist_data')
+          .select('data')
+          .eq('user_id', currentUser.id)
+          .single();
+
+        if (hotlistData && hotlistData.data) {
+          const clients = hotlistData.data.clients || [];
+          const activeCount = clients.filter(c => c.stage >= 0).length;
+          document.getElementById('pipelineCount').textContent = activeCount;
+        }
+      } catch (error) {
+        console.error('Error loading metrics:', error);
+      }
+    }
+
+    // Load Partners
+    async function loadPartners() {
+      try {
+        const { data: partners } = await supabase
+          .from('accountability_partners')
+          .select(`
+            *,
+            partner:partner_id(email, display_name),
+            requester:requester_id(email, display_name)
+          `)
+          .or(`requester_id.eq.${currentUser.id},partner_id.eq.${currentUser.id}`)
+          .eq('status', 'accepted');
+
+        const partnerList = document.getElementById('partnerList');
+        partnerList.innerHTML = '';
+
+        partners?.forEach(partner => {
+          const partnerUser = partner.requester_id === currentUser.id ? partner.partner : partner.requester;
+          const li = document.createElement('li');
+          li.className = 'partner-item';
+          li.innerHTML = `
+            <div class="partner-info">
+              <div class="partner-avatar">${partnerUser.display_name?.[0] || partnerUser.email[0]}</div>
+              <div class="partner-details">
+                <div class="partner-name">${partnerUser.display_name || partnerUser.email}</div>
+                <div class="partner-status">Connected</div>
+              </div>
+            </div>
+            <div class="partner-actions">
+              <button class="btn btn-sm btn-secondary" onclick="viewPartnerStats('${partnerUser.id}')">View Stats</button>
+              <button class="btn btn-sm btn-danger" onclick="removePartner('${partner.id}')">Remove</button>
+            </div>
+          `;
+          partnerList.appendChild(li);
+        });
+      } catch (error) {
+        console.error('Error loading partners:', error);
+      }
+    }
+
+    // Load Activity Feed
+    async function loadActivityFeed() {
+      try {
+        // My activity
+        const { data: myActivity } = await supabase
+          .from('activity_feed')
+          .select('*')
+          .eq('user_id', currentUser.id)
+          .order('created_at', { ascending: false })
+          .limit(5);
+
+        const myFeed = document.getElementById('myActivityFeed');
+        myFeed.innerHTML = '';
+
+        myActivity?.forEach(activity => {
+          const item = createFeedItem(activity, true);
+          myFeed.appendChild(item);
+        });
+
+        // Partner activity
+        const { data: partnerActivity } = await supabase
+          .from('activity_feed')
+          .select(`
+            *,
+            user:user_id(email, display_name)
+          `)
+          .eq('is_public', true)
+          .neq('user_id', currentUser.id)
+          .order('created_at', { ascending: false })
+          .limit(5);
+
+        const partnerFeed = document.getElementById('partnerActivityFeed');
+        partnerFeed.innerHTML = '';
+
+        partnerActivity?.forEach(activity => {
+          const item = createFeedItem(activity, false);
+          partnerFeed.appendChild(item);
+        });
+      } catch (error) {
+        console.error('Error loading activity feed:', error);
+      }
+    }
+
+    // Create Feed Item
+    function createFeedItem(activity, isOwn) {
+      const div = document.createElement('div');
+      div.className = 'feed-item';
+
+      const timeAgo = getTimeAgo(new Date(activity.created_at));
+      const userName = isOwn ? 'You' : (activity.user?.display_name || 'Partner');
+
+      div.innerHTML = `
+        <div class="feed-avatar">${userName[0]}</div>
+        <div class="feed-content">
+          <div class="feed-text">${activity.event_data?.message || activity.event_type}</div>
+          <div class="feed-time">${timeAgo}</div>
+          ${!isOwn ? `
+            <div class="feed-actions">
+              <button class="feed-action-btn" onclick="sendCheer('${activity.user_id}')">👏 Cheer</button>
+              <button class="feed-action-btn" onclick="sendComment('${activity.id}')">💬 Comment</button>
+            </div>
+          ` : ''}
+        </div>
+      `;
+
+      return div;
+    }
+
+    // Load Leaderboard
+    async function loadLeaderboard(metric = 'calls') {
+      try {
+        // For demo, create sample leaderboard data
+        const leaderboardData = [
+          { rank: 1, name: 'John Smith', value: 142, metric: 'calls' },
+          { rank: 2, name: 'You', value: 98, metric: 'calls' },
+          { rank: 3, name: 'Sarah Johnson', value: 87, metric: 'calls' },
+          { rank: 4, name: 'Mike Wilson', value: 76, metric: 'calls' },
+          { rank: 5, name: 'Emily Davis', value: 65, metric: 'calls' }
+        ];
+
+        const leaderboardList = document.getElementById('leaderboardList');
+        leaderboardList.innerHTML = '';
+
+        leaderboardData.forEach((entry, index) => {
+          const li = document.createElement('li');
+          li.className = 'leaderboard-item';
+
+          const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : '';
+
+          li.innerHTML = `
+            <div class="leaderboard-rank ${rankClass}">${entry.rank}</div>
+            <div class="leaderboard-user">
+              <div class="leaderboard-name">${entry.name}</div>
+              <div class="leaderboard-score">${entry.value} ${metric}</div>
+            </div>
+            <div class="leaderboard-value">${entry.name === 'You' ? '🎯' : ''}</div>
+          `;
+
+          leaderboardList.appendChild(li);
+        });
+      } catch (error) {
+        console.error('Error loading leaderboard:', error);
+      }
+    }
+
+    // Load Badges
+    async function loadBadges() {
+      try {
+        const { data: badges } = await supabase
+          .from('user_badges')
+          .select('*')
+          .eq('user_id', currentUser.id);
+
+        const allBadges = [
+          { type: 'calls_50', name: 'Call Champion', icon: '📞', earned: false },
+          { type: 'calls_100', name: 'Call Master', icon: '☎️', earned: false },
+          { type: 'streak_7', name: 'Week Warrior', icon: '🔥', earned: false },
+          { type: 'streak_30', name: 'Consistency King', icon: '👑', earned: false },
+          { type: 'apps_10', name: 'App Expert', icon: '📝', earned: false },
+          { type: 'closer_3', name: 'Deal Closer', icon: '🎯', earned: false },
+          { type: 'early_bird', name: 'Early Bird', icon: '🌅', earned: false },
+          { type: 'night_owl', name: 'Night Owl', icon: '🦉', earned: false }
+        ];
+
+        // Mark earned badges
+        badges?.forEach(badge => {
+          const idx = allBadges.findIndex(b => b.type === badge.badge_type);
+          if (idx >= 0) {
+            allBadges[idx].earned = true;
+          }
+        });
+
+        const badgesGrid = document.getElementById('badgesGrid');
+        badgesGrid.innerHTML = '';
+
+        allBadges.forEach(badge => {
+          const div = document.createElement('div');
+          div.className = `badge-item ${!badge.earned ? 'badge-locked' : ''}`;
+          div.innerHTML = `
+            <div class="badge-icon">${badge.icon}</div>
+            <div class="badge-name">${badge.name}</div>
+          `;
+          badgesGrid.appendChild(div);
+        });
+      } catch (error) {
+        console.error('Error loading badges:', error);
+      }
+    }
+
+    // Subscribe to real-time updates
+    function subscribeToUpdates() {
+      // Subscribe to notifications
+      supabase
+        .channel('notifications')
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${currentUser.id}`
+        }, (payload) => {
+          showToast(payload.new.message, 'success');
+          loadActivityFeed();
+        })
+        .subscribe();
+    }
+
+    // UI Functions
+    function showView(viewName) {
+      document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+      document.getElementById(viewName + 'View').style.display = 'block';
+
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+
+    function showTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.getElementById(tabName + 'Tab').classList.add('active');
+
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+
+    function showInviteModal() {
+      document.getElementById('inviteModal').classList.add('show');
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('show');
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toastMessage');
+
+      toast.className = `toast ${type}`;
+      toastMessage.textContent = message;
+      toast.classList.add('show');
+
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    // Partner Management
+    async function sendInvite() {
+      const email = document.getElementById('partnerEmail').value;
+      const message = document.getElementById('inviteMessage').value;
+
+      if (!email) {
+        showToast('Please enter an email address', 'error');
+        return;
+      }
+
+      // For demo purposes
+      showToast('Invitation sent to ' + email, 'success');
+      closeModal('inviteModal');
+    }
+
+    async function removePartner(partnerId) {
+      if (!confirm('Are you sure you want to remove this partner?')) return;
+
+      try {
+        await supabase
+          .from('accountability_partners')
+          .update({ status: 'removed' })
+          .eq('id', partnerId);
+
+        showToast('Partner removed', 'success');
+        loadPartners();
+      } catch (error) {
+        showToast('Error removing partner', 'error');
+      }
+    }
+
+    // Encouragement Functions
+    async function sendCheer(userId) {
+      try {
+        await supabase
+          .from('encouragements')
+          .insert({
+            from_user_id: currentUser.id,
+            to_user_id: userId,
+            reaction_type: 'cheer'
+          });
+
+        showToast('Cheer sent!', 'success');
+      } catch (error) {
+        console.error('Error sending cheer:', error);
+      }
+    }
+
+    // Utility Functions
+    function getTimeAgo(date) {
+      const seconds = Math.floor((new Date() - date) / 1000);
+
+      if (seconds < 60) return 'just now';
+      if (seconds < 3600) return Math.floor(seconds / 60) + ' min ago';
+      if (seconds < 86400) return Math.floor(seconds / 3600) + ' hours ago';
+      return Math.floor(seconds / 86400) + ' days ago';
+    }
+
+    function changeLeaderboardMetric(metric) {
+      loadLeaderboard(metric);
+    }
+
+    // Save Settings
+    async function saveSettings() {
+      const settings = {
+        share_activity: document.getElementById('shareActivity').checked,
+        share_pipeline: document.getElementById('sharePipeline').checked,
+        share_service: document.getElementById('shareService').checked,
+        share_streaks: document.getElementById('shareStreaks').checked
+      };
+
+      try {
+        await supabase
+          .from('user_profiles')
+          .update(settings)
+          .eq('id', currentUser.id);
+
+        showToast('Settings saved', 'success');
+      } catch (error) {
+        showToast('Error saving settings', 'error');
+      }
+    }
+  </script>
+</body>
+</html>

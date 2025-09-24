@@ -1689,6 +1689,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <span style="color:#cbd5e1;">|</span>
         <a href="#" onclick="showSignInDialog(); return false;" style="color:#3b82f6; text-decoration:none; hover:text-decoration:underline;" id="cloudSyncLink">Cloud sync</a>
         <span style="color:#cbd5e1;" id="cloudSyncSeparator">|</span>
+        <a href="teams-dashboard.html" style="color:#3b82f6; text-decoration:none; hover:text-decoration:underline; display:none;" id="teamsLink">Teams</a>
+        <span style="color:#cbd5e1; display:none;" id="teamsSeparator">|</span>
         <a href="#" onclick="openSuggestEmail(); return false;" style="color:#3b82f6; text-decoration:none; hover:text-decoration:underline;">Suggest a change</a>
       </div>
     </div>
@@ -1790,23 +1792,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
    * ========================= */
   var VERSION = '2.5.1';
 
-  // Supabase Configuration (will be null until user provides credentials)
-  var SUPABASE_URL = null;  // Will be set from localStorage or user input
-  var SUPABASE_ANON_KEY = null;  // Will be set from localStorage or user input
+  // Supabase Configuration - Replace these with your actual Supabase project credentials
+  var SUPABASE_URL = 'https://yoxzlejphrhtuisnptor.supabase.co';  // Replace with your Supabase project URL
+  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlveHpsZWpwaHJodHVpc25wdG9yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1NjIwNDIsImV4cCI6MjA3NDEzODA0Mn0.azXNn6AQQcB5iJzn7ebhAh5cSBESgKwEV2aSviX8yeY';  // Replace with your Supabase anon/public key
   var supabase = null;  // Supabase client instance
   var currentUser = null;  // Current authenticated user
   var syncEnabled = false;  // Whether to sync to cloud
 
-  // Initialize Supabase if credentials exist
+  // Initialize Supabase
   function initSupabase() {
-    var storedUrl = localStorage.getItem('hotlistSupabaseUrl');
-    var storedKey = localStorage.getItem('hotlistSupabaseAnonKey');
-
-    if (storedUrl && storedKey && window.supabase) {
-      SUPABASE_URL = storedUrl;
-      SUPABASE_ANON_KEY = storedKey;
+    if (SUPABASE_URL && SUPABASE_URL !== 'https://yoxzlejphrhtuisnptor.supabase.co' && SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== 'YOUR_ANON_KEY' && window.supabase) {
       supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       checkAuthStatus();
+    } else {
+      console.log('Supabase not configured. Please update SUPABASE_URL and SUPABASE_ANON_KEY in the code.');
     }
   }
 
@@ -1819,6 +1818,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       currentUser = user;
       if (user) {
         syncEnabled = true;
+        // Show Teams link when authenticated
+        document.getElementById('teamsLink').style.display = 'inline';
+        document.getElementById('teamsSeparator').style.display = 'inline';
         updateAuthUI();
 
         // Check if this is first sync - if cloud is empty, migrate local data
@@ -5830,41 +5832,40 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     var content = document.createElement('div');
     content.style.cssText = 'background:white; border-radius:12px; padding:30px; max-width:400px; width:90%; box-shadow:0 10px 40px rgba(0,0,0,0.2);';
 
-    content.innerHTML =
-      '<h2 style="margin:0 0 10px; color:var(--ink);">Enable Cloud Sync</h2>' +
-      '<p style="color:var(--muted); font-size:14px; margin-bottom:20px;">Sync your data across devices. Your data remains private and encrypted.</p>' +
+    // Check if Supabase is configured
+    if (!supabase) {
+      content.innerHTML =
+        '<h2 style="margin:0 0 10px; color:var(--ink);">Cloud Sync Not Configured</h2>' +
+        '<p style="color:var(--muted); font-size:14px; margin-bottom:20px;">The application owner needs to configure Supabase credentials in the code.</p>' +
+        '<div style="background:#fff3cd; padding:15px; border-radius:8px; margin-bottom:20px; font-size:13px; color:#856404;">' +
+        '<strong>For the site owner:</strong><br>' +
+        '1. Create a project at <a href="https://supabase.com" target="_blank" style="color:#1976d2;">supabase.com</a><br>' +
+        '2. Run <code>supabase_setup.sql</code> in the SQL Editor<br>' +
+        '3. Update SUPABASE_URL and SUPABASE_ANON_KEY in index.html<br>' +
+        '4. Deploy the updated code' +
+        '</div>' +
+        '<div style="display:flex; gap:10px; justify-content:flex-end;">' +
+        '<button id="cancelSignIn" style="padding:8px 16px; border:1px solid #e2e8f0; background:white; border-radius:6px; cursor:pointer;">Close</button>' +
+        '</div>';
+    } else {
+      content.innerHTML =
+        '<h2 style="margin:0 0 10px; color:var(--ink);">Sign In to Cloud Sync</h2>' +
+        '<p style="color:var(--muted); font-size:14px; margin-bottom:20px;">Enter your email to receive a magic link. Your data will sync across all your devices.</p>' +
 
-      '<div style="margin-bottom:20px;">' +
-      '<label style="display:block; margin-bottom:5px; font-size:12px; color:var(--muted);">Email</label>' +
-      '<input type="email" id="signInEmail" placeholder="your@email.com" style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:6px; font-size:14px;">' +
-      '</div>' +
+        '<div style="margin-bottom:20px;">' +
+        '<label style="display:block; margin-bottom:5px; font-size:12px; color:var(--muted);">Email Address</label>' +
+        '<input type="email" id="signInEmail" placeholder="your@email.com" style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:6px; font-size:14px;">' +
+        '</div>' +
 
-      '<div style="background:#e8f5e9; padding:15px; border-radius:8px; margin-bottom:20px; font-size:13px; color:#2e7d32; border:1px solid #4caf50;">' +
-      '<strong>🚀 Quick Setup (5 minutes):</strong><br>' +
-      '1. Create free account at <a href="https://supabase.com" target="_blank" style="color:#1976d2; font-weight:600;">supabase.com</a><br>' +
-      '2. Create a new project (wait 2 mins for setup)<br>' +
-      '3. Run the SQL from <code style="background:#f5f5f5; padding:2px 4px; border-radius:3px;">supabase_setup.sql</code> in SQL Editor<br>' +
-      '4. Get credentials from Settings → API<br>' +
-      '5. Paste them below → Sign in with email' +
-      '</div>' +
+        '<div style="background:#e8f5e9; padding:12px; border-radius:6px; margin-bottom:20px; font-size:12px; color:#2e7d32;">' +
+        '✨ <strong>How it works:</strong> We\'ll send a magic link to your email. Click it to sign in - no password needed!' +
+        '</div>' +
 
-      '<details open style="margin-bottom:20px; background:#f8f9fa; padding:15px; border-radius:8px; border:1px solid #dee2e6;">' +
-      '<summary style="cursor:pointer; color:#495057; font-weight:600; font-size:14px; margin-bottom:10px;">🔑 Supabase Credentials (Required)</summary>' +
-      '<div style="margin-top:15px;">' +
-      '<label style="display:block; margin-bottom:5px; font-size:12px; color:#6c757d; font-weight:500;">Project URL</label>' +
-      '<input type="text" id="supabaseUrl" placeholder="https://xxxxxxxxxxxxx.supabase.co" style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #ced4da; border-radius:6px; font-size:13px; font-family:monospace;">' +
-      '<label style="display:block; margin-bottom:5px; font-size:12px; color:#6c757d; font-weight:500;">Anon/Public Key</label>' +
-      '<input type="text" id="supabaseKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." style="width:100%; padding:10px; border:1px solid #ced4da; border-radius:6px; font-size:13px; font-family:monospace;">' +
-      '<div style="margin-top:10px; padding:10px; background:#fff3cd; border-radius:4px; font-size:11px; color:#856404;">' +
-      '💡 <strong>Where to find:</strong> Supabase Dashboard → Settings → API' +
-      '</div>' +
-      '</div>' +
-      '</details>' +
-
-      '<div style="display:flex; gap:10px; justify-content:flex-end;">' +
-      '<button id="cancelSignIn" style="padding:8px 16px; border:1px solid #e2e8f0; background:white; border-radius:6px; cursor:pointer;">Cancel</button>' +
-      '<button id="signInButton" style="padding:10px 20px; background:var(--green); color:white; border:none; border-radius:6px; cursor:pointer; font-weight:600;">Send Magic Link 🪄</button>' +
-      '</div>';
+        '<div style="display:flex; gap:10px; justify-content:flex-end;">' +
+        '<button id="cancelSignIn" style="padding:8px 16px; border:1px solid #e2e8f0; background:white; border-radius:6px; cursor:pointer;">Cancel</button>' +
+        '<button id="signInButton" style="padding:10px 20px; background:var(--green); color:white; border:none; border-radius:6px; cursor:pointer; font-weight:600;">Send Magic Link 🪄</button>' +
+        '</div>';
+    }
 
     dialog.appendChild(content);
     document.body.appendChild(dialog);
@@ -5874,52 +5875,30 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       dialog.remove();
     });
 
-    // Handle sign in
-    document.getElementById('signInButton').addEventListener('click', async function() {
-      var email = document.getElementById('signInEmail').value.trim();
-      var url = document.getElementById('supabaseUrl').value.trim();
-      var key = document.getElementById('supabaseKey').value.trim();
+    // Handle sign in (only if button exists)
+    var signInBtn = document.getElementById('signInButton');
+    if (signInBtn) {
+      signInBtn.addEventListener('click', async function() {
+        var email = document.getElementById('signInEmail').value.trim();
 
-      // Validate inputs
-      if (!email) {
-        alert('Please enter your email address');
-        return;
-      }
-
-      // Check if we need Supabase config
-      if (!SUPABASE_URL && (!url || !key)) {
-        alert('⚠️ Missing Supabase Credentials\n\nPlease add both:\n• Project URL\n• Anon Key\n\nFind these in Supabase Dashboard → Settings → API');
-        return;
-      }
-
-      // Save and initialize Supabase config if provided
-      if (url && key) {
-        localStorage.setItem('hotlistSupabaseUrl', url);
-        localStorage.setItem('hotlistSupabaseAnonKey', key);
-        SUPABASE_URL = url;
-        SUPABASE_ANON_KEY = key;
-
-        // Initialize Supabase client
-        if (window.supabase) {
-          supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-          console.log('Supabase client initialized');
-        } else {
-          alert('Error: Supabase SDK not loaded. Please refresh the page.');
+        // Validate inputs
+        if (!email) {
+          alert('Please enter your email address');
           return;
         }
-      }
 
-      // Send magic link
-      try {
-        this.disabled = true;
-        this.textContent = 'Sending...';
-        await signInWithEmail(email);
-        dialog.remove();
-      } catch(error) {
-        this.disabled = false;
-        this.textContent = 'Send Magic Link 🪄';
-      }
-    });
+        // Send magic link
+        try {
+          this.disabled = true;
+          this.textContent = 'Sending...';
+          await signInWithEmail(email);
+          dialog.remove();
+        } catch(error) {
+          this.disabled = false;
+          this.textContent = 'Send Magic Link 🪄';
+        }
+      });
+    }
 
     // Handle ESC key to close
     function handleEscape(e) {
@@ -7175,6 +7154,85 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </div>
 
 <script>
+// Track activity metrics for Teams feature
+async function trackActivity(activityType, value = 1) {
+  if (!supabase || !currentUser) return;
+
+  try {
+    const today = new Date().toISOString().split('T')[0];
+
+    // Get or create today's metrics
+    const { data: existing } = await supabase
+      .from('activity_metrics')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .eq('date', today)
+      .single();
+
+    const updates = {};
+    if (existing) {
+      // Update existing metrics
+      updates[activityType] = (existing[activityType] || 0) + value;
+      updates.updated_at = new Date().toISOString();
+
+      await supabase
+        .from('activity_metrics')
+        .update(updates)
+        .eq('id', existing.id);
+    } else {
+      // Create new metrics record
+      updates[activityType] = value;
+      updates.user_id = currentUser.id;
+      updates.date = today;
+
+      await supabase
+        .from('activity_metrics')
+        .insert(updates);
+    }
+
+    // Update streaks
+    try {
+      await supabase.rpc('update_user_streak', {
+        p_user_id: currentUser.id,
+        p_streak_type: 'daily_activity'
+      });
+    } catch (e) {
+      console.log('Streak update skipped');
+    }
+
+    // Check for badges
+    try {
+      await supabase.rpc('check_and_award_badges', {
+        p_user_id: currentUser.id
+      });
+    } catch (e) {
+      console.log('Badge check skipped');
+    }
+
+    // Add to activity feed
+    const eventMessages = {
+      calls_made: 'Made a call',
+      quotes_sent: 'Sent a quote',
+      applications_sent: 'Sent an application',
+      policies_bound: 'Bound a policy',
+      follow_ups_completed: 'Completed a follow-up',
+      new_contacts_added: 'Added a new contact'
+    };
+
+    await supabase
+      .from('activity_feed')
+      .insert({
+        user_id: currentUser.id,
+        event_type: activityType,
+        event_data: { message: eventMessages[activityType] || 'Activity tracked' },
+        is_public: true
+      });
+
+  } catch (error) {
+    console.error('Error tracking activity:', error);
+  }
+}
+
 // Register service worker for PWA functionality
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
