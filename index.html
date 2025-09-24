@@ -1843,44 +1843,99 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     // First check if we have an access token in the URL (from magic link)
     if (window.location.hash && window.location.hash.includes('access_token')) {
       console.log('Processing magic link authentication...');
+      console.log('URL hash:', window.location.hash);
 
       try {
-        // Parse the URL hash to get tokens
+        // Parse the URL hash to get tokens - handle both formats
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const access_token = hashParams.get('access_token');
         const refresh_token = hashParams.get('refresh_token');
+        const type = hashParams.get('type');
 
-        if (access_token && refresh_token) {
-          // Set the session with the tokens from the URL
-          const { data: { session }, error } = await supabase.auth.setSession({
-            access_token: access_token,
-            refresh_token: refresh_token
-          });
+        console.log('Parsed tokens:', {
+          access_token: access_token ? 'present' : 'missing',
+          refresh_token: refresh_token ? 'present' : 'missing',
+          type: type
+        });
 
-          if (error) {
-            console.error('Error setting session from magic link:', error);
-            alert('Error processing sign-in link. Please try again.');
-            window.history.replaceState(null, null, window.location.pathname);
-            return;
+        if (access_token) {
+          // If this is from a magic link, Supabase should handle it automatically
+          if (type === 'magiclink') {
+            console.log('Magic link detected, letting Supabase handle authentication...');
+
+            // For magic links, we should use the built-in handler
+            const { data: { session }, error } = await supabase.auth.getSession();
+
+            if (!error && session) {
+              console.log('Magic link session established:', session.user.email);
+              currentUser = session.user;
+              syncEnabled = true;
+
+              // Clear the tokens from URL
+              window.history.replaceState(null, null, window.location.pathname);
+
+              // Show success banner and update UI
+              showAuthSuccessBanner(session.user.email);
+              document.getElementById('teamsLink').style.display = 'inline';
+              document.getElementById('teamsSeparator').style.display = 'inline';
+              updateAuthUI();
+
+              // Handle initial sync
+              handleInitialSync();
+              return;
+            }
           }
 
-          if (session) {
-            console.log('Magic link authentication successful:', session.user.email);
-            currentUser = session.user;
-            syncEnabled = true;
+          // Fallback to manual session setting if refresh token is present
+          if (refresh_token) {
+            console.log('Attempting manual session setting...');
+            const { data: { session }, error } = await supabase.auth.setSession({
+              access_token: access_token,
+              refresh_token: refresh_token
+            });
 
-            // Clear the tokens from URL
-            window.history.replaceState(null, null, window.location.pathname);
+            if (error) {
+              console.error('Error setting session from tokens:', error);
+              console.error('Error details:', error.message, error.status);
 
-            // Show success banner and update UI
-            showAuthSuccessBanner(session.user.email);
-            document.getElementById('teamsLink').style.display = 'inline';
-            document.getElementById('teamsSeparator').style.display = 'inline';
-            updateAuthUI();
+              // Try one more time with just getting the session
+              const { data: { session: fallbackSession } } = await supabase.auth.getSession();
+              if (fallbackSession) {
+                console.log('Fallback session found:', fallbackSession.user.email);
+                currentUser = fallbackSession.user;
+                syncEnabled = true;
+                window.history.replaceState(null, null, window.location.pathname);
+                showAuthSuccessBanner(fallbackSession.user.email);
+                document.getElementById('teamsLink').style.display = 'inline';
+                document.getElementById('teamsSeparator').style.display = 'inline';
+                updateAuthUI();
+                handleInitialSync();
+                return;
+              }
 
-            // Handle initial sync
-            handleInitialSync();
-            return;
+              alert('Error processing sign-in link. Please request a new magic link.');
+              window.history.replaceState(null, null, window.location.pathname);
+              return;
+            }
+
+            if (session) {
+              console.log('Session established via setSession:', session.user.email);
+              currentUser = session.user;
+              syncEnabled = true;
+
+              // Clear the tokens from URL
+              window.history.replaceState(null, null, window.location.pathname);
+
+              // Show success banner and update UI
+              showAuthSuccessBanner(session.user.email);
+              document.getElementById('teamsLink').style.display = 'inline';
+              document.getElementById('teamsSeparator').style.display = 'inline';
+              updateAuthUI();
+
+              // Handle initial sync
+              handleInitialSync();
+              return;
+            }
           }
         }
       } catch (error) {
