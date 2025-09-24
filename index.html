@@ -1840,6 +1840,44 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   async function checkAuthStatus() {
     if (!supabase) return;
 
+    // First check if we have an access token in the URL (from magic link)
+    if (window.location.hash && window.location.hash.includes('access_token')) {
+      console.log('Processing magic link authentication...');
+
+      try {
+        // Let Supabase handle the magic link authentication
+        const { data: { session }, error } = await supabase.auth.getSession();
+
+        if (error) {
+          console.error('Error processing magic link:', error);
+          alert('Error processing sign-in link. Please try again.');
+          window.history.replaceState(null, null, window.location.pathname);
+          return;
+        }
+
+        if (session) {
+          console.log('Magic link authentication successful:', session.user.email);
+          currentUser = session.user;
+          syncEnabled = true;
+
+          // Clear the tokens from URL
+          window.history.replaceState(null, null, window.location.pathname);
+
+          // Show success banner and update UI
+          showAuthSuccessBanner(session.user.email);
+          document.getElementById('teamsLink').style.display = 'inline';
+          document.getElementById('teamsSeparator').style.display = 'inline';
+          updateAuthUI();
+
+          // Handle initial sync
+          handleInitialSync();
+          return;
+        }
+      } catch (error) {
+        console.error('Unexpected error processing magic link:', error);
+      }
+    }
+
     // Check for auth errors in the URL
     if (window.location.hash) {
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
@@ -1873,55 +1911,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         document.getElementById('teamsSeparator').style.display = 'inline';
         updateAuthUI();
 
-        // Show success notification if just logged in
-        if (window.location.hash && window.location.hash.includes('access_token')) {
-          // Clear the auth tokens from URL
-          window.history.replaceState(null, null, window.location.pathname + window.location.search);
-
-          // Show welcome banner
-          showAuthSuccessBanner(user.email);
-        }
-
-        // Check if we've already synced this session
-        var hasSyncedThisSession = sessionStorage.getItem('hasSynced');
-
-        if (!hasSyncedThisSession) {
-          // Mark that we're syncing this session
-          sessionStorage.setItem('hasSynced', 'true');
-
-          // Check if this is first sync - if cloud is empty, migrate local data
-          const cloudData = await loadFromCloud();
-          if (!cloudData) {
-            console.log('First sync - migrating local data to cloud');
-            // Get existing local data
-            var localData = localStorage.getItem(STABLE_KEY);
-            if (localData) {
-              try {
-                var parsedData = JSON.parse(localData);
-                await saveToCloud(parsedData);
-                console.log('Local data migrated to cloud successfully');
-              } catch (e) {
-                console.error('Failed to migrate local data:', e);
-              }
-            }
-          } else {
-            // Cloud has data - only ask once per browser (not per session)
-            var hasChosenDataSource = localStorage.getItem('hasChosenDataSource');
-            if (!hasChosenDataSource) {
-              if (confirm('Cloud data found. Use cloud data? (Cancel to keep local data)')) {
-                state = coerceState(cloudData);
-                save(state);
-                render();
-              }
-              // Remember that we've made this choice
-              localStorage.setItem('hasChosenDataSource', 'true');
-            } else {
-              // User has already chosen before - just load cloud data
-              state = coerceState(cloudData);
-              save(state);
-            }
-          }
-        }
+        // Handle initial sync
+        handleInitialSync();
       }
     } catch (error) {
       console.log('Auth check failed:', error);
@@ -1960,6 +1951,54 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         alert('❌ Invalid Supabase Credentials\n\nPlease check:\n• Project URL is correct\n• Anon Key is correct\n\nFind these in Settings → API in your Supabase dashboard');
       } else {
         alert('Sign in failed: ' + error.message);
+      }
+    }
+  }
+
+  // Handle initial sync when user is authenticated
+  async function handleInitialSync() {
+    // Check if we've already synced this session
+    var hasSyncedThisSession = sessionStorage.getItem('hasSynced');
+
+    if (!hasSyncedThisSession) {
+      // Mark that we're syncing this session
+      sessionStorage.setItem('hasSynced', 'true');
+
+      try {
+        // Check if this is first sync - if cloud is empty, migrate local data
+        const cloudData = await loadFromCloud();
+        if (!cloudData) {
+          console.log('First sync - migrating local data to cloud');
+          // Get existing local data
+          var localData = localStorage.getItem(STABLE_KEY);
+          if (localData) {
+            try {
+              var parsedData = JSON.parse(localData);
+              await saveToCloud(parsedData);
+              console.log('Local data migrated to cloud successfully');
+            } catch (e) {
+              console.error('Failed to migrate local data:', e);
+            }
+          }
+        } else {
+          // Cloud has data - only ask once per browser (not per session)
+          var hasChosenDataSource = localStorage.getItem('hasChosenDataSource');
+          if (!hasChosenDataSource) {
+            if (confirm('Cloud data found. Use cloud data? (Cancel to keep local data)')) {
+              state = coerceState(cloudData);
+              save(state);
+              render();
+            }
+            // Remember that we've made this choice
+            localStorage.setItem('hasChosenDataSource', 'true');
+          } else {
+            // User has already chosen before - just load cloud data
+            state = coerceState(cloudData);
+            save(state);
+          }
+        }
+      } catch (error) {
+        console.error('Error during initial sync:', error);
       }
     }
   }
