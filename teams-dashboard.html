@@ -943,7 +943,8 @@ body {
       } else {
         showToast('Please sign in through the main Hotlist app', 'error');
         setTimeout(() => {
-          window.location.href = 'index.html';
+          // Redirect to the base URL without .html extension
+          window.location.href = '/';
         }, 2000);
       }
     }

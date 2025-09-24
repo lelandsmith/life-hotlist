@@ -1812,6 +1812,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       try {
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         console.log('Supabase client initialized successfully');
+
+        // Listen for auth state changes
+        supabase.auth.onAuthStateChange((event, session) => {
+          console.log('Auth state changed:', event);
+          if (event === 'SIGNED_IN' && session) {
+            currentUser = session.user;
+            syncEnabled = true;
+            updateAuthUI();
+          } else if (event === 'SIGNED_OUT') {
+            currentUser = null;
+            syncEnabled = false;
+            updateAuthUI();
+          }
+        });
+
         checkAuthStatus();
       } catch (error) {
         console.error('Failed to initialize Supabase client:', error);
@@ -1867,27 +1882,44 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           showAuthSuccessBanner(user.email);
         }
 
-        // Check if this is first sync - if cloud is empty, migrate local data
-        const cloudData = await loadFromCloud();
-        if (!cloudData) {
-          console.log('First sync - migrating local data to cloud');
-          // Get existing local data
-          var localData = localStorage.getItem(STABLE_KEY);
-          if (localData) {
-            try {
-              var parsedData = JSON.parse(localData);
-              await saveToCloud(parsedData);
-              console.log('Local data migrated to cloud successfully');
-            } catch (e) {
-              console.error('Failed to migrate local data:', e);
+        // Check if we've already synced this session
+        var hasSyncedThisSession = sessionStorage.getItem('hasSynced');
+
+        if (!hasSyncedThisSession) {
+          // Mark that we're syncing this session
+          sessionStorage.setItem('hasSynced', 'true');
+
+          // Check if this is first sync - if cloud is empty, migrate local data
+          const cloudData = await loadFromCloud();
+          if (!cloudData) {
+            console.log('First sync - migrating local data to cloud');
+            // Get existing local data
+            var localData = localStorage.getItem(STABLE_KEY);
+            if (localData) {
+              try {
+                var parsedData = JSON.parse(localData);
+                await saveToCloud(parsedData);
+                console.log('Local data migrated to cloud successfully');
+              } catch (e) {
+                console.error('Failed to migrate local data:', e);
+              }
             }
-          }
-        } else {
-          // Cloud has data - ask user if they want to use cloud or keep local
-          if (confirm('Cloud data found. Use cloud data? (Cancel to keep local data)')) {
-            state = coerceState(cloudData);
-            save(state);
-            render();
+          } else {
+            // Cloud has data - only ask once per browser (not per session)
+            var hasChosenDataSource = localStorage.getItem('hasChosenDataSource');
+            if (!hasChosenDataSource) {
+              if (confirm('Cloud data found. Use cloud data? (Cancel to keep local data)')) {
+                state = coerceState(cloudData);
+                save(state);
+                render();
+              }
+              // Remember that we've made this choice
+              localStorage.setItem('hasChosenDataSource', 'true');
+            } else {
+              // User has already chosen before - just load cloud data
+              state = coerceState(cloudData);
+              save(state);
+            }
           }
         }
       }
@@ -1940,6 +1972,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       await supabase.auth.signOut();
       currentUser = null;
       syncEnabled = false;
+
+      // Clear session storage flags
+      sessionStorage.removeItem('hasSynced');
+
+      // Hide teams link immediately
+      document.getElementById('teamsLink').style.display = 'none';
+      document.getElementById('teamsSeparator').style.display = 'none';
+
       updateAuthUI();
       // Continue using local storage
       console.log('Signed out - continuing with local storage');
