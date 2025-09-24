@@ -1825,6 +1825,29 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   async function checkAuthStatus() {
     if (!supabase) return;
 
+    // Check for auth errors in the URL
+    if (window.location.hash) {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const errorCode = hashParams.get('error_code');
+      const errorDescription = hashParams.get('error_description');
+
+      if (errorCode) {
+        console.log('Auth error detected:', errorCode, errorDescription);
+
+        // Clear the error from URL
+        window.history.replaceState(null, null, window.location.pathname + window.location.search);
+
+        // Show user-friendly error messages
+        if (errorCode === 'otp_expired') {
+          alert('⏰ Magic link expired\n\nThe sign-in link has expired. This can happen if:\n\n• The link was pre-scanned by email security\n• More than 1 hour passed since it was sent\n• The link was already used\n\nPlease request a new magic link.\n\n💡 Tip: Try using a personal email address to avoid corporate email scanners.');
+          return;
+        } else if (errorCode === 'access_denied') {
+          alert('❌ Access denied\n\nSign-in was cancelled or denied.');
+          return;
+        }
+      }
+    }
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       currentUser = user;
@@ -1875,13 +1898,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       const { error } = await supabase.auth.signInWithOtp({
         email: email,
         options: {
-          emailRedirectTo: window.location.href
+          emailRedirectTo: window.location.href,
+          shouldCreateUser: true,
+          data: {
+            email_confirm: true
+          }
         }
       });
 
       if (error) throw error;
 
-      alert('✅ Magic Link Sent!\n\nCheck your email for the sign-in link.\n\n📧 Check spam folder if not in inbox\n⏰ Link expires in 1 hour\n🔄 Refresh this page after clicking the link');
+      alert('✅ Magic Link Sent!\n\nCheck your email for the sign-in link.\n\n📧 Check spam folder if not in inbox\n⏰ Link expires in 1 hour\n🔄 Refresh this page after clicking the link\n\n⚠️ Note: If using corporate email with link scanning, the link may expire. Try using a personal email instead.');
     } catch (error) {
       console.error('Sign in error:', error);
 
