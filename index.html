@@ -1801,9 +1801,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   // Initialize Supabase
   function initSupabase() {
-    if (SUPABASE_URL && SUPABASE_URL !== 'https://YOUR_PROJECT_ID.supabase.co' && SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== 'YOUR_ANON_KEY' && window.supabase) {
-      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      checkAuthStatus();
+    // Check if the Supabase library is loaded
+    if (!window.supabase || !window.supabase.createClient) {
+      console.log('Supabase library not loaded yet. Retrying...');
+      setTimeout(initSupabase, 500);
+      return;
+    }
+
+    if (SUPABASE_URL && SUPABASE_URL !== 'https://YOUR_PROJECT_ID.supabase.co' && SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== 'YOUR_ANON_KEY') {
+      try {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('Supabase client initialized successfully');
+        checkAuthStatus();
+      } catch (error) {
+        console.error('Failed to initialize Supabase client:', error);
+      }
     } else {
       console.log('Supabase not configured. Please update SUPABASE_URL and SUPABASE_ANON_KEY in the code.');
     }
@@ -5826,6 +5838,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   }
   // Sign-in dialog function
   function showSignInDialog() {
+    // Try to initialize Supabase first if not already done
+    if (!supabase && window.supabase && window.supabase.createClient) {
+      initSupabase();
+    }
+
     var dialog = document.createElement('div');
     dialog.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:10000; display:flex; align-items:center; justify-content:center;';
 
