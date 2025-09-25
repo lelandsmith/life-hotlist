@@ -1824,6 +1824,32 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   var syncEnabled = false;  // Whether to sync to cloud
   window.currentUser = null;  // Global reference for Teams page
 
+  // Test Supabase connection
+  window.testSupabase = async function() {
+    console.log('Testing Supabase...');
+    if (!supabase) {
+      console.error('Supabase not initialized');
+      return;
+    }
+
+    try {
+      // Try a simple auth call
+      const { data, error } = await supabase.auth.getSession();
+      console.log('Supabase test - getSession:', { data: !!data, error });
+
+      // Check if we can reach Supabase
+      const healthCheck = await fetch(SUPABASE_URL + '/auth/v1/health', {
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Content-Type': 'application/json'
+        }
+      });
+      console.log('Supabase health check:', healthCheck.status);
+    } catch (err) {
+      console.error('Supabase test error:', err);
+    }
+  };
+
   // Manual OAuth login function for testing
   window.testLogin = async function() {
     if (!supabase) {
@@ -1914,6 +1940,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     if (SUPABASE_URL && SUPABASE_URL !== 'https://YOUR_PROJECT_ID.supabase.co' && SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== 'YOUR_ANON_KEY') {
       try {
         console.log('Creating Supabase client with URL:', SUPABASE_URL);
+        console.log('Anon key present:', !!SUPABASE_ANON_KEY);
+        console.log('Anon key length:', SUPABASE_ANON_KEY.length);
+
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
           auth: {
             autoRefreshToken: true,
