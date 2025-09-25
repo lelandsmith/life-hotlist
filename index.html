@@ -2028,6 +2028,28 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           }
         });
         console.log('Supabase client initialized successfully with detectSessionInUrl enabled');
+        window.supabaseClient = supabase;  // Store globally for access
+
+        // Check for existing session immediately after client initialization
+        try {
+          const { data: { session: existingSession } } = await supabase.auth.getSession();
+          if (existingSession && existingSession.user && !currentUser) {
+            console.log('🔵 Found existing session on init:', existingSession.user.email);
+            currentUser = existingSession.user;
+            window.currentUser = existingSession.user;
+            syncEnabled = true;
+
+            // Update UI
+            updateAuthUI();
+
+            // Load cloud data after a short delay
+            setTimeout(async () => {
+              await handleInitialSync();
+            }, 100);
+          }
+        } catch (error) {
+          console.error('Error checking existing session:', error);
+        }
 
         // Listen for auth state changes
         supabase.auth.onAuthStateChange(async (event, session) => {
@@ -2160,6 +2182,46 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       console.log('Supabase not configured. Please update SUPABASE_URL and SUPABASE_ANON_KEY in the code.');
     }
   }
+
+  // Manual session restoration function
+  window.restoreSession = async function() {
+    const client = supabase || window.supabaseClient;
+    if (!client) {
+      console.log('No Supabase client available');
+      return false;
+    }
+
+    try {
+      console.log('Manually restoring session...');
+      const { data: { session }, error } = await client.auth.getSession();
+
+      if (error) {
+        console.error('Error getting session:', error);
+        return false;
+      }
+
+      if (session && session.user) {
+        console.log('✅ Session restored for:', session.user.email);
+        currentUser = session.user;
+        window.currentUser = session.user;
+        syncEnabled = true;
+
+        // Update UI
+        updateAuthUI();
+
+        // Load cloud data
+        await handleInitialSync();
+
+        return true;
+      } else {
+        console.log('No session to restore');
+        return false;
+      }
+    } catch (e) {
+      console.error('Failed to restore session:', e);
+      return false;
+    }
+  };
 
   // Check if user is signed in
   async function checkAuthStatus() {
