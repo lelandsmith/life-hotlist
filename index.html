@@ -1994,7 +1994,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   };
 
   // Initialize Supabase
-  function initSupabase() {
+  async function initSupabase() {
     // Prevent double initialization
     if (supabase) {
       console.log('Supabase already initialized');
@@ -2031,8 +2031,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         window.supabaseClient = supabase;  // Store globally for access
 
         // Check for existing session immediately after client initialization
-        try {
-          const { data: { session: existingSession } } = await supabase.auth.getSession();
+        supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
           if (existingSession && existingSession.user && !currentUser) {
             console.log('🔵 Found existing session on init:', existingSession.user.email);
             currentUser = existingSession.user;
@@ -2047,9 +2046,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
               await handleInitialSync();
             }, 100);
           }
-        } catch (error) {
+        }).catch(error => {
           console.error('Error checking existing session:', error);
-        }
+        });
 
         // Listen for auth state changes
         supabase.auth.onAuthStateChange(async (event, session) => {
