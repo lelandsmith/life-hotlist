@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Supabase Direct API Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <h1>Supabase Direct API Test</h1>
+  <pre id="output"></pre>
+
+  <script>
+    const SUPABASE_URL = 'https://yoxzlejphrhtuisnptor.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlveHpsZWpwaHJodHVpc25wdG9yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1NjIwNDIsImV4cCI6MjA3NDEzODA0Mn0.azXNn6AQQcB5iJzn7ebhAh5cSBESgKwEV2aSviX8yeY';
+
+    function log(msg) {
+      console.log(msg);
+      document.getElementById('output').innerHTML += msg + '\n';
+    }
+
+    async function testDirectAPI() {
+      log('Testing direct API calls to Supabase...\n');
+
+      // Test 1: Direct fetch to Supabase
+      log('1. Testing direct fetch to Supabase URL...');
+      try {
+        const response = await fetch(SUPABASE_URL + '/rest/v1/', {
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`
+          }
+        });
+        log('   Response status: ' + response.status);
+        if (!response.ok) {
+          const text = await response.text();
+          log('   Response: ' + text);
+        } else {
+          log('   ✅ Direct API connection works!');
+        }
+      } catch (error) {
+        log('   ❌ Error: ' + error.message);
+      }
+
+      // Test 2: Check auth endpoint
+      log('\n2. Testing auth endpoint...');
+      try {
+        const response = await fetch(SUPABASE_URL + '/auth/v1/health', {
+          headers: {
+            'apikey': SUPABASE_KEY
+          }
+        });
+        log('   Auth health status: ' + response.status);
+        const data = await response.text();
+        log('   Response: ' + data);
+      } catch (error) {
+        log('   Error: ' + error.message);
+      }
+
+      // Test 3: Create client with minimal config
+      log('\n3. Creating Supabase client with minimal config...');
+      try {
+        const minimalClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+          auth: {
+            persistSession: false,
+            autoRefreshToken: false,
+            detectSessionInUrl: false
+          }
+        });
+        log('   Client created successfully');
+
+        // Try a simple call
+        log('   Testing client with simple call...');
+        const { data, error } = await minimalClient.from('_test_').select('*').limit(1);
+        if (error && error.code === '42P01') {
+          log('   ✅ Client can make requests (table doesn\'t exist, which is expected)');
+        } else if (error) {
+          log('   Error: ' + error.message);
+        } else {
+          log('   Unexpected success: ' + JSON.stringify(data));
+        }
+      } catch (error) {
+        log('   ❌ Error creating client: ' + error.message);
+      }
+
+      // Test 4: Check if the issue is with getSession specifically
+      log('\n4. Testing getSession with timeout...');
+      try {
+        const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const timeoutPromise = new Promise((resolve) => {
+          setTimeout(() => resolve({ timeout: true }), 3000);
+        });
+
+        const sessionPromise = client.auth.getSession();
+
+        const result = await Promise.race([sessionPromise, timeoutPromise]);
+
+        if (result.timeout) {
+          log('   ❌ getSession() timed out!');
+          log('   This confirms the issue is with session checking.');
+        } else {
+          log('   ✅ getSession() completed: ' + (result.data?.session ? 'Session found' : 'No session'));
+        }
+      } catch (error) {
+        log('   Error: ' + error.message);
+      }
+
+      // Test 5: Try older initialization pattern
+      log('\n5. Testing with auth.storage disabled...');
+      try {
+        const noStorageClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+          auth: {
+            persistSession: false,
+            storage: null
+          }
+        });
+
+        const { data, error } = await noStorageClient.auth.getSession();
+        if (error) {
+          log('   Error: ' + error.message);
+        } else {
+          log('   ✅ Works without storage! Session: ' + (data.session ? 'Found' : 'None'));
+        }
+      } catch (error) {
+        log('   ❌ Error: ' + error.message);
+      }
+
+      log('\n===== DIAGNOSIS =====');
+      log('If test 5 works but test 4 doesn\'t, the issue is with localStorage.');
+      log('This might be due to browser privacy settings or third-party cookie blocking.');
+    }
+
+    testDirectAPI();
+  </script>
+</body>
+</html>

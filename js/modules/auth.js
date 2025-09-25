@@ -31,12 +31,35 @@ export class AuthManager {
       console.log('URL:', supabaseUrl);
       console.log('Key length:', supabaseKey?.length);
 
-      // Initialize Supabase client
+      // Initialize Supabase client with custom storage to fix hanging issue
       this.supabase = window.supabase.createClient(supabaseUrl, supabaseKey, {
         auth: {
           autoRefreshToken: true,
           persistSession: true,
-          detectSessionInUrl: true
+          detectSessionInUrl: true,
+          storage: {
+            getItem: (key) => {
+              try {
+                return localStorage.getItem(key);
+              } catch {
+                return null;
+              }
+            },
+            setItem: (key, value) => {
+              try {
+                localStorage.setItem(key, value);
+              } catch {
+                console.warn('Failed to save to localStorage:', key);
+              }
+            },
+            removeItem: (key) => {
+              try {
+                localStorage.removeItem(key);
+              } catch {
+                console.warn('Failed to remove from localStorage:', key);
+              }
+            }
+          }
         }
       });
 
@@ -89,8 +112,44 @@ export class AuthManager {
     }
 
     try {
-      console.log('Calling getSession()...');
-      const { data: { session }, error } = await this.supabase.auth.getSession();
+      console.log('Calling getSession() with timeout...');
+
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((resolve) => {
+        setTimeout(() => resolve({ timeout: true }), 3000);
+      });
+
+      const sessionPromise = this.supabase.auth.getSession();
+      const result = await Promise.race([sessionPromise, timeoutPromise]);
+
+      if (result.timeout) {
+        console.warn('⚠️ getSession() timed out after 3 seconds');
+
+        // Try to recover session from localStorage manually
+        const keys = Object.keys(localStorage).filter(k => k.includes('supabase'));
+        console.log('Checking localStorage for session keys:', keys);
+
+        for (const key of keys) {
+          if (key.includes('auth-token')) {
+            try {
+              const stored = localStorage.getItem(key);
+              if (stored) {
+                const parsed = JSON.parse(stored);
+                if (parsed.access_token && parsed.user) {
+                  console.log('Found cached session for:', parsed.user.email);
+                  this.setUser(parsed.user, true);
+                  return;
+                }
+              }
+            } catch (e) {
+              console.error('Error parsing stored session:', e);
+            }
+          }
+        }
+        return;
+      }
+
+      const { data: { session }, error } = result;
 
       if (error) {
         console.error('Error checking existing session:', error);
@@ -105,9 +164,6 @@ export class AuthManager {
         this.setUser(session.user, true);
       } else {
         console.log('⚠️ No existing session found');
-        console.log('Checking localStorage for Supabase keys...');
-        const keys = Object.keys(localStorage).filter(k => k.includes('supabase'));
-        console.log('Supabase keys in localStorage:', keys);
       }
     } catch (error) {
       console.error('Failed to check existing session:', error);
@@ -235,12 +291,30 @@ export class AuthManager {
   async getSession() {
     if (!this.supabase) return null;
 
-    const { data: { session }, error } = await this.supabase.auth.getSession();
-    if (error) {
-      console.error('Error getting session:', error);
+    try {
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((resolve) => {
+        setTimeout(() => resolve({ timeout: true }), 3000);
+      });
+
+      const sessionPromise = this.supabase.auth.getSession();
+      const result = await Promise.race([sessionPromise, timeoutPromise]);
+
+      if (result.timeout) {
+        console.warn('getSession() timed out');
+        return null;
+      }
+
+      const { data: { session }, error } = result;
+      if (error) {
+        console.error('Error getting session:', error);
+        return null;
+      }
+      return session;
+    } catch (error) {
+      console.error('Failed to get session:', error);
       return null;
     }
-    return session;
   }
 
   /**
