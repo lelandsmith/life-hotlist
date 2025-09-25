@@ -1935,13 +1935,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   async function checkAuthStatus() {
     if (!supabase) return;
 
+    // Check if the URL actually has OAuth/magic link tokens
+    const hashString = window.location.hash.substring(1); // Remove the # character
+    const hasAuthTokens = hashString && (
+      hashString.includes('access_token=') ||
+      hashString.includes('token_type=') ||
+      hashString.includes('provider_token=')
+    );
+
     // Don't manually process auth tokens - Supabase handles them with detectSessionInUrl
     // This includes both magic links and OAuth returns
-    if (window.location.hash && (
-      window.location.hash.includes('access_token') ||
-      window.location.hash.includes('token_type') ||
-      window.location.hash.includes('provider_token')
-    )) {
+    if (hasAuthTokens) {
       console.log('Auth tokens detected in URL, waiting for Supabase to process...');
       // The onAuthStateChange listener will handle the SIGNED_IN event
       // For OAuth, Supabase needs a moment to exchange the tokens
@@ -1954,19 +1958,64 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         console.log(`🔄 OAuth check attempt ${retryCount}/${maxRetries}`);
 
         try {
-          const { data: { user }, error } = await supabase.auth.getUser();
+          // First, try to set the session manually from the URL tokens
+          if (retryCount === 1 && window.location.hash) {
+            console.log('Attempting to manually set session from URL tokens...');
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            const accessToken = hashParams.get('access_token');
+            const refreshToken = hashParams.get('refresh_token');
+
+            if (accessToken && refreshToken) {
+              console.log('Found tokens, attempting to set session...');
+              const { data, error } = await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken
+              });
+
+              if (!error && data.session) {
+                console.log('✅ Successfully set session from URL tokens');
+                const user = data.session.user;
+                currentUser = user;
+                window.currentUser = user;
+                syncEnabled = true;
+
+                // Clear the URL hash
+                window.history.replaceState(null, null, window.location.pathname);
+
+                // Update UI
+                document.getElementById('teamsLink').style.display = 'inline';
+                document.getElementById('teamsSeparator').style.display = 'inline';
+                updateAuthUI();
+
+                // Show success banner
+                if (!sessionStorage.getItem('authenticated')) {
+                  showAuthSuccessBanner(user.email);
+                  sessionStorage.setItem('authenticated', 'true');
+                }
+
+                await handleInitialSync();
+                return; // Success, no need to retry
+              } else {
+                console.error('Failed to set session from tokens:', error);
+              }
+            }
+          }
+
+          // Fallback to getSession
+          const { data: { session }, error } = await supabase.auth.getSession();
 
           if (error) {
-            console.error('Error getting user during OAuth check:', error);
+            console.error('Error getting session during OAuth check:', error);
             if (retryCount < maxRetries) {
               setTimeout(checkOAuthSession, 1000);
             }
             return;
           }
 
-          if (user && !currentUser) {
+          if (session && session.user && !currentUser) {
+            const user = session.user;
             // OAuth completed but onAuthStateChange might not have fired yet
-            console.log('🟡 OAuth fallback: Found user via getUser()', user.email);
+            console.log('🟡 OAuth fallback: Found user via getSession()', user.email);
             currentUser = user;
             window.currentUser = user;  // Set global for Teams page
             syncEnabled = true;
@@ -1991,9 +2040,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             }
 
             await handleInitialSync();
-          } else if (!user && retryCount < maxRetries) {
-            // No user yet, keep trying
-            console.log('No user found yet, retrying...');
+          } else if (!session && retryCount < maxRetries) {
+            // No session yet, keep trying
+            console.log('No session found yet, retrying...');
             setTimeout(checkOAuthSession, 1000);
           }
         } catch (err) {
@@ -2029,12 +2078,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     }
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      console.log('🔍 checkAuthStatus: Found user:', user ? user.email : 'none');
-      currentUser = user;
-      window.currentUser = user;  // Set global for Teams page
-      if (user) {
+      // Use getSession instead of getUser to avoid 401 errors
+      const { data: { session }, error } = await supabase.auth.getSession();
+
+      if (!error && session) {
+        const user = session.user;
+        console.log('🔍 checkAuthStatus: Found user:', user ? user.email : 'none');
+        currentUser = user;
+        window.currentUser = user;  // Set global for Teams page
         syncEnabled = true;
+
         // Show Teams link when authenticated
         document.getElementById('teamsLink').style.display = 'inline';
         document.getElementById('teamsSeparator').style.display = 'inline';
@@ -2042,6 +2095,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         // Handle initial sync
         handleInitialSync();
+      } else {
+        console.log('No active session found');
       }
     } catch (error) {
       console.log('Auth check failed:', error);
@@ -7351,8 +7406,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       if (supabase && !currentUser) {
         console.log('🔍 Verifying auth state after page load...');
         try {
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user && !currentUser) {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session && session.user && !currentUser) {
+            const user = session.user;
             console.log('🟢 Late auth verification: Found authenticated user', user.email);
             currentUser = user;
             window.currentUser = user;
