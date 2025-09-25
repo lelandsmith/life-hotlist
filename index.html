@@ -1994,19 +1994,49 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         // CRITICAL: Handle OAuth redirect immediately
         if (window.location.hash && window.location.hash.includes('access_token')) {
           console.log('OAuth redirect detected, processing tokens...');
-          // Supabase should handle this automatically, but give it time
-          setTimeout(async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-              console.log('OAuth session established:', session.user.email);
-              // Trigger our auth state manually if needed
-              currentUser = session.user;
-              window.currentUser = session.user;
-              syncEnabled = true;
-              updateAuthUI();
-              handleInitialSync();
-            }
-          }, 1000);
+          // Extract tokens directly from URL
+          const hashParams = new URLSearchParams(window.location.hash.substring(1));
+          const accessToken = hashParams.get('access_token');
+          const refreshToken = hashParams.get('refresh_token');
+
+          if (accessToken && refreshToken) {
+            console.log('Found OAuth tokens, setting session directly...');
+
+            supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken
+            }).then(({ data, error }) => {
+              if (error) {
+                console.error('Failed to set session:', error);
+              } else if (data && data.session) {
+                console.log('✅ OAuth session set successfully:', data.session.user.email);
+                currentUser = data.session.user;
+                window.currentUser = data.session.user;
+                syncEnabled = true;
+
+                // Update UI
+                const teamsLink = document.getElementById('teamsLink');
+                const teamsSeparator = document.getElementById('teamsSeparator');
+                if (teamsLink) teamsLink.style.display = 'inline';
+                if (teamsSeparator) teamsSeparator.style.display = 'inline';
+
+                updateAuthUI();
+
+                // Clear URL
+                window.history.replaceState(null, null, window.location.pathname);
+
+                // Show success banner
+                if (!sessionStorage.getItem('authenticated')) {
+                  showAuthSuccessBanner(data.session.user.email);
+                  sessionStorage.setItem('authenticated', 'true');
+                }
+
+                handleInitialSync();
+              }
+            }).catch(err => {
+              console.error('Exception setting session:', err);
+            });
+          }
         }
 
         // Check for existing session after a short delay to let Supabase process any URL tokens
