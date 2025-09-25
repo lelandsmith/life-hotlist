@@ -2001,11 +2001,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
           if (accessToken && refreshToken) {
             console.log('Found OAuth tokens, setting session directly...');
+            console.log('Calling supabase.auth.setSession...');
 
-            supabase.auth.setSession({
+            const setSessionPromise = supabase.auth.setSession({
               access_token: accessToken,
               refresh_token: refreshToken
-            }).then(({ data, error }) => {
+            });
+
+            console.log('setSession promise created:', !!setSessionPromise);
+
+            setSessionPromise.then(({ data, error }) => {
+              console.log('setSession promise resolved');
               if (error) {
                 console.error('Failed to set session:', error);
               } else if (data && data.session) {
