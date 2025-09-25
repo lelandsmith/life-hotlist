@@ -6404,10 +6404,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           this.disabled = true;
           this.textContent = 'Redirecting to Google...';
 
+          // Use the current page URL to ensure proper redirect on both localhost and production
+          const redirectUrl = window.location.href.split('#')[0].split('?')[0];
+          console.log('OAuth redirect URL:', redirectUrl);
+
           const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-              redirectTo: window.location.origin
+              redirectTo: redirectUrl
             }
           });
 
