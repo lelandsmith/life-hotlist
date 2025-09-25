@@ -2591,36 +2591,45 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       clearInterval(window.syncInterval);
     }
 
-    // Poll for changes every 5 seconds
+    // Poll for changes every 30 seconds (reduced frequency)
     window.syncInterval = setInterval(async () => {
-      if (currentUser && syncEnabled) {
+      if (currentUser && syncEnabled && !window.isSaving) {  // Don't sync while saving
         try {
           const cloudData = await loadFromCloud();
           if (cloudData && cloudData.lastModified) {
-            // Check if cloud data is newer than our current data
+            // Check if cloud data is actually different (not just timestamp)
             const cloudTime = new Date(cloudData.lastModified).getTime();
             const localTime = state.lastModified ? new Date(state.lastModified).getTime() : 0;
 
-            if (cloudTime > localTime) {
-              console.log('Detected newer data from cloud, syncing...');
-              state = coerceState(cloudData);
+            // Only sync if cloud is significantly newer (more than 2 seconds difference)
+            // This avoids syncing our own recent saves
+            if (cloudTime > localTime + 2000) {
+              // Additional check: compare actual data content
+              const cloudDataStr = JSON.stringify(cloudData.clients || []);
+              const localDataStr = JSON.stringify(state.clients || []);
 
-              // Save to local for offline access
-              var dataStr = JSON.stringify(state);
-              localStorage.setItem(STABLE_KEY, dataStr);
-              if (storageDB) {
-                await saveToIndexedDB(STABLE_KEY, dataStr);
+              if (cloudDataStr !== localDataStr) {
+                console.log('Detected different data from cloud, syncing...');
+                state = coerceState(cloudData);
+
+                // Save to local for offline access
+                var dataStr = JSON.stringify(state);
+                localStorage.setItem(STABLE_KEY, dataStr);
+                if (storageDB) {
+                  await saveToIndexedDB(STABLE_KEY, dataStr);
+                }
+
+                // Re-render UI
+                render();
               }
-
-              // Re-render UI
-              render();
             }
           }
         } catch (error) {
-          console.error('Error checking for cloud updates:', error);
+          // Silently ignore errors to avoid console spam
+          // console.error('Error checking for cloud updates:', error);
         }
       }
-    }, 5000); // Check every 5 seconds
+    }, 30000); // Check every 30 seconds
   }
 
   // Sign out
@@ -2665,6 +2674,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       return;
     }
 
+    // Set flag to prevent real-time sync during save
+    window.isSaving = true;
+
     try {
       console.log('Saving to cloud for user:', currentUser.email);
       const { error } = await client
@@ -2687,6 +2699,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       }
     } catch (error) {
       console.error('Cloud save failed:', error);
+    } finally {
+      // Clear the saving flag
+      window.isSaving = false;
     }
   }
 
