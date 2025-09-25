@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Auth Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <h1>Supabase Auth Test</h1>
+  <div id="status">Loading...</div>
+  <br>
+  <button onclick="signIn()">Sign in with Google</button>
+  <button onclick="signOut()">Sign Out</button>
+  <button onclick="checkSession()">Check Session</button>
+  <br><br>
+  <pre id="output"></pre>
+
+  <script>
+    const SUPABASE_URL = 'https://yoxzlejphrhtuisnptor.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlveHpsZWpwaHJodHVpc25wdG9yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1NjIwNDIsImV4cCI6MjA3NDEzODA0Mn0.azXNn6AQQcB5iJzn7ebhAh5cSBESgKwEV2aSviX8yeY';
+
+    let supabase;
+    let currentUser = null;
+
+    function log(msg) {
+      console.log(msg);
+      document.getElementById('output').innerHTML += msg + '\n';
+    }
+
+    async function init() {
+      log('Initializing Supabase...');
+
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+      log('Supabase client created');
+
+      // Check for existing session
+      const { data: { session }, error } = await supabase.auth.getSession();
+
+      if (error) {
+        log('Error getting session: ' + error.message);
+      } else if (session) {
+        log('Session found: ' + session.user.email);
+        currentUser = session.user;
+        document.getElementById('status').innerHTML = 'Signed in as: ' + session.user.email;
+      } else {
+        log('No session found');
+        document.getElementById('status').innerHTML = 'Not signed in';
+      }
+
+      // Listen for auth changes
+      supabase.auth.onAuthStateChange((event, session) => {
+        log('Auth event: ' + event);
+        if (session) {
+          currentUser = session.user;
+          document.getElementById('status').innerHTML = 'Signed in as: ' + session.user.email;
+        } else {
+          currentUser = null;
+          document.getElementById('status').innerHTML = 'Not signed in';
+        }
+      });
+    }
+
+    async function signIn() {
+      log('Starting OAuth sign in...');
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.href
+        }
+      });
+
+      if (error) {
+        log('Sign in error: ' + error.message);
+      } else {
+        log('Redirecting to Google...');
+      }
+    }
+
+    async function signOut() {
+      log('Signing out...');
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        log('Sign out error: ' + error.message);
+      } else {
+        log('Signed out successfully');
+      }
+    }
+
+    async function checkSession() {
+      log('Checking session...');
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) {
+        log('Error: ' + error.message);
+      } else if (session) {
+        log('Session active: ' + session.user.email);
+        log('Expires at: ' + new Date(session.expires_at * 1000));
+      } else {
+        log('No active session');
+      }
+    }
+
+    // Initialize on load
+    init();
+  </script>
+</body>
+</html>
