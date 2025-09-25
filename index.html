@@ -2679,13 +2679,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     try {
       console.log('Saving to cloud for user:', currentUser.email);
+      console.log('User ID:', currentUser.id);
+      console.log('Data to save has', data.clients ? data.clients.length : 0, 'clients');
+
+      const saveData = {
+        user_id: currentUser.id,
+        data: JSON.stringify(data),
+        updated_at: new Date().toISOString()
+      };
+      console.log('Save payload:', { ...saveData, data: saveData.data.substring(0, 100) + '...' });
+
       const { error } = await client
         .from('hotlist_data')
-        .upsert({
-          user_id: currentUser.id,
-          data: JSON.stringify(data),
-          updated_at: new Date().toISOString()
-        }, {
+        .upsert(saveData, {
           onConflict: 'user_id'
         });
 
@@ -2715,27 +2721,47 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     try {
       console.log('Loading from cloud for user:', currentUser.email);
+      console.log('User ID:', currentUser.id);
 
-      // Simple approach: just try the query without timeout
-      // If it hangs, we'll handle it elsewhere
-      const { data, error } = await client
-        .from('hotlist_data')
-        .select('data')
-        .eq('user_id', currentUser.id)
-        .single();
+      // Add timeout to prevent hanging
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        controller.abort();
+        console.error('❌ Cloud load aborted after 5 seconds');
+      }, 5000);
 
-      if (error) {
-        if (error.code === 'PGRST116') {
-          // No data found for user - this is OK for new users
-          console.log('No cloud data found for user (new user or no saved data)');
-          return null;
+      try {
+        const { data, error } = await client
+          .from('hotlist_data')
+          .select('data')
+          .eq('user_id', currentUser.id)
+          .single();
+
+        clearTimeout(timeoutId);
+
+        if (error) {
+          if (error.code === 'PGRST116') {
+            // No data found for user - this is OK for new users
+            console.log('No cloud data found for user (new user or no saved data)');
+            return null;
+          }
+          console.error('Cloud load error:', error);
+          console.error('Error details:', JSON.stringify(error));
+          throw error;
         }
-        console.error('Cloud load error:', error);
-        throw error;
-      }
 
-      console.log('✅ Cloud data loaded successfully, has data:', !!data);
-      return data ? JSON.parse(data.data) : null;
+        console.log('✅ Cloud data loaded successfully');
+        console.log('Data received:', data);
+        if (data && data.data) {
+          const parsedData = JSON.parse(data.data);
+          console.log('Parsed data has', parsedData.clients ? parsedData.clients.length : 0, 'clients');
+          return parsedData;
+        }
+        return null;
+      } catch (innerError) {
+        clearTimeout(timeoutId);
+        throw innerError;
+      }
     } catch (error) {
       console.error('Cloud load failed:', error);
       return null;
