@@ -27,6 +27,10 @@ export class AuthManager {
     }
 
     try {
+      console.log('🔧 Initializing Supabase client...');
+      console.log('URL:', supabaseUrl);
+      console.log('Key length:', supabaseKey?.length);
+
       // Initialize Supabase client
       this.supabase = window.supabase.createClient(supabaseUrl, supabaseKey, {
         auth: {
@@ -38,10 +42,7 @@ export class AuthManager {
 
       console.log('✅ Supabase client initialized');
 
-      // Check for existing session immediately
-      await this.checkExistingSession();
-
-      // Set up auth state change listener
+      // Set up auth state change listener FIRST
       this.supabase.auth.onAuthStateChange(async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.email || 'no session');
 
@@ -61,11 +62,17 @@ export class AuthManager {
         }
       });
 
+      // Then check for existing session
+      console.log('🔍 Checking for existing session...');
+      await this.checkExistingSession();
+
       // Process any OAuth tokens in URL
       await this.processAuthTokens();
 
       this.initialized = true;
-      console.log('AuthManager initialization complete');
+      console.log('✅ AuthManager initialization complete');
+      console.log('Current user:', this.currentUser?.email || 'none');
+      console.log('Sync enabled:', this.syncEnabled);
 
     } catch (error) {
       console.error('Failed to initialize AuthManager:', error);
@@ -76,9 +83,13 @@ export class AuthManager {
    * Check for existing session on page load
    */
   async checkExistingSession() {
-    if (!this.supabase) return;
+    if (!this.supabase) {
+      console.log('No Supabase client, cannot check session');
+      return;
+    }
 
     try {
+      console.log('Calling getSession()...');
       const { data: { session }, error } = await this.supabase.auth.getSession();
 
       if (error) {
@@ -86,11 +97,17 @@ export class AuthManager {
         return;
       }
 
+      console.log('Session result:', session ? 'Found' : 'None');
+
       if (session && session.user) {
         console.log('🔵 Found existing session:', session.user.email);
+        console.log('Session expires at:', new Date(session.expires_at * 1000));
         this.setUser(session.user, true);
       } else {
-        console.log('No existing session found');
+        console.log('⚠️ No existing session found');
+        console.log('Checking localStorage for Supabase keys...');
+        const keys = Object.keys(localStorage).filter(k => k.includes('supabase'));
+        console.log('Supabase keys in localStorage:', keys);
       }
     } catch (error) {
       console.error('Failed to check existing session:', error);
