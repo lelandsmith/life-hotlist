@@ -1982,9 +1982,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 // Clear the URL hash
                 window.history.replaceState(null, null, window.location.pathname);
 
-                // Update UI
-                document.getElementById('teamsLink').style.display = 'inline';
-                document.getElementById('teamsSeparator').style.display = 'inline';
+                // Update UI - guard against missing elements
+                const teamsLink = document.getElementById('teamsLink');
+                const teamsSeparator = document.getElementById('teamsSeparator');
+                if (teamsLink) teamsLink.style.display = 'inline';
+                if (teamsSeparator) teamsSeparator.style.display = 'inline';
                 updateAuthUI();
 
                 // Show success banner
@@ -2088,9 +2090,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         window.currentUser = user;  // Set global for Teams page
         syncEnabled = true;
 
-        // Show Teams link when authenticated
-        document.getElementById('teamsLink').style.display = 'inline';
-        document.getElementById('teamsSeparator').style.display = 'inline';
+        // Show Teams link when authenticated - guard against missing elements
+        const teamsLink = document.getElementById('teamsLink');
+        const teamsSeparator = document.getElementById('teamsSeparator');
+        if (teamsLink) teamsLink.style.display = 'inline';
+        if (teamsSeparator) teamsSeparator.style.display = 'inline';
         updateAuthUI();
 
         // Handle initial sync
@@ -2239,9 +2243,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       sessionStorage.removeItem('hasSynced');
       sessionStorage.removeItem('authenticated');
 
-      // Hide teams link immediately
-      document.getElementById('teamsLink').style.display = 'none';
-      document.getElementById('teamsSeparator').style.display = 'none';
+      // Hide teams link immediately - guard against missing elements
+      const teamsLink = document.getElementById('teamsLink');
+      const teamsSeparator = document.getElementById('teamsSeparator');
+      if (teamsLink) teamsLink.style.display = 'none';
+      if (teamsSeparator) teamsSeparator.style.display = 'none';
 
       updateAuthUI();
       // Continue using local storage
