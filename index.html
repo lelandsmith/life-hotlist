@@ -2568,17 +2568,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   // Handle initial sync when user is authenticated
   async function handleInitialSync() {
+    // Check and set flag atomically to prevent race conditions
+    if (initialSyncCompleted) {
+      console.log('⏭️ Initial sync already in progress or completed, skipping...');
+      return;
+    }
+    initialSyncCompleted = true;  // Set immediately to prevent duplicate calls
+
     console.log('Handling initial sync...');
     console.log('Current user:', currentUser ? currentUser.email : 'none');
     console.log('Sync enabled:', syncEnabled);
     console.log('Supabase client available:', !!(supabase || window.supabaseClient));
-    console.log('Initial sync already completed:', initialSyncCompleted);
-
-    // Prevent duplicate syncs
-    if (initialSyncCompleted) {
-      console.log('Initial sync already completed, skipping...');
-      return;
-    }
 
     try {
       // Load cloud data
@@ -2622,12 +2622,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       // Set up real-time sync
       setupRealtimeSync();
 
-      // Mark initial sync as completed
-      initialSyncCompleted = true;
       console.log('✅ Initial sync completed successfully');
 
     } catch (error) {
       console.error('Error during initial sync:', error);
+      // Reset flag on error to allow retry if needed
+      initialSyncCompleted = false;
     }
   }
 
@@ -2773,32 +2773,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       console.log('Loading from cloud for user:', currentUser.email);
       console.log('User ID:', currentUser.id);
 
-      // Create timeout promise
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => {
-          reject(new Error('Cloud load timeout after 10 seconds'));
-        }, 10000);
-      });
-
-      // Create query promise with logging
-      console.log('📡 Starting Supabase query...');
-      const queryPromise = client
-        .from('hotlist_data')
-        .select('data')
-        .eq('user_id', currentUser.id)
-        .single()
-        .then(result => {
-          console.log('✅ Supabase query completed!', result);
-          return result;
-        })
-        .catch(err => {
-          console.error('❌ Supabase query failed:', err);
-          throw err;
-        });
-
       try {
-        // Race between query and timeout
-        const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
+        console.log('📡 Starting Supabase query...');
+        const startTime = Date.now();
+
+        const { data, error } = await client
+          .from('hotlist_data')
+          .select('data')
+          .eq('user_id', currentUser.id)
+          .single();
+
+        const queryTime = Date.now() - startTime;
+        console.log(`⏱️ Supabase query took ${queryTime}ms`);
 
         if (error) {
           if (error.code === 'PGRST116') {
