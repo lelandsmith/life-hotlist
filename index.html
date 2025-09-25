@@ -2484,12 +2484,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     try {
       console.log('🔍 About to call getSession in checkAuthStatus...');
 
-      // Add timeout to prevent hanging
+      // Add timeout to prevent hanging (increased for slower connections)
       const timeout = new Promise((resolve) => {
         setTimeout(() => {
           console.log('⏱️ getSession timeout triggered');
-          resolve({ data: { session: null }, error: { message: 'Timeout after 5 seconds' }, timeout: true });
-        }, 5000);
+          resolve({ data: { session: null }, error: { message: 'Timeout after 15 seconds' }, timeout: true });
+        }, 15000);
       });
 
       const sessionPromise = client.auth.getSession();
@@ -2773,12 +2773,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       console.log('Loading from cloud for user:', currentUser.email);
       console.log('User ID:', currentUser.id);
 
-      // Add timeout to prevent hanging
+      // Add timeout to prevent hanging (increased to 15 seconds for slower connections)
       const controller = new AbortController();
       const timeoutId = setTimeout(() => {
         controller.abort();
-        console.error('❌ Cloud load aborted after 5 seconds');
-      }, 5000);
+        console.error('❌ Cloud load aborted after 15 seconds - network may be slow');
+      }, 15000);
 
       try {
         const { data, error } = await client
