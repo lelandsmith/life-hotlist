@@ -1824,6 +1824,34 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   var syncEnabled = false;  // Whether to sync to cloud
   window.currentUser = null;  // Global reference for Teams page
 
+  // Manual OAuth login function for testing
+  window.testLogin = async function() {
+    if (!supabase) {
+      console.error('Supabase not initialized');
+      return;
+    }
+
+    console.log('Starting OAuth login...');
+    const redirectUrl = window.location.href.split('#')[0].split('?')[0];
+    console.log('Redirect URL:', redirectUrl);
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: redirectUrl,
+        queryParams: {
+          prompt: 'select_account'
+        }
+      }
+    });
+
+    if (error) {
+      console.error('OAuth error:', error);
+    } else {
+      console.log('OAuth initiated:', data);
+    }
+  };
+
   // Debug function to check auth state
   window.debugAuth = async function() {
     console.log('=== AUTH DEBUG INFO ===');
@@ -1834,18 +1862,35 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     if (supabase) {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         console.log('5. Session from getSession():', !!session, session?.user?.email);
+        if (sessionError) console.log('   Session error:', sessionError);
+        if (session) {
+          console.log('   Session expires:', new Date(session.expires_at * 1000));
+          console.log('   Access token (first 20 chars):', session.access_token?.substring(0, 20));
+        }
 
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
         console.log('6. User from getUser():', !!user, user?.email);
+        if (userError) console.log('   User error:', userError);
       } catch (error) {
         console.log('5-6. Error checking session/user:', error.message);
       }
+
+      // Check localStorage for Supabase session
+      const keys = Object.keys(localStorage).filter(k => k.includes('supabase'));
+      console.log('7. Supabase keys in localStorage:', keys);
+      keys.forEach(key => {
+        const value = localStorage.getItem(key);
+        if (value && value.includes('access_token')) {
+          console.log(`   ${key}: [contains session data]`);
+        }
+      });
     }
 
-    console.log('7. Teams link visible:', document.getElementById('teamsLink')?.style.display);
-    console.log('8. URL has tokens:', window.location.hash.includes('access_token'));
+    console.log('8. Teams link visible:', document.getElementById('teamsLink')?.style.display);
+    console.log('9. URL has tokens:', window.location.hash.includes('access_token'));
+    console.log('10. Current URL:', window.location.href);
     console.log('======================');
   };
 
