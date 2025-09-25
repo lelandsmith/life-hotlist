@@ -1920,7 +1920,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     if (supabase) {
       try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        const { data: { session }, error: sessionError } = await (supabase || window.supabaseClient).auth.getSession();
         console.log('5. Session from getSession():', !!session, session?.user?.email);
         if (sessionError) console.log('   Session error:', sessionError);
         if (session) {
@@ -1928,7 +1928,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           console.log('   Access token (first 20 chars):', session.access_token?.substring(0, 20));
         }
 
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        const { data: { user }, error: userError } = await (supabase || window.supabaseClient).auth.getUser();
         console.log('6. User from getUser():', !!user, user?.email);
         if (userError) console.log('   User error:', userError);
       } catch (error) {
@@ -1950,6 +1950,47 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     console.log('9. URL has tokens:', window.location.hash.includes('access_token'));
     console.log('10. Current URL:', window.location.href);
     console.log('======================');
+  };
+
+  // Debug sync status
+  window.debugSync = async function() {
+    console.log('=== SYNC DEBUG INFO ===');
+    console.log('1. Sync enabled:', syncEnabled);
+    console.log('2. Current user:', currentUser ? currentUser.email : 'none');
+    console.log('3. Supabase client:', !!(supabase || window.supabaseClient));
+    console.log('4. Local state clients:', state?.clients?.length || 0);
+
+    // Try to load from cloud
+    const client = supabase || window.supabaseClient;
+    if (client && currentUser) {
+      try {
+        console.log('5. Attempting to load from cloud...');
+        const { data, error } = await client
+          .from('hotlist_data')
+          .select('data, updated_at')
+          .eq('user_id', currentUser.id)
+          .single();
+
+        if (error) {
+          console.log('   Cloud load error:', error.message);
+          if (error.code === 'PGRST116') {
+            console.log('   No data found in cloud for this user');
+          }
+        } else if (data) {
+          const cloudState = JSON.parse(data.data);
+          console.log('   Cloud data found:');
+          console.log('     - Clients:', cloudState?.clients?.length || 0);
+          console.log('     - Updated at:', data.updated_at);
+        }
+      } catch (e) {
+        console.error('   Error loading from cloud:', e);
+      }
+    } else {
+      console.log('5. Cannot load from cloud - missing client or user');
+    }
+
+    console.log('6. Save function will sync:', currentUser && syncEnabled);
+    console.log('===================');
   };
 
   // Initialize Supabase
@@ -2122,7 +2163,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   // Check if user is signed in
   async function checkAuthStatus() {
-    if (!supabase) return;
+    const client = supabase || window.supabaseClient;
+    if (!client) return;
 
     // Check if the URL actually has OAuth/magic link tokens
     const hashString = window.location.hash.substring(1); // Remove the # character
@@ -2205,7 +2247,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           }
 
           // Fallback to getSession
-          const { data: { session }, error } = await supabase.auth.getSession();
+          const { data: { session }, error } = await client.auth.getSession();
 
           if (error) {
             console.error('Error getting session during OAuth check:', error);
@@ -2282,7 +2324,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     try {
       // Use getSession instead of getUser to avoid 401 errors
-      const { data: { session }, error } = await supabase.auth.getSession();
+      const { data: { session }, error } = await client.auth.getSession();
 
       if (!error && session) {
         const user = session.user;
@@ -2347,6 +2389,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   // Handle initial sync when user is authenticated
   async function handleInitialSync() {
     console.log('Handling initial sync...');
+    console.log('Current user:', currentUser ? currentUser.email : 'none');
+    console.log('Sync enabled:', syncEnabled);
+    console.log('Supabase client available:', !!(supabase || window.supabaseClient));
+
     try {
       // Load cloud data
       const cloudData = await loadFromCloud();
@@ -2367,10 +2413,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         render();
       } else {
         // No cloud data - migrate local data to cloud
-        console.log('No cloud data found, migrating local data to cloud');
+        console.log('No cloud data found, checking for local data to migrate...');
         if (state && state.clients && state.clients.length > 0) {
+          console.log('Found local data with', state.clients.length, 'clients - migrating to cloud');
           await saveToCloud(state);
           console.log('Local data migrated to cloud');
+        } else {
+          console.log('No local data to migrate');
         }
       }
 
@@ -2384,7 +2433,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   // Set up real-time sync to detect changes from other devices
   function setupRealtimeSync() {
-    if (!supabase || !currentUser) return;
+    const client = supabase || window.supabaseClient;
+    if (!client || !currentUser) return;
 
     console.log('Setting up real-time sync...');
 
@@ -2427,7 +2477,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   // Sign out
   async function signOut() {
-    if (!supabase) return;
+    const client = supabase || window.supabaseClient;
+    if (!client) return;
 
     try {
       // Clear sync interval
@@ -2436,7 +2487,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         window.syncInterval = null;
       }
 
-      await supabase.auth.signOut();
+      await client.auth.signOut();
       currentUser = null;
       syncEnabled = false;
 
@@ -2460,10 +2511,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   // Save to cloud (for signed-in users)
   async function saveToCloud(data) {
-    if (!supabase || !currentUser || !syncEnabled) return;
+    const client = supabase || window.supabaseClient;
+    if (!client || !currentUser || !syncEnabled) {
+      console.log('Cannot save to cloud - client:', !!client, 'user:', !!currentUser, 'sync:', syncEnabled);
+      return;
+    }
 
     try {
-      const { error } = await supabase
+      console.log('Saving to cloud for user:', currentUser.email);
+      const { error } = await client
         .from('hotlist_data')
         .upsert({
           user_id: currentUser.id,
@@ -2488,10 +2544,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   // Load from cloud
   async function loadFromCloud() {
-    if (!supabase || !currentUser) return null;
+    const client = supabase || window.supabaseClient;
+    if (!client || !currentUser) {
+      console.log('Cannot load from cloud - client:', !!client, 'user:', !!currentUser);
+      return null;
+    }
 
     try {
-      const { data, error } = await supabase
+      console.log('Loading from cloud for user:', currentUser.email);
+      const { data, error } = await client
         .from('hotlist_data')
         .select('data')
         .eq('user_id', currentUser.id)
@@ -7946,7 +8007,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <script>
 // Track activity metrics for Teams feature
 async function trackActivity(activityType, value = 1) {
-  if (!supabase || !currentUser) return;
+  const client = supabase || window.supabaseClient;
+  if (!client || !currentUser) return;
 
   try {
     const today = new Date().toISOString().split('T')[0];
@@ -7965,7 +8027,7 @@ async function trackActivity(activityType, value = 1) {
       updates[activityType] = (existing[activityType] || 0) + value;
       updates.updated_at = new Date().toISOString();
 
-      await supabase
+      await client
         .from('activity_metrics')
         .update(updates)
         .eq('id', existing.id);
@@ -7975,7 +8037,7 @@ async function trackActivity(activityType, value = 1) {
       updates.user_id = currentUser.id;
       updates.date = today;
 
-      await supabase
+      await client
         .from('activity_metrics')
         .insert(updates);
     }
@@ -8009,7 +8071,7 @@ async function trackActivity(activityType, value = 1) {
       new_contacts_added: 'Added a new contact'
     };
 
-    await supabase
+    await client
       .from('activity_feed')
       .insert({
         user_id: currentUser.id,
