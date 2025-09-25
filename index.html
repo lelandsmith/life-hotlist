@@ -2030,7 +2030,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         console.log('Supabase client initialized successfully with detectSessionInUrl enabled');
         window.supabaseClient = supabase;  // Store globally for access
 
-        // Check for existing session immediately after client initialization
+        // CRITICAL: Process OAuth tokens if they're in the URL
+        if (window.location.hash && window.location.hash.includes('access_token')) {
+          console.log('🔴 OAuth tokens detected in URL, waiting for Supabase to process...');
+          // Give Supabase time to process the tokens
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+
+        // Check for existing session after token processing
         try {
           const { data: { session: existingSession } } = await supabase.auth.getSession();
           console.log('Session check result:', existingSession ? 'Found' : 'None');
