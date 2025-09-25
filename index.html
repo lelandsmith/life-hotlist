@@ -2031,7 +2031,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         window.supabaseClient = supabase;  // Store globally for access
 
         // Check for existing session immediately after client initialization
-        supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
+        try {
+          const { data: { session: existingSession } } = await supabase.auth.getSession();
+          console.log('Session check result:', existingSession ? 'Found' : 'None');
+
           if (existingSession && existingSession.user && !currentUser) {
             console.log('🔵 Found existing session on init:', existingSession.user.email);
             currentUser = existingSession.user;
@@ -2045,10 +2048,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             setTimeout(async () => {
               await handleInitialSync();
             }, 100);
+          } else if (!existingSession) {
+            console.log('⚠️ No session found during init');
           }
-        }).catch(error => {
+        } catch (error) {
           console.error('Error checking existing session:', error);
-        });
+        }
 
         // Listen for auth state changes
         supabase.auth.onAuthStateChange(async (event, session) => {
@@ -3367,9 +3372,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     // Initialize Supabase first if configured
     if (SUPABASE_URL && SUPABASE_URL !== 'https://YOUR_PROJECT_ID.supabase.co' &&
         SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== 'YOUR_ANON_KEY') {
-      initSupabase();
-      // Wait a bit for auth state to be established
-      await new Promise(function(resolve) { setTimeout(resolve, 1000); });
+      await initSupabase();  // CRITICAL: Must await this!
+      // Give Supabase time to fully establish auth state
+      await new Promise(function(resolve) { setTimeout(resolve, 500); });
       // Check for existing session after initialization
       checkAuthStatus();
     }
