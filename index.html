@@ -3370,6 +3370,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       initSupabase();
       // Wait a bit for auth state to be established
       await new Promise(function(resolve) { setTimeout(resolve, 1000); });
+      // Check for existing session after initialization
+      checkAuthStatus();
     }
 
     var result = load();
@@ -7743,24 +7745,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     // Validate and fix any clients missing context (data integrity check)
     validateAllContexts();
 
-    // Verify auth state after page load
+    // Final auth state verification after page fully loads
     setTimeout(async function() {
       if (supabase && !currentUser) {
-        console.log('🔍 Verifying auth state after page load...');
-        try {
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session && session.user && !currentUser) {
-            const user = session.user;
-            console.log('🟢 Late auth verification: Found authenticated user', user.email);
-            currentUser = user;
-            window.currentUser = user;
-            syncEnabled = true;
-            updateAuthUI();
-            handleInitialSync();
-          }
-        } catch (error) {
-          console.log('Auth verification error:', error);
-        }
+        console.log('🔍 Final auth verification after page load...');
+        checkAuthStatus();
       }
     }, 2000);
 
