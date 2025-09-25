@@ -1991,8 +1991,26 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           }
         });
 
+        // CRITICAL: Handle OAuth redirect immediately
+        if (window.location.hash && window.location.hash.includes('access_token')) {
+          console.log('OAuth redirect detected, processing tokens...');
+          // Supabase should handle this automatically, but give it time
+          setTimeout(async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+              console.log('OAuth session established:', session.user.email);
+              // Trigger our auth state manually if needed
+              currentUser = session.user;
+              window.currentUser = session.user;
+              syncEnabled = true;
+              updateAuthUI();
+              handleInitialSync();
+            }
+          }, 1000);
+        }
+
         // Check for existing session after a short delay to let Supabase process any URL tokens
-        setTimeout(checkAuthStatus, 100);
+        setTimeout(checkAuthStatus, 2000);
       } catch (error) {
         console.error('Failed to initialize Supabase client:', error);
       }
