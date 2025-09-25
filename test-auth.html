@@ -11,6 +11,8 @@
   <button onclick="signIn()">Sign in with Google</button>
   <button onclick="signOut()">Sign Out</button>
   <button onclick="checkSession()">Check Session</button>
+  <button onclick="clearStorage()">Clear Storage</button>
+  <button onclick="window.location.reload()">Reload Page</button>
   <br><br>
   <pre id="output"></pre>
 
@@ -28,20 +30,40 @@
 
     async function init() {
       log('Initializing Supabase...');
+      log('URL: ' + SUPABASE_URL);
+      log('Key exists: ' + !!SUPABASE_KEY);
+
+      // Check localStorage first
+      log('Checking localStorage...');
+      const keys = Object.keys(localStorage);
+      const supabaseKeys = keys.filter(k => k.includes('supabase'));
+      log('Supabase keys in storage: ' + supabaseKeys.join(', '));
 
       supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
       log('Supabase client created');
 
-      // Check for existing session
-      const { data: { session }, error } = await supabase.auth.getSession();
+      // Add timeout to prevent hanging
+      log('Checking session with timeout...');
 
-      if (error) {
-        log('Error getting session: ' + error.message);
-      } else if (session) {
-        log('Session found: ' + session.user.email);
-        currentUser = session.user;
-        document.getElementById('status').innerHTML = 'Signed in as: ' + session.user.email;
+      const timeout = new Promise((resolve) => {
+        setTimeout(() => resolve({ timeout: true }), 5000);
+      });
+
+      const sessionPromise = supabase.auth.getSession();
+
+      const result = await Promise.race([sessionPromise, timeout]);
+
+      if (result.timeout) {
+        log('ERROR: getSession() timed out after 5 seconds!');
+        log('This suggests a Supabase configuration issue.');
+        document.getElementById('status').innerHTML = 'Error: Session check timeout';
+      } else if (result.error) {
+        log('Error getting session: ' + result.error.message);
+      } else if (result.data && result.data.session) {
+        log('Session found: ' + result.data.session.user.email);
+        currentUser = result.data.session.user;
+        document.getElementById('status').innerHTML = 'Signed in as: ' + result.data.session.user.email;
       } else {
         log('No session found');
         document.getElementById('status').innerHTML = 'Not signed in';
@@ -97,6 +119,17 @@
       } else {
         log('No active session');
       }
+    }
+
+    function clearStorage() {
+      log('Clearing all Supabase data from localStorage...');
+      const keys = Object.keys(localStorage);
+      const supabaseKeys = keys.filter(k => k.includes('supabase'));
+      supabaseKeys.forEach(key => {
+        log('Removing: ' + key);
+        localStorage.removeItem(key);
+      });
+      log('Storage cleared. Please reload the page.');
     }
 
     // Initialize on load
