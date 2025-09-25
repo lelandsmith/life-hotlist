@@ -223,6 +223,29 @@ window.debugAuth = async () => {
   const session = await authManager.getSession();
   console.log('Session:', session ? 'Active' : 'None');
 
+  // Check localStorage
+  console.log('\n=== LOCALSTORAGE CHECK ===');
+  const supabaseKeys = Object.keys(localStorage).filter(k => k.includes('supabase'));
+  console.log('Supabase keys:', supabaseKeys);
+
+  supabaseKeys.forEach(key => {
+    const value = localStorage.getItem(key);
+    if (value) {
+      try {
+        const parsed = JSON.parse(value);
+        if (parsed.access_token) {
+          console.log(`${key}: Has access token`);
+        } else if (parsed.url) {
+          console.log(`${key}: ${parsed.url}`);
+        } else {
+          console.log(`${key}: ${JSON.stringify(parsed).substring(0, 50)}...`);
+        }
+      } catch {
+        console.log(`${key}: ${value.substring(0, 50)}...`);
+      }
+    }
+  });
+
   return authManager.getUserInfo();
 };
 
@@ -243,6 +266,12 @@ window.restoreSession = async () => {
   console.log('Manually checking for existing session...');
   await authManager.checkExistingSession();
   return authManager.isAuthenticated();
+};
+
+window.forceRefresh = async () => {
+  console.log('Force refreshing session...');
+  const result = await authManager.forceRefreshSession();
+  return result ? authManager.getUserInfo() : null;
 };
 
 // Make saveState globally available for your existing code

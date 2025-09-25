@@ -281,6 +281,51 @@ export class AuthManager {
   }
 
   /**
+   * Force refresh session from Supabase
+   */
+  async forceRefreshSession() {
+    if (!this.supabase) {
+      console.error('No Supabase client');
+      return false;
+    }
+
+    try {
+      console.log('Force refreshing session...');
+
+      // Try to get the session
+      const { data: { session }, error } = await this.supabase.auth.getSession();
+
+      if (error) {
+        console.error('Session refresh error:', error);
+        return false;
+      }
+
+      if (session && session.user) {
+        console.log('✅ Session found and restored:', session.user.email);
+        this.setUser(session.user, true);
+        return true;
+      } else {
+        console.log('No session to restore');
+
+        // Try to refresh the session
+        const { data: { session: refreshedSession }, error: refreshError } =
+          await this.supabase.auth.refreshSession();
+
+        if (refreshedSession && refreshedSession.user) {
+          console.log('✅ Session refreshed:', refreshedSession.user.email);
+          this.setUser(refreshedSession.user, true);
+          return true;
+        }
+
+        return false;
+      }
+    } catch (error) {
+      console.error('Force refresh failed:', error);
+      return false;
+    }
+  }
+
+  /**
    * Check if user is authenticated
    */
   isAuthenticated() {
