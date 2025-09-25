@@ -888,9 +888,11 @@ body[data-density="titles-only"] .stage-time-metric { display: none; }
     inset 0 2px 2px rgba(255,255,255,0.3),
     inset 0 -2px 2px rgba(0,0,0,0.1);
   border: 1px solid rgba(5,150,105,0.5);
+}
+.segment.just-filled {
   animation: segmentFill 0.4s ease-out;
 }
-.segment.filled::after {
+.segment.just-filled::after {
   content: '';
   position: absolute;
   top: 0;
@@ -4569,6 +4571,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     // Update segmented progress
     var contextGoalSegments = document.getElementById('contextGoalSegments');
     if(contextGoalSegments) {
+      // Store the previous achievement count to detect new fills
+      var prevAchievements = contextGoalSegments.dataset.prevAchievements
+        ? parseInt(contextGoalSegments.dataset.prevAchievements)
+        : -1;
+
       // Clear existing segments
       contextGoalSegments.innerHTML = '';
 
@@ -4579,10 +4586,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         if(i < monthlyAchievements) {
           segment.classList.add('filled');
+
+          // Add animation class only for newly filled segment
+          // (when this segment wasn't filled before)
+          if(prevAchievements >= 0 && i === monthlyAchievements - 1 && monthlyAchievements > prevAchievements) {
+            segment.classList.add('just-filled');
+          }
         }
 
         contextGoalSegments.appendChild(segment);
       }
+
+      // Store current achievements for next comparison
+      contextGoalSegments.dataset.prevAchievements = monthlyAchievements;
     }
 
     // Update goal input if it exists
