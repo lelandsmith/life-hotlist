@@ -1868,7 +1868,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   /* =========================
    *  Version & Changelog
    * ========================= */
-  var VERSION = '2.5.1';
+  var VERSION = '3.0.0';
 
   // Supabase Configuration - Replace these with your actual Supabase project credentials
   // Use window-level variables to ensure they're accessible from all functions
@@ -2944,6 +2944,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   // Recent commits from git log
   var CHANGELOG = [
+    { version: '3.0.0', date: '2025-01-24', changes: '🎉 MAJOR UPDATE: Teams Collaboration Feature! Create and manage teams, share client data in real-time, role-based permissions (Owner/Admin/Member/Viewer), team dashboard with activity tracking, secure team invitations, enhanced cloud sync with Supabase authentication' },
+    { version: '2.9.0', date: '2025-01-24', changes: '🏗️ Architecture Improvements: Modular JavaScript structure with separate auth and sync modules, improved Google OAuth integration, robust error handling and timeout protection, enhanced database schema with teams support, comprehensive test utilities for debugging' },
+    { version: '2.6.2', date: '2025-01-24', changes: 'Enhanced segmented progress bar animations - animation now only triggers when Issued button is clicked, removed constant pulsating effects, added one-time pop-in effect with white flash overlay for better visual feedback' },
+    { version: '2.6.1', date: '2025-01-24', changes: 'Improved segmented progress bar styling - adjusted segment dimensions to 12px width and 20px height, added 3D visual effects with gradients and shadows, implemented smooth hover animations with shimmer effect' },
+    { version: '2.6.0', date: '2025-01-24', changes: 'Fixed cloud data persistence on page refresh - resolved state overwrite issues, improved sync timing and error handling, added timeout protection for Supabase queries, enhanced real-time sync to only update when data actually changes' },
     { version: '2.5.2', date: '2025-01-23', changes: 'Fixed edit icon visibility for client names in notes mode - changed from absolute positioning to inline-block display, modified anchor link to inline-block with calculated width, edit pencil icon now appears correctly when hovering over client names while notes are open' },
     { version: '2.5.1', date: '2025-01-23', changes: 'Added client name hyperlinks to Country Passport Navigator search - opens in new tab with name pre-populated, preserves all styling with only cursor change on hover' },
     { version: '2.5.0', date: '2025-01-23', changes: 'Fixed critical context persistence bug (home/auto clients disappearing), fixed notes saving with debounced saves, added calendar integration (Google/Outlook/ICS), added Enter key support for note editing, renamed Filters to Settings, default follow-ups to 2 days out, increased quote font size to 18px' },
