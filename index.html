@@ -883,62 +883,49 @@ body[data-density="titles-only"] .stage-time-metric { display: none; }
     #059669 60%,
     #047857 100%);
   box-shadow:
-    0 0 20px rgba(16,185,129,0.4),
-    0 2px 8px rgba(16,185,129,0.3),
-    inset 0 2px 2px rgba(255,255,255,0.4),
+    0 0 12px rgba(16,185,129,0.3),
+    0 2px 4px rgba(16,185,129,0.2),
+    inset 0 2px 2px rgba(255,255,255,0.3),
     inset 0 -2px 2px rgba(0,0,0,0.1);
   border: 1px solid rgba(5,150,105,0.5);
-  animation: segmentGlow 3s ease-in-out infinite;
+  animation: segmentFill 0.4s ease-out;
 }
 .segment.filled::after {
   content: '';
   position: absolute;
-  top: 2px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 4px;
-  height: 4px;
-  background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, transparent 70%);
-  border-radius: 50%;
-  animation: sparkle 2s ease-in-out infinite;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg,
+    rgba(255,255,255,0.5) 0%,
+    transparent 50%);
+  border-radius: 4px;
+  opacity: 0;
+  animation: fillFlash 0.5s ease-out;
 }
-.segment.filled:nth-child(odd) {
-  animation-delay: 0.15s;
-}
-.segment.filled:nth-child(even) {
-  animation-delay: 0.3s;
-}
-.segment.filled:nth-child(3n) {
-  animation-delay: 0.45s;
-}
-@keyframes segmentGlow {
-  0%, 100% {
-    transform: scale(1);
-    filter: brightness(1);
-    box-shadow:
-      0 0 20px rgba(16,185,129,0.4),
-      0 2px 8px rgba(16,185,129,0.3),
-      inset 0 2px 2px rgba(255,255,255,0.4),
-      inset 0 -2px 2px rgba(0,0,0,0.1);
+@keyframes segmentFill {
+  0% {
+    transform: scale(0.7) translateY(2px);
+    opacity: 0;
   }
   50% {
-    transform: scale(1.02);
-    filter: brightness(1.1);
-    box-shadow:
-      0 0 30px rgba(16,185,129,0.6),
-      0 4px 12px rgba(16,185,129,0.4),
-      inset 0 2px 3px rgba(255,255,255,0.5),
-      inset 0 -2px 3px rgba(0,0,0,0.15);
+    transform: scale(1.15) translateY(-1px);
   }
-}
-@keyframes sparkle {
-  0%, 100% {
-    opacity: 0.3;
-    transform: translateX(-50%) scale(1);
-  }
-  50% {
+  100% {
+    transform: scale(1) translateY(0);
     opacity: 1;
-    transform: translateX(-50%) scale(1.5);
+  }
+}
+@keyframes fillFlash {
+  0% {
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
   }
 }
 
