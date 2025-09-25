@@ -1824,6 +1824,31 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   var syncEnabled = false;  // Whether to sync to cloud
   window.currentUser = null;  // Global reference for Teams page
 
+  // Debug function to check auth state
+  window.debugAuth = async function() {
+    console.log('=== AUTH DEBUG INFO ===');
+    console.log('1. Supabase initialized:', !!supabase);
+    console.log('2. Current user (local):', !!currentUser, currentUser?.email);
+    console.log('3. Window user (global):', !!window.currentUser, window.currentUser?.email);
+    console.log('4. Sync enabled:', syncEnabled);
+
+    if (supabase) {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log('5. Session from getSession():', !!session, session?.user?.email);
+
+        const { data: { user } } = await supabase.auth.getUser();
+        console.log('6. User from getUser():', !!user, user?.email);
+      } catch (error) {
+        console.log('5-6. Error checking session/user:', error.message);
+      }
+    }
+
+    console.log('7. Teams link visible:', document.getElementById('teamsLink')?.style.display);
+    console.log('8. URL has tokens:', window.location.hash.includes('access_token'));
+    console.log('======================');
+  };
+
   // Initialize Supabase
   function initSupabase() {
     // Prevent double initialization
