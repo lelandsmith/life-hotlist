@@ -2773,21 +2773,32 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       console.log('Loading from cloud for user:', currentUser.email);
       console.log('User ID:', currentUser.id);
 
-      // Add timeout to prevent hanging (increased to 15 seconds for slower connections)
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => {
-        controller.abort();
-        console.error('❌ Cloud load aborted after 15 seconds - network may be slow');
-      }, 15000);
+      // Create timeout promise
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('Cloud load timeout after 10 seconds'));
+        }, 10000);
+      });
+
+      // Create query promise with logging
+      console.log('📡 Starting Supabase query...');
+      const queryPromise = client
+        .from('hotlist_data')
+        .select('data')
+        .eq('user_id', currentUser.id)
+        .single()
+        .then(result => {
+          console.log('✅ Supabase query completed!', result);
+          return result;
+        })
+        .catch(err => {
+          console.error('❌ Supabase query failed:', err);
+          throw err;
+        });
 
       try {
-        const { data, error } = await client
-          .from('hotlist_data')
-          .select('data')
-          .eq('user_id', currentUser.id)
-          .single();
-
-        clearTimeout(timeoutId);
+        // Race between query and timeout
+        const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
 
         if (error) {
           if (error.code === 'PGRST116') {
@@ -2809,7 +2820,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         }
         return null;
       } catch (innerError) {
-        clearTimeout(timeoutId);
+        console.error('Query error in inner try:', innerError);
         throw innerError;
       }
     } catch (error) {
