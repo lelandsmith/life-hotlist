@@ -2037,17 +2037,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
             if (accessToken && refreshToken) {
               console.log('Found tokens, attempting to set session...');
-              const { data, error } = await supabase.auth.setSession({
-                access_token: accessToken,
-                refresh_token: refreshToken
-              });
+              console.log('Access token length:', accessToken.length);
+              console.log('Refresh token:', refreshToken);
 
-              if (!error && data.session) {
-                console.log('✅ Successfully set session from URL tokens');
-                const user = data.session.user;
-                currentUser = user;
-                window.currentUser = user;
-                syncEnabled = true;
+              try {
+                const { data, error } = await supabase.auth.setSession({
+                  access_token: accessToken,
+                  refresh_token: refreshToken
+                });
+
+                console.log('setSession result:', { data, error });
+
+                if (!error && data && data.session) {
+                  console.log('✅ Successfully set session from URL tokens');
+                  const user = data.session.user;
+                  currentUser = user;
+                  window.currentUser = user;
+                  syncEnabled = true;
 
                 // Clear the URL hash
                 window.history.replaceState(null, null, window.location.pathname);
@@ -2066,10 +2072,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 }
 
                 await handleInitialSync();
-                return; // Success, no need to retry
-              } else {
-                console.error('Failed to set session from tokens:', error);
+                  return; // Success, no need to retry
+                } else {
+                  console.error('Failed to set session from tokens:', error);
+                  console.error('Data returned:', data);
+                }
+              } catch (err) {
+                console.error('Exception setting session:', err);
               }
+            } else {
+              console.log('Missing tokens - access:', !!accessToken, 'refresh:', !!refreshToken);
             }
           }
 
