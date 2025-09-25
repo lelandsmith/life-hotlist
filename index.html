@@ -2545,14 +2545,25 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         // Re-render with cloud data
         render();
       } else {
-        // No cloud data - migrate local data to cloud
-        console.log('No cloud data found, checking for local data to migrate...');
-        if (state && state.clients && state.clients.length > 0) {
-          console.log('Found local data with', state.clients.length, 'clients - migrating to cloud');
-          await saveToCloud(state);
-          console.log('Local data migrated to cloud');
+        // No cloud data returned - but don't clear existing state!
+        console.log('No cloud data returned from loadFromCloud');
+
+        // Only migrate local data if we don't already have data loaded
+        if (!state || !state.clients || state.clients.length === 0) {
+          console.log('No existing state, checking localStorage for data to migrate...');
+          // Try to load from local storage
+          const localData = loadFromLocalStorage();
+          if (localData && localData.clients && localData.clients.length > 0) {
+            console.log('Found local data with', localData.clients.length, 'clients - using it');
+            state = localData;
+            // Try to save to cloud
+            await saveToCloud(state);
+            console.log('Local data migrated to cloud');
+          } else {
+            console.log('No local data to migrate');
+          }
         } else {
-          console.log('No local data to migrate');
+          console.log('Already have state with', state.clients.length, 'clients - keeping it');
         }
       }
 
@@ -2690,30 +2701,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     try {
       console.log('Loading from cloud for user:', currentUser.email);
 
-      // Add timeout to prevent hanging
-      const timeout = new Promise((resolve) => {
-        setTimeout(() => {
-          console.log('⏱️ Cloud load timeout after 10 seconds');
-          resolve({ timeout: true });
-        }, 10000);
-      });
-
-      const queryPromise = client
+      // Simple approach: just try the query without timeout
+      // If it hangs, we'll handle it elsewhere
+      const { data, error } = await client
         .from('hotlist_data')
         .select('data')
         .eq('user_id', currentUser.id)
         .single();
 
-      const result = await Promise.race([queryPromise, timeout]);
-
-      if (result.timeout) {
-        console.error('❌ Cloud load timed out!');
-        return null;
-      }
-
-      const { data, error } = result;
-
       if (error) {
+        if (error.code === 'PGRST116') {
+          // No data found for user - this is OK for new users
+          console.log('No cloud data found for user (new user or no saved data)');
+          return null;
+        }
         console.error('Cloud load error:', error);
         throw error;
       }
