@@ -1566,62 +1566,6 @@ body[data-density="titles-only"] .stage.completed .stage-label {
   .sidebar{max-height:52vh}
 }
 
-/* Loading notification */
-.loading-notification {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(15, 23, 42, 0.95);
-  color: white;
-  padding: 12px 24px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 14px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.1);
-  animation: slideUp 0.3s ease;
-}
-
-.loading-notification.warning {
-  background: rgba(245, 158, 11, 0.95);
-}
-
-.loading-notification.success {
-  background: rgba(16, 185, 129, 0.95);
-}
-
-.loading-notification.error {
-  background: rgba(220, 38, 38, 0.95);
-}
-
-.loading-notification .spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(255,255,255,0.3);
-  border-top-color: white;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateX(-50%) translateY(100px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(-50%) translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
 
 </style>
 
@@ -1936,55 +1880,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   var currentUser = null;  // Current authenticated user
   var syncEnabled = false;  // Whether to sync to cloud
   var initialSyncCompleted = false;  // Track if initial sync has already been done
-
-  /* Loading notification system */
-  let currentNotification = null;
-
-  function showLoadingNotification(message, type = '') {
-    // Remove existing notification if any
-    if (currentNotification) {
-      currentNotification.remove();
-    }
-
-    const notification = document.createElement('div');
-    notification.className = 'loading-notification' + (type ? ' ' + type : '');
-
-    // Add spinner for loading states
-    if (!type || type === 'warning') {
-      notification.innerHTML = '<div class="spinner"></div>';
-    }
-
-    const text = document.createElement('span');
-    text.textContent = message;
-    notification.appendChild(text);
-
-    document.body.appendChild(notification);
-    currentNotification = notification;
-
-    // Auto-remove success/error messages after 3 seconds
-    if (type === 'success' || type === 'error') {
-      setTimeout(() => {
-        if (currentNotification === notification) {
-          notification.style.animation = 'slideUp 0.3s ease reverse';
-          setTimeout(() => {
-            if (currentNotification === notification) {
-              notification.remove();
-              currentNotification = null;
-            }
-          }, 300);
-        }
-      }, 3000);
-    }
-
-    return notification;
-  }
-
-  function hideLoadingNotification() {
-    if (currentNotification) {
-      currentNotification.remove();
-      currentNotification = null;
-    }
-  }
   window.currentUser = null;  // Global reference for Teams page
 
   // Test Supabase connection
@@ -2011,7 +1906,30 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             auth: {
               autoRefreshToken: true,
               persistSession: true,
-              detectSessionInUrl: true
+              detectSessionInUrl: true,
+              storage: {
+                getItem: (key) => {
+                  try {
+                    return localStorage.getItem(key);
+                  } catch {
+                    return null;
+                  }
+                },
+                setItem: (key, value) => {
+                  try {
+                    localStorage.setItem(key, value);
+                  } catch {
+                    console.warn('Failed to save to localStorage:', key);
+                  }
+                },
+                removeItem: (key) => {
+                  try {
+                    localStorage.removeItem(key);
+                  } catch {
+                    console.warn('Failed to remove from localStorage:', key);
+                  }
+                }
+              }
             }
           });
           console.log('Manual init success, client created');
@@ -2184,7 +2102,30 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           auth: {
             autoRefreshToken: true,
             persistSession: true,
-            detectSessionInUrl: true  // This is key for magic links
+            detectSessionInUrl: true,
+            storage: {
+              getItem: (key) => {
+                try {
+                  return localStorage.getItem(key);
+                } catch {
+                  return null;
+                }
+              },
+              setItem: (key, value) => {
+                try {
+                  localStorage.setItem(key, value);
+                } catch {
+                  console.warn('Failed to save to localStorage:', key);
+                }
+              },
+              removeItem: (key) => {
+                try {
+                  localStorage.removeItem(key);
+                } catch {
+                  console.warn('Failed to remove from localStorage:', key);
+                }
+              }
+            }
           }
         });
         console.log('Supabase client initialized successfully with detectSessionInUrl enabled');
@@ -2412,12 +2353,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   // Check if user is signed in
   async function checkAuthStatus() {
     console.log('🔍 checkAuthStatus function started');
-    showLoadingNotification('Checking authentication...');
 
     const client = supabase || window.supabaseClient;
     if (!client) {
       console.log('checkAuthStatus: No Supabase client available');
-      hideLoadingNotification();
       return;
     }
 
@@ -2591,12 +2530,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     try {
       console.log('🔍 About to call getSession in checkAuthStatus...');
 
-      // Add timeout to prevent hanging (increased for slower connections)
+      // Add timeout to prevent hanging (reduced based on modular auth)
       const timeout = new Promise((resolve) => {
         setTimeout(() => {
-          console.log('⏱️ getSession timeout triggered');
-          resolve({ data: { session: null }, error: { message: 'Timeout after 15 seconds' }, timeout: true });
-        }, 15000);
+          console.log('⏱️ getSession timeout triggered after 3 seconds');
+          resolve({ data: { session: null }, error: { message: 'Timeout after 3 seconds' }, timeout: true });
+        }, 3000);
       });
 
       const sessionPromise = client.auth.getSession();
@@ -2607,10 +2546,41 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
       if (result.timeout) {
         console.error('❌ getSession() timed out in checkAuthStatus!');
-        showLoadingNotification('⚠️ Authentication check slow - loading local data', 'warning');
-        // Load from localStorage when auth times out
-        state = loadFromLocalStorage() || state;
-        render();
+
+        // Try to recover session from localStorage manually (modular pattern)
+        console.log('🔧 Attempting localStorage session recovery...');
+        const keys = Object.keys(localStorage).filter(k => k.includes('supabase'));
+        console.log('Found Supabase keys:', keys);
+
+        let recoveredSession = null;
+        for (const key of keys) {
+          if (key.includes('auth-token')) {
+            try {
+              const stored = localStorage.getItem(key);
+              if (stored) {
+                const parsed = JSON.parse(stored);
+                if (parsed.access_token && parsed.user) {
+                  console.log('✅ Recovered session from localStorage');
+                  recoveredSession = { user: parsed.user, access_token: parsed.access_token };
+                  break;
+                }
+              }
+            } catch (e) {
+              console.log('Failed to parse stored auth:', e);
+            }
+          }
+        }
+
+        if (recoveredSession) {
+          currentUser = recoveredSession.user;
+          syncEnabled = true;
+          updateAuthUI();
+          showLoadingNotification('✅ Session recovered from storage', 'success');
+          await handleInitialSync();
+        } else {
+          showLoadingNotification('⚠️ Auth slow - using local data', 'warning');
+          hideLoadingNotification();
+        }
         return;
       }
 
@@ -2679,17 +2649,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   // Handle initial sync when user is authenticated
   async function handleInitialSync() {
-    // Check and set flag atomically to prevent race conditions
-    if (initialSyncCompleted) {
-      console.log('⏭️ Initial sync already in progress or completed, skipping...');
-      return;
-    }
-    initialSyncCompleted = true;  // Set immediately to prevent duplicate calls
-
     console.log('Handling initial sync...');
     console.log('Current user:', currentUser ? currentUser.email : 'none');
     console.log('Sync enabled:', syncEnabled);
     console.log('Supabase client available:', !!(supabase || window.supabaseClient));
+    console.log('Initial sync already completed:', initialSyncCompleted);
+
+    // Prevent duplicate syncs
+    if (initialSyncCompleted) {
+      console.log('Initial sync already completed, skipping...');
+      return;
+    }
 
     try {
       // Load cloud data
@@ -2733,12 +2703,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       // Set up real-time sync
       setupRealtimeSync();
 
+      // Mark initial sync as completed
+      initialSyncCompleted = true;
       console.log('✅ Initial sync completed successfully');
 
     } catch (error) {
       console.error('Error during initial sync:', error);
-      // Reset flag on error to allow retry if needed
-      initialSyncCompleted = false;
     }
   }
 
@@ -2884,19 +2854,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       console.log('Loading from cloud for user:', currentUser.email);
       console.log('User ID:', currentUser.id);
 
-      try {
-        console.log('📡 Starting Supabase query...');
-        showLoadingNotification('Loading data from cloud...');
-        const startTime = Date.now();
+      // Add timeout to prevent hanging (increased to 15 seconds for slower connections)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        controller.abort();
+        console.error('❌ Cloud load aborted after 15 seconds - network may be slow');
+      }, 15000);
 
+      try {
         const { data, error } = await client
           .from('hotlist_data')
           .select('data')
           .eq('user_id', currentUser.id)
           .single();
 
-        const queryTime = Date.now() - startTime;
-        console.log(`⏱️ Supabase query took ${queryTime}ms`);
+        clearTimeout(timeoutId);
 
         if (error) {
           if (error.code === 'PGRST116') {
@@ -2914,13 +2886,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         if (data && data.data) {
           const parsedData = JSON.parse(data.data);
           console.log('Parsed data has', parsedData.clients ? parsedData.clients.length : 0, 'clients');
-          showLoadingNotification(`✅ Loaded ${parsedData.clients ? parsedData.clients.length : 0} clients from cloud`, 'success');
           return parsedData;
         }
-        showLoadingNotification('📝 No cloud data found', 'warning');
         return null;
       } catch (innerError) {
-        console.error('Query error in inner try:', innerError);
+        clearTimeout(timeoutId);
         throw innerError;
       }
     } catch (error) {
@@ -3367,17 +3337,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   }
 
   function loadFromLocalStorage() {
-    showLoadingNotification('Loading data from local storage...');
     try {
       var cur = JSON.parse(localStorage.getItem(STABLE_KEY) || 'null');
-      if (cur) {
-        showLoadingNotification('✅ Data loaded from local storage', 'success');
-        return coerceState(cur);
-      }
+      if (cur) return coerceState(cur);
     } catch(e) {
       console.error('Failed to load from localStorage:', e);
     }
-    showLoadingNotification('📝 Creating fresh data', 'success');
     var fresh = {clients:[], quotes:{raw:'', list:[]}, quotesSettings:{interval:15, random:true, norepeat:true, recent:[]}};
     localStorage.setItem(STABLE_KEY, JSON.stringify(fresh));
     return fresh;
