@@ -1827,26 +1827,42 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   // Test Supabase connection
   window.testSupabase = async function() {
     console.log('Testing Supabase...');
+    console.log('1. Supabase library loaded:', typeof window.supabase);
+    console.log('2. Supabase client exists:', !!supabase);
+    console.log('3. SUPABASE_URL:', SUPABASE_URL);
+    console.log('4. SUPABASE_ANON_KEY exists:', !!SUPABASE_ANON_KEY);
+
     if (!supabase) {
-      console.error('Supabase not initialized');
+      console.error('Supabase not initialized!');
+
+      // Try to initialize it manually
+      if (window.supabase && window.supabase.createClient) {
+        console.log('Attempting manual initialization...');
+        try {
+          window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+          console.log('Manual init success');
+        } catch (e) {
+          console.error('Manual init failed:', e);
+        }
+      }
       return;
     }
 
-    try {
-      // Try a simple auth call
-      const { data, error } = await supabase.auth.getSession();
-      console.log('Supabase test - getSession:', { data: !!data, error });
+    console.log('5. Testing Supabase auth methods...');
 
-      // Check if we can reach Supabase
-      const healthCheck = await fetch(SUPABASE_URL + '/auth/v1/health', {
-        headers: {
-          'apikey': SUPABASE_ANON_KEY,
-          'Content-Type': 'application/json'
-        }
-      });
-      console.log('Supabase health check:', healthCheck.status);
+    // Test with timeout
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Timeout after 5 seconds')), 5000)
+    );
+
+    try {
+      const result = await Promise.race([
+        supabase.auth.getSession(),
+        timeoutPromise
+      ]);
+      console.log('6. getSession result:', result);
     } catch (err) {
-      console.error('Supabase test error:', err);
+      console.error('Test error:', err.message);
     }
   };
 
