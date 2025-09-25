@@ -1825,6 +1825,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   var supabase = null;  // Supabase client instance
   var currentUser = null;  // Current authenticated user
   var syncEnabled = false;  // Whether to sync to cloud
+  var initialSyncCompleted = false;  // Track if initial sync has already been done
   window.currentUser = null;  // Global reference for Teams page
 
   // Test Supabase connection
@@ -2071,30 +2072,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         }
 
         // Check for existing session (for non-OAuth cases)
-        try {
-          console.log('Checking for existing session...');
-          const { data: { session: existingSession } } = await supabase.auth.getSession();
-          console.log('Session check result:', existingSession ? 'Found' : 'None');
+        console.log('Checking for existing session...');
 
-          if (existingSession && existingSession.user && !currentUser) {
-            console.log('🔵 Found existing session on init:', existingSession.user.email);
-            currentUser = existingSession.user;
-            window.currentUser = existingSession.user;
-            syncEnabled = true;
-
-            // Update UI
-            updateAuthUI();
-
-            // Load cloud data after a short delay
-            setTimeout(async () => {
-              await handleInitialSync();
-            }, 100);
-          } else if (!existingSession) {
-            console.log('⚠️ No session found during init');
-          }
-        } catch (error) {
-          console.error('Error checking existing session:', error);
-        }
+        // Skip the session check in initSupabase - it will be handled by checkAuthStatus later
+        // This avoids the hanging issue with getSession() during initialization
+        console.log('Session check will be handled by checkAuthStatus after init completes');
 
         // Listen for auth state changes
         supabase.auth.onAuthStateChange(async (event, session) => {
@@ -2218,8 +2200,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           }
         }
 
-        // Check for existing session after a short delay to let Supabase process any URL tokens
-        setTimeout(checkAuthStatus, 2000);
+        // Auth check is now handled in the main initialization flow after initSupabase completes
+        // This prevents duplicate checks and ensures proper sequencing
       } catch (error) {
         console.error('Failed to initialize Supabase client:', error);
       }
@@ -2270,8 +2252,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   // Check if user is signed in
   async function checkAuthStatus() {
+    console.log('🔍 checkAuthStatus function started');
+
     const client = supabase || window.supabaseClient;
-    if (!client) return;
+    if (!client) {
+      console.log('checkAuthStatus: No Supabase client available');
+      return;
+    }
+
+    console.log('🔍 checkAuthStatus called - currentUser:', currentUser ? currentUser.email : 'none');
+    console.log('🔍 Supabase client exists:', !!client);
 
     // Check if the URL actually has OAuth/magic link tokens
     const hashString = window.location.hash.substring(1); // Remove the # character
@@ -2430,8 +2420,28 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     }
 
     try {
-      // Use getSession instead of getUser to avoid 401 errors
-      const { data: { session }, error } = await client.auth.getSession();
+      console.log('🔍 About to call getSession in checkAuthStatus...');
+
+      // Add timeout to prevent hanging
+      const timeout = new Promise((resolve) => {
+        setTimeout(() => {
+          console.log('⏱️ getSession timeout triggered');
+          resolve({ data: { session: null }, error: { message: 'Timeout after 5 seconds' }, timeout: true });
+        }, 5000);
+      });
+
+      const sessionPromise = client.auth.getSession();
+      console.log('🔍 getSession promise created');
+
+      const result = await Promise.race([sessionPromise, timeout]);
+      console.log('🔍 getSession completed or timed out');
+
+      if (result.timeout) {
+        console.error('❌ getSession() timed out in checkAuthStatus!');
+        return;
+      }
+
+      const { data: { session }, error } = result;
 
       if (!error && session) {
         const user = session.user;
@@ -2448,7 +2458,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         updateAuthUI();
 
         // Handle initial sync
-        handleInitialSync();
+        console.log('🔄 Calling handleInitialSync from checkAuthStatus for existing session');
+        await handleInitialSync();
       } else {
         console.log('No active session found');
       }
@@ -2499,6 +2510,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     console.log('Current user:', currentUser ? currentUser.email : 'none');
     console.log('Sync enabled:', syncEnabled);
     console.log('Supabase client available:', !!(supabase || window.supabaseClient));
+    console.log('Initial sync already completed:', initialSyncCompleted);
+
+    // Prevent duplicate syncs
+    if (initialSyncCompleted) {
+      console.log('Initial sync already completed, skipping...');
+      return;
+    }
 
     try {
       // Load cloud data
@@ -2532,6 +2550,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
       // Set up real-time sync
       setupRealtimeSync();
+
+      // Mark initial sync as completed
+      initialSyncCompleted = true;
+      console.log('✅ Initial sync completed successfully');
 
     } catch (error) {
       console.error('Error during initial sync:', error);
@@ -3312,9 +3334,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   /* Enhanced load/save with IndexedDB and localStorage fallback */
   async function load() {
-    // If user is signed in and sync is enabled, always prioritize cloud data
-    if (currentUser && syncEnabled) {
-      console.log('User is signed in, loading from cloud...');
+    // If initial sync has already loaded cloud data, use the current state
+    if (initialSyncCompleted && currentUser && syncEnabled) {
+      console.log('Initial sync already completed, using current state');
+      return state;  // Return the state that was already loaded by handleInitialSync
+    }
+
+    // If user is signed in and sync is enabled, but initial sync hasn't run yet
+    // (This shouldn't normally happen, but it's a fallback)
+    if (currentUser && syncEnabled && !initialSyncCompleted) {
+      console.log('User is signed in but initial sync not completed, loading from cloud...');
       try {
         const cloudData = await loadFromCloud();
         if (cloudData && Object.keys(cloudData).length > 0) {
@@ -3417,7 +3446,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       // Give Supabase time to fully establish auth state
       await new Promise(function(resolve) { setTimeout(resolve, 500); });
       // Check for existing session after initialization
-      checkAuthStatus();
+      await checkAuthStatus();  // CRITICAL: Must await to ensure sync happens before load()
     }
 
     var result = load();
