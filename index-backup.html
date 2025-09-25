@@ -2592,7 +2592,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         // Save to local for offline access
         var dataStr = JSON.stringify(state);
         localStorage.setItem(STABLE_KEY, dataStr);
-        // IndexedDB removed - localStorage only
+        if (storageDB) {
+          await saveToIndexedDB(STABLE_KEY, dataStr);
+        }
 
         // Re-render with cloud data
         render();
@@ -2667,7 +2669,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 // Save to local for offline access
                 var dataStr = JSON.stringify(state);
                 localStorage.setItem(STABLE_KEY, dataStr);
-                // IndexedDB removed - localStorage only
+                if (storageDB) {
+                  await saveToIndexedDB(STABLE_KEY, dataStr);
+                }
 
                 // Re-render UI
                 render();
@@ -2976,7 +2980,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     { version: '1.8.3', date: '2025-01-17', changes: 'Remove ultra-compact mode, simplify to 2 density options, fix density select display' },
     { version: '1.8.2', date: '2025-01-17', changes: 'Switch to cookie-based density persistence for cache-resistant settings' },
     { version: '1.8.1', date: '2025-01-17', changes: 'Add demo data system with Load Demo button for first-time users' },
-    { version: '1.8.0', date: '2025-01-16', changes: 'Implement persistent storage improvements, fix celebration logic, add storage management tools' },
+    { version: '1.8.0', date: '2025-01-16', changes: 'Implement IndexedDB persistent storage, fix celebration logic, add storage management tools' },
     { version: '1.7.2', date: '2025-01-16', changes: 'Redesign celebrations, fix header layout, and prevent duplicate goal celebrations' },
     { version: '1.7.1', date: '2025-01-16', changes: 'Fix service worker caching strategy and force cache refresh' },
     { version: '1.7.0', date: '2025-01-15', changes: 'Add epic purchase celebration with money rain and cha-ching sound' },
@@ -3123,16 +3127,202 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     calendarMethod:$('#calendarMethod')
   };
 
-  /* Storage Module */
-  // Using localStorage only for simplicity
+  /* IndexedDB Storage Module */
+  // IndexedDB removed - using localStorage only
 
+  async function requestPersistentStorage() {
+    if ('storage' in navigator && 'persist' in navigator.storage) {
+      try {
+        const persistent = await navigator.storage.persist();
+        console.log('Persistent storage:', persistent ? 'granted' : 'denied');
+        return persistent;
+      } catch (e) {
+        console.warn('Could not request persistent storage:', e);
+        return false;
+      }
+    }
+    return false;
+  }
 
+  async function getStorageInfo() {
+    const info = {
+      persistent: false,
+      quota: 0,
+      usage: 0
+    };
 
+    if ('storage' in navigator) {
+      try {
+        if ('persisted' in navigator.storage) {
+          info.persistent = await navigator.storage.persisted();
+        }
+        if ('estimate' in navigator.storage) {
+          const estimate = await navigator.storage.estimate();
+          info.quota = estimate.quota || 0;
+          info.usage = estimate.usage || 0;
+        }
+      } catch (e) {
+        console.warn('Could not get storage info:', e);
+      }
+    }
 
+    return info;
+  }
 
+  function initDB() {
+    return new Promise(async function(resolve, reject) {
+      if (!window.indexedDB) {
+        console.log('IndexedDB not supported, falling back to localStorage');
+        resolve(null);
+        return;
+      }
 
-  /* UI state with localStorage only */
+      // Request persistent storage to prevent data loss during cache clearing
+      await requestPersistentStorage();
+
+      var request = indexedDB.open(DB_NAME, DB_VERSION);
+
+      request.onerror = function() {
+        console.error('Failed to open IndexedDB:', request.error);
+        resolve(null);
+      };
+
+      request.onsuccess = function() {
+        storageDB = request.result;
+        console.log('IndexedDB initialized successfully');
+
+        // Handle database closing unexpectedly
+        storageDB.onclose = function() {
+          console.warn('IndexedDB connection closed unexpectedly');
+          storageDB = null;
+        };
+
+        storageDB.onerror = function(event) {
+          console.error('IndexedDB error:', event);
+        };
+
+        storageDB.onabort = function(event) {
+          console.error('IndexedDB transaction aborted:', event);
+        };
+
+        resolve(storageDB);
+      };
+
+      request.onupgradeneeded = function(event) {
+        var db = event.target.result;
+        if (!db.objectStoreNames.contains(STORE_NAME)) {
+          db.createObjectStore(STORE_NAME);
+        }
+      };
+    });
+  }
+
+  function saveToIndexedDB(key, data) {
+    return new Promise(function(resolve, reject) {
+      // Re-open database if needed
+      if (!storageDB) {
+        initDB().then(function(db) {
+          if (!db) {
+            reject(new Error('IndexedDB not available'));
+            return;
+          }
+          performSave();
+        });
+      } else {
+        performSave();
+      }
+
+      function performSave() {
+        try {
+          var transaction = storageDB.transaction([STORE_NAME], 'readwrite');
+          var store = transaction.objectStore(STORE_NAME);
+          var request = store.put(data, key);
+
+          request.onsuccess = function() {
+            console.log('Data saved to IndexedDB successfully');
+            resolve();
+          };
+
+          request.onerror = function() {
+            console.error('Failed to save to IndexedDB:', request.error);
+            reject(request.error);
+          };
+
+          transaction.oncomplete = function() {
+            console.log('IndexedDB transaction completed');
+          };
+
+          transaction.onerror = function() {
+            console.error('IndexedDB transaction error:', transaction.error);
+            reject(transaction.error);
+          };
+        } catch (e) {
+          console.error('Error during IndexedDB save:', e);
+          reject(e);
+        }
+      }
+    });
+  }
+
+  function loadFromIndexedDB(key) {
+    return new Promise(function(resolve, reject) {
+      // Re-open database if needed
+      if (!storageDB) {
+        initDB().then(function(db) {
+          if (!db) {
+            reject(new Error('IndexedDB not available'));
+            return;
+          }
+          performLoad();
+        });
+      } else {
+        performLoad();
+      }
+
+      function performLoad() {
+        try {
+          var transaction = storageDB.transaction([STORE_NAME], 'readonly');
+          var store = transaction.objectStore(STORE_NAME);
+          var request = store.get(key);
+
+          request.onsuccess = function() {
+            console.log('Data loaded from IndexedDB:', key, request.result ? 'found' : 'not found');
+            resolve(request.result);
+          };
+
+          request.onerror = function() {
+            console.error('Failed to load from IndexedDB:', request.error);
+            reject(request.error);
+          };
+        } catch (e) {
+          console.error('Error during IndexedDB load:', e);
+          reject(e);
+        }
+      }
+    });
+  }
+
+  /* UI state with IndexedDB support */
   function loadUI() {
+    if (storageDB) {
+      return loadFromIndexedDB(UI_KEY).then(function(data) {
+        if (data) {
+          try {
+            return JSON.parse(data);
+          } catch(e) {
+            console.error('Failed to parse IndexedDB UI data:', e);
+          }
+        }
+        return loadUIFromLocalStorage();
+      }).catch(function(e) {
+        console.error('IndexedDB UI load failed:', e);
+        return loadUIFromLocalStorage();
+      });
+    }
+    return loadUIFromLocalStorage();
+  }
+
+  function loadUIFromLocalStorage() {
     try {
       return JSON.parse(localStorage.getItem(UI_KEY) || '{}');
     } catch(e) {
@@ -3142,12 +3332,33 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   function saveUI(u) {
     var dataStr = JSON.stringify(u);
+
+    // Always save to localStorage first (synchronous, immediate)
     localStorage.setItem(UI_KEY, dataStr);
-    console.log('UI saved to localStorage');
+
+    // Then attempt to save to IndexedDB (asynchronous)
+    saveToIndexedDB(UI_KEY, dataStr).then(function() {
+      console.log('Successfully saved UI to IndexedDB');
+    }).catch(function(e) {
+      console.error('Failed to save UI to IndexedDB, but localStorage save succeeded:', e);
+      // Try to reinitialize DB for next save
+      storageDB = null;
+    });
   }
   var ui = {};
   var uiReady = Promise.resolve().then(function() {
-    ui = loadUI() || {};
+    var result = loadUI();
+    if (result && result.then) {
+      return result.then(function(loadedUI) {
+        ui = loadedUI || {};
+        // Initialize context group order if not present
+        if(!ui.contextGroupOrder){
+          ui.contextGroupOrder = ['life', 'home_auto', 'commercial', 'farm', 'networking'];
+        }
+        return ui;
+      });
+    }
+    ui = result || {};
     // Initialize context group order if not present
     if(!ui.contextGroupOrder){
       ui.contextGroupOrder = ['life', 'home_auto', 'commercial', 'farm', 'networking'];
@@ -3188,7 +3399,33 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     return isFinite(v) ? v : 4;
   }
 
-  /* Storage helper functions */
+  /* Migrate existing localStorage data to IndexedDB */
+  function migrateData() {
+    if (!storageDB) return Promise.resolve();
+
+    return new Promise(function(resolve) {
+      var promises = [];
+
+      var mainData = localStorage.getItem(STABLE_KEY);
+      if (mainData) {
+        promises.push(saveToIndexedDB(STABLE_KEY, mainData).catch(function(e) {
+          console.error('Failed to migrate main data:', e);
+        }));
+      }
+
+      var uiData = localStorage.getItem(UI_KEY);
+      if (uiData) {
+        promises.push(saveToIndexedDB(UI_KEY, uiData).catch(function(e) {
+          console.error('Failed to migrate UI data:', e);
+        }));
+      }
+
+      Promise.all(promises).then(function() {
+        console.log('Data migration completed');
+        resolve();
+      });
+    });
+  }
 
   /* Stable state */
   function coerceState(x){ var out={clients:[], quotes:{raw:'', list:[]}, quotesSettings:{interval:15, random:true, norepeat:true, recent:[]} }; if(!x) return out; if(Array.isArray(x)){ out.clients=x; return normalize(out); } if(typeof x==='object'){ if(Array.isArray(x.clients)) out.clients=x.clients; if(x.quotes) out.quotes=x.quotes; if(x.quotesSettings) out.quotesSettings=x.quotesSettings; return normalize(out);} return out; }
@@ -3224,7 +3461,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     return state;
   }
 
-  /* Load and save functions with localStorage */
+  /* Enhanced load/save with IndexedDB and localStorage fallback */
   async function load() {
     // If initial sync has already loaded cloud data, use the current state
     if (initialSyncCompleted && currentUser && syncEnabled) {
@@ -3243,6 +3480,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           // Save to local storage for offline access
           const dataStr = JSON.stringify(cloudData);
           localStorage.setItem(STABLE_KEY, dataStr);
+          if (storageDB) {
+            await saveToIndexedDB(STABLE_KEY, dataStr);
+          }
           return coerceState(cloudData);
         }
       } catch(e) {
@@ -3251,8 +3491,27 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       }
     }
 
-    // Fall back to local storage
-    return loadFromLocalStorage();
+    // Fall back to local storage only if not signed in
+    if (!currentUser) {
+      if (storageDB) {
+        return loadFromIndexedDB(STABLE_KEY).then(function(data) {
+          if (data) {
+            try {
+              return coerceState(JSON.parse(data));
+            } catch(e) {
+              console.error('Failed to parse IndexedDB data:', e);
+            }
+          }
+          return loadFromLocalStorage();
+        }).catch(function(e) {
+          console.error('IndexedDB load failed, using localStorage:', e);
+          return loadFromLocalStorage();
+        });
+      }
+      return loadFromLocalStorage();
+    }
+
+    return null;
   }
 
   function loadFromLocalStorage() {
@@ -3290,15 +3549,24 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   }
 
   function saveLocally(dataStr) {
-    // Save to localStorage only
+    // Save to localStorage first (synchronous, immediate)
     localStorage.setItem(STABLE_KEY, dataStr);
-    console.log('Data saved to localStorage');
+
+    // Then attempt to save to IndexedDB (asynchronous)
+    if (storageDB) {
+      saveToIndexedDB(STABLE_KEY, dataStr).then(function() {
+        console.log('Successfully saved to IndexedDB');
+      }).catch(function(e) {
+        console.error('Failed to save to IndexedDB, but localStorage save succeeded:', e);
+        // Try to reinitialize DB for next save
+        storageDB = null;
+      });
+    }
   }
   /* Initialize storage and load state */
   var state = {clients:[], quotes:{raw:'', list:[]}, quotesSettings:{interval:15, random:true, norepeat:true, recent:[]}}; // Default state to prevent null errors
-  var storageReady = Promise.resolve().then(function() {
-    // IndexedDB removed - using localStorage only
-    return Promise.resolve();
+  var storageReady = initDB().then(function() {
+    return migrateData();
   }).then(async function() {
     // Initialize Supabase first if configured
     if (SUPABASE_URL && SUPABASE_URL !== 'https://YOUR_PROJECT_ID.supabase.co' &&
