@@ -2263,6 +2263,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     console.log('🔍 checkAuthStatus called - currentUser:', currentUser ? currentUser.email : 'none');
     console.log('🔍 Supabase client exists:', !!client);
 
+    // If we already have a user from onAuthStateChange, just sync
+    if (currentUser && syncEnabled) {
+      console.log('🔍 User already authenticated via onAuthStateChange, proceeding with sync');
+      console.log('🔄 Calling handleInitialSync from checkAuthStatus for existing session');
+      await handleInitialSync();
+      return;
+    }
+
     // Check if the URL actually has OAuth/magic link tokens
     const hashString = window.location.hash.substring(1); // Remove the # character
     const hasAuthTokens = hashString && (
@@ -2681,13 +2689,36 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     try {
       console.log('Loading from cloud for user:', currentUser.email);
-      const { data, error } = await client
+
+      // Add timeout to prevent hanging
+      const timeout = new Promise((resolve) => {
+        setTimeout(() => {
+          console.log('⏱️ Cloud load timeout after 10 seconds');
+          resolve({ timeout: true });
+        }, 10000);
+      });
+
+      const queryPromise = client
         .from('hotlist_data')
         .select('data')
         .eq('user_id', currentUser.id)
         .single();
 
-      if (error) throw error;
+      const result = await Promise.race([queryPromise, timeout]);
+
+      if (result.timeout) {
+        console.error('❌ Cloud load timed out!');
+        return null;
+      }
+
+      const { data, error } = result;
+
+      if (error) {
+        console.error('Cloud load error:', error);
+        throw error;
+      }
+
+      console.log('✅ Cloud data loaded successfully, has data:', !!data);
       return data ? JSON.parse(data.data) : null;
     } catch (error) {
       console.error('Cloud load failed:', error);
