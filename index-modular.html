@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hotlist - Modular Version</title>
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root {
+      --ink: #2c3e50;
+      --muted: #7f8c8d;
+      --green: #27ae60;
+      --red: #e74c3c;
+      --blue: #3498db;
+      --orange: #f39c12;
+      --bg: #ecf0f1;
+      --card: #fff;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .header h1 {
+      font-size: 28px;
+      color: #ff6b35;
+      margin-bottom: 16px;
+    }
+
+    .auth-section {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 8px;
+      color: white;
+    }
+
+    .auth-status {
+      flex: 1;
+      font-size: 14px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: white;
+      color: #667eea;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .content {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin: 24px 0;
+    }
+
+    .stat-card {
+      padding: 16px;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: bold;
+      color: var(--ink);
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .debug-section {
+      margin-top: 24px;
+      padding: 16px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 12px;
+    }
+
+    .debug-section h3 {
+      margin-bottom: 12px;
+      color: var(--ink);
+    }
+
+    .debug-output {
+      background: white;
+      padding: 12px;
+      border-radius: 4px;
+      border: 1px solid #dee2e6;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .teams-link {
+      display: none;
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #667eea;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .teams-link:hover {
+      background: white;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: var(--muted);
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(0,0,0,0.1);
+      border-left-color: #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🔥 Hotlist - Modular Version</h1>
+
+      <div class="auth-section">
+        <div class="auth-status">
+          <div id="authStatus">Checking authentication...</div>
+        </div>
+        <a href="#" class="teams-link" id="teamsLink">Teams</a>
+        <span id="teamsSeparator" style="display:none;color:rgba(255,255,255,0.5)">|</span>
+        <button id="signInBtn" class="btn btn-primary" style="display:none">
+          Sign in with Google
+        </button>
+        <button id="signOutBtn" class="btn btn-secondary" style="display:none">
+          Sign Out
+        </button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div id="loadingSection" class="loading">
+        <div class="spinner"></div>
+        <p>Initializing app...</p>
+      </div>
+
+      <div id="mainContent" style="display:none">
+        <h2>Dashboard</h2>
+
+        <div class="stats">
+          <div class="stat-card">
+            <div class="stat-value" id="clientCount">0</div>
+            <div class="stat-label">Total Clients</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="syncStatus">-</div>
+            <div class="stat-label">Sync Status</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="lastSync">Never</div>
+            <div class="stat-label">Last Sync</div>
+          </div>
+        </div>
+
+        <div class="debug-section">
+          <h3>Debug Console</h3>
+          <div class="debug-output" id="debugOutput">
+            Ready. Try these commands in the console:
+            <br>• debugAuth() - Check authentication status
+            <br>• debugSync() - Check sync status
+            <br>• restoreSession() - Manually restore session
+            <br>• app.auth - Access auth manager
+            <br>• app.sync - Access sync manager
+          </div>
+        </div>
+
+        <div style="margin-top: 24px; padding: 16px; background: #fff3cd; border-radius: 8px; border: 1px solid #ffc107;">
+          <strong>ℹ️ This is the modular test version</strong><br>
+          <small>The auth logic has been extracted into clean modules for easier debugging.
+          <a href="index.html">Go back to main app</a></small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load modules -->
+  <script type="module" src="/js/main.js"></script>
+
+  <!-- Additional UI updates -->
+  <script type="module">
+    // Wait for app to initialize
+    setTimeout(() => {
+      if (window.app && window.app.auth) {
+        // Hide loading, show content
+        document.getElementById('loadingSection').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
+
+        // Update stats display
+        function updateStats() {
+          const clientCount = document.getElementById('clientCount');
+          const syncStatus = document.getElementById('syncStatus');
+          const lastSync = document.getElementById('lastSync');
+
+          if (clientCount) {
+            clientCount.textContent = window.app.state?.clients?.length || 0;
+          }
+
+          if (syncStatus) {
+            const status = window.app.sync?.getSyncStatus();
+            syncStatus.textContent = status?.enabled ? '✅ Active' : '❌ Inactive';
+          }
+
+          if (lastSync && window.app.sync) {
+            const status = window.app.sync.getSyncStatus();
+            if (status.lastSync) {
+              lastSync.textContent = status.lastSync.toLocaleTimeString();
+            }
+          }
+        }
+
+        // Update stats every 5 seconds
+        updateStats();
+        setInterval(updateStats, 5000);
+
+        // Log to debug output
+        const logDebug = (message) => {
+          const output = document.getElementById('debugOutput');
+          if (output) {
+            const time = new Date().toLocaleTimeString();
+            output.innerHTML = `[${time}] ${message}<br>` + output.innerHTML;
+            // Keep only last 20 lines
+            const lines = output.innerHTML.split('<br>');
+            if (lines.length > 20) {
+              output.innerHTML = lines.slice(0, 20).join('<br>');
+            }
+          }
+        };
+
+        // Subscribe to auth changes
+        window.app.auth.subscribe((event, data) => {
+          logDebug(`Auth event: ${event} - ${data?.email || 'no user'}`);
+          updateStats();
+        });
+
+        // Log initial state
+        logDebug('App initialized successfully');
+        if (window.app.auth.isAuthenticated()) {
+          const user = window.app.auth.getUserInfo();
+          logDebug(`Authenticated as: ${user.email}`);
+        } else {
+          logDebug('Not authenticated');
+        }
+      }
+    }, 1000);
+  </script>
+</body>
+</html>
