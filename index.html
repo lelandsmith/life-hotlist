@@ -2032,13 +2032,47 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         // CRITICAL: Process OAuth tokens if they're in the URL
         if (window.location.hash && window.location.hash.includes('access_token')) {
-          console.log('🔴 OAuth tokens detected in URL, waiting for Supabase to process...');
-          // Give Supabase time to process the tokens
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          console.log('🔴 OAuth tokens detected in URL, processing manually...');
+
+          // Extract tokens from URL
+          const hashParams = new URLSearchParams(window.location.hash.substring(1));
+          const accessToken = hashParams.get('access_token');
+          const refreshToken = hashParams.get('refresh_token');
+
+          if (accessToken && refreshToken) {
+            console.log('Setting session with tokens...');
+            try {
+              const { data, error } = await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken
+              });
+
+              if (error) {
+                console.error('Failed to set session:', error);
+              } else if (data && data.session) {
+                console.log('✅ Session set successfully:', data.session.user.email);
+                currentUser = data.session.user;
+                window.currentUser = data.session.user;
+                syncEnabled = true;
+
+                // Clear tokens from URL
+                window.history.replaceState(null, null, window.location.pathname);
+
+                // Update UI
+                updateAuthUI();
+
+                // Skip the normal session check since we just set it
+                return;
+              }
+            } catch (e) {
+              console.error('Error setting session:', e);
+            }
+          }
         }
 
-        // Check for existing session after token processing
+        // Check for existing session (for non-OAuth cases)
         try {
+          console.log('Checking for existing session...');
           const { data: { session: existingSession } } = await supabase.auth.getSession();
           console.log('Session check result:', existingSession ? 'Found' : 'None');
 
