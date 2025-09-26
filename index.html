@@ -2159,8 +2159,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 // Clear tokens from URL
                 window.history.replaceState(null, null, window.location.pathname);
 
-                // Update UI
+                // Update UI - ensure Teams link is visible
+                const teamsLink = document.getElementById('teamsLink');
+                const teamsSeparator = document.getElementById('teamsSeparator');
+                if (teamsLink) teamsLink.style.display = 'inline';
+                if (teamsSeparator) teamsSeparator.style.display = 'inline';
+
                 updateAuthUI();
+
+                // Show success banner
+                showAuthSuccessBanner(data.session.user.email);
+                sessionStorage.setItem('authenticated', 'true');
+
+                // Handle initial sync
+                await handleInitialSync();
 
                 // Skip the normal session check since we just set it
                 return;
