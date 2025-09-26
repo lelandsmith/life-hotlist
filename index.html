@@ -2658,43 +2658,32 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     try {
       console.log('Sending magic link to:', email);
 
-      // Fallback for localhost - use direct API call with URL param
-      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        console.log('Using localhost fallback for magic link');
-        const response = await fetch(`${SUPABASE_URL}/auth/v1/otp?apikey=${SUPABASE_ANON_KEY}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            email: email,
-            options: {
-              emailRedirectTo: window.location.href
-            }
-          })
-        });
+      // Check if we have the credentials
+      if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+        throw new Error('Supabase credentials not found. URL: ' + !!SUPABASE_URL + ', Key: ' + !!SUPABASE_ANON_KEY);
+      }
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.msg || errorData.message || 'Failed to send magic link');
-        }
-
-        console.log('Magic link sent via fallback method');
-      } else {
-        // Production - use normal Supabase client
-        const { error } = await client.auth.signInWithOtp({
+      // Always use the URL parameter method since Supabase JS client has issues
+      console.log('Using direct API call for magic link');
+      const response = await fetch(`${SUPABASE_URL}/auth/v1/otp?apikey=${SUPABASE_ANON_KEY}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
           email: email,
           options: {
-            emailRedirectTo: window.location.href,
-            shouldCreateUser: true,
-            data: {
-              email_confirm: true
-            }
+            emailRedirectTo: window.location.href
           }
-        });
+        })
+      });
 
-        if (error) throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.msg || errorData.message || 'Failed to send magic link');
       }
+
+      console.log('Magic link sent successfully');
 
       alert('✅ Magic Link Sent!\n\nCheck your email for the sign-in link.\n\n📧 Check spam folder if not in inbox\n⏰ Link expires in 1 hour\n🔄 Refresh this page after clicking the link\n\n⚠️ Note: If using corporate email with link scanning, the link may expire. Try using a personal email instead.');
     } catch (error) {
