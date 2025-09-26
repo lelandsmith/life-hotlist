@@ -151,15 +151,29 @@
         const email = document.getElementById('email-input').value;
         if (!email) return alert('Please enter an email');
 
-        const { error } = await supabase.auth.signInWithOtp({
-          email: email,
-          options: { emailRedirectTo: window.location.origin + window.location.pathname }
-        });
+        // Use direct API call with URL parameter to bypass CORS issue
+        try {
+          const response = await fetch(SUPABASE_URL + '/auth/v1/otp?apikey=' + SUPABASE_KEY, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              email: email,
+              options: {
+                emailRedirectTo: window.location.origin + window.location.pathname
+              }
+            })
+          });
 
-        if (error) {
-          alert('Error: ' + error.message);
-        } else {
-          alert('Check your email for the magic link!');
+          if (response.ok) {
+            alert('Check your email for the magic link!');
+          } else {
+            const data = await response.json();
+            alert('Error: ' + (data.message || data.msg || 'Failed to send magic link'));
+          }
+        } catch (err) {
+          alert('Error: ' + err.message);
         }
       };
 
