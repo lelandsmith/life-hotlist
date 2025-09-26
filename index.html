@@ -2354,9 +2354,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   async function checkAuthStatus() {
     console.log('🔍 checkAuthStatus function started');
 
+    // Show connecting notification
+    showNotification('Connecting', 'Checking authentication status...');
+
     const client = supabase || window.supabaseClient;
     if (!client) {
       console.log('checkAuthStatus: No Supabase client available');
+      showNotification('Error', 'Unable to connect to authentication service');
       return;
     }
 
@@ -2546,6 +2550,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
       if (result.timeout) {
         console.error('❌ getSession() timed out in checkAuthStatus!');
+        showNotification('Connection Slow', 'Cloud connection timed out, checking local storage...');
 
         // Try to recover session from localStorage manually (modular pattern)
         console.log('🔧 Attempting localStorage session recovery...');
@@ -2575,11 +2580,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           currentUser = recoveredSession.user;
           syncEnabled = true;
           updateAuthUI();
-          showLoadingNotification('✅ Session recovered from storage', 'success');
+          showNotification('Session Recovered', 'Using cached authentication');
           await handleInitialSync();
         } else {
-          showLoadingNotification('⚠️ Auth slow - using local data', 'warning');
-          hideLoadingNotification();
+          showNotification('Offline Mode', 'Using local data only');
         }
         return;
       }
@@ -2589,6 +2593,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       if (!error && session) {
         const user = session.user;
         console.log('🔍 checkAuthStatus: Found user:', user ? user.email : 'none');
+        showNotification('Authenticated', `Signed in as ${user.email}`);
         currentUser = user;
         window.currentUser = user;  // Set global for Teams page
         syncEnabled = true;
@@ -2605,6 +2610,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         await handleInitialSync();
       } else {
         console.log('No active session found');
+        showNotification('Not Signed In', 'Using local storage only');
       }
     } catch (error) {
       console.log('Auth check failed:', error);
@@ -2662,12 +2668,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     }
 
     try {
+      // Show notification that we're loading from cloud
+      if (currentUser) {
+        showNotification('Loading Data', 'Fetching data from cloud database...');
+      }
+
       // Load cloud data
       const cloudData = await loadFromCloud();
 
       if (cloudData && Object.keys(cloudData).length > 0) {
         // Cloud has data - use it as the source of truth
         console.log('Loading data from cloud');
+        showNotification('Cloud Data Loaded', `Loaded ${cloudData.clients?.length || 0} clients from cloud`);
         state = coerceState(cloudData);
 
         // Save to local for offline access
@@ -2688,15 +2700,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           const localData = loadFromLocalStorage();
           if (localData && localData.clients && localData.clients.length > 0) {
             console.log('Found local data with', localData.clients.length, 'clients - using it');
+            showNotification('Local Data', `Loaded ${localData.clients.length} clients from local storage`);
             state = localData;
             // Try to save to cloud
             await saveToCloud(state);
             console.log('Local data migrated to cloud');
+            showNotification('Synced', 'Local data uploaded to cloud');
           } else {
             console.log('No local data to migrate');
+            showNotification('No Data', 'No data found in cloud or local storage');
           }
         } else {
           console.log('Already have state with', state.clients.length, 'clients - keeping it');
+          showNotification('Data Retained', `Keeping existing ${state.clients.length} clients`);
         }
       }
 
