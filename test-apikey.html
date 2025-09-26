@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>API Key Test</title>
+</head>
+<body>
+  <h1>API Key Debugging</h1>
+
+  <button onclick="testMagicLink()">Test Magic Link with Different Methods</button>
+
+  <pre id="output" style="background: #f0f0f0; padding: 20px; height: 500px; overflow: auto;"></pre>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    const SUPABASE_URL = 'https://yoxzlejphrhtuisnptor.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlveHpsZWpwaHJodHVpc25wdG9yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1NjIwNDIsImV4cCI6MjA3NDEzODA0Mn0.azXNn6AQQcB5iJzn7ebhAh5cSBESgKwEV2aSviX8yeY';
+
+    function log(msg) {
+      document.getElementById('output').innerHTML += msg + '\n';
+      console.log(msg);
+    }
+
+    async function testMagicLink() {
+      log('=== Starting API Key Tests ===\n');
+
+      // Test 1: Direct fetch with apikey header
+      log('Test 1: Direct fetch with apikey header');
+      try {
+        const response1 = await fetch(SUPABASE_URL + '/auth/v1/otp', {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email: 'emailleland@gmail.com',
+            options: {
+              emailRedirectTo: window.location.href
+            }
+          })
+        });
+        const data1 = await response1.text();
+        log('Response: ' + response1.status + ' - ' + data1);
+      } catch (err) {
+        log('Error: ' + err.message);
+      }
+
+      // Test 2: Using URL parameter instead of header
+      log('\nTest 2: Using URL parameter for apikey');
+      try {
+        const response2 = await fetch(SUPABASE_URL + '/auth/v1/otp?apikey=' + SUPABASE_KEY, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email: 'emailleland@gmail.com',
+            options: {
+              emailRedirectTo: window.location.href
+            }
+          })
+        });
+        const data2 = await response2.text();
+        log('Response: ' + response2.status + ' - ' + data2);
+      } catch (err) {
+        log('Error: ' + err.message);
+      }
+
+      // Test 3: Using Supabase client
+      log('\nTest 3: Using Supabase client library');
+      try {
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const { data, error } = await supabase.auth.signInWithOtp({
+          email: 'emailleland@gmail.com',
+          options: {
+            emailRedirectTo: window.location.href
+          }
+        });
+        if (error) {
+          log('Error: ' + error.message);
+          // Try to see what headers the client is using
+          log('Checking what the client sends...');
+        } else {
+          log('Success! Magic link sent');
+        }
+      } catch (err) {
+        log('Exception: ' + err.message);
+      }
+
+      // Test 4: Check if it's a CORS issue with Authorization header
+      log('\nTest 4: With Authorization Bearer header');
+      try {
+        const response4 = await fetch(SUPABASE_URL + '/auth/v1/otp', {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_KEY,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email: 'emailleland@gmail.com',
+            options: {
+              emailRedirectTo: window.location.href
+            }
+          })
+        });
+        const data4 = await response4.text();
+        log('Response: ' + response4.status + ' - ' + data4);
+      } catch (err) {
+        log('Error: ' + err.message);
+      }
+
+      log('\n=== Tests Complete ===');
+      log('If Method 2 (URL parameter) works but Method 1 (header) fails, it\'s a CORS issue.');
+    }
+  </script>
+</body>
+</html>
