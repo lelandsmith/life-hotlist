@@ -750,8 +750,8 @@ body[data-density="titles-only"] .stage-time-metric { display: none; }
   display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;
   font-size:11px;font-weight:800;color:#fff;flex:0 0 auto; box-shadow:0 2px 6px rgba(15,23,42,.16)
 }
-.age-badge.orange{background:var(--orange)}
-.age-badge.red{background:var(--red)}
+.age-badge.orange{background:rgba(245, 158, 11, 0.6)}
+.age-badge.red{background:rgba(220, 38, 38, 0.6)}
 .age-badge.sm{width:16px;height:16px;font-size:10px}
 /* Green dot for touched today */
 .touched-dot{
@@ -1316,6 +1316,43 @@ body[data-all-contexts="true"] .context-group > div:last-child {
 }
 
 .delete-undo-countdown {
+  font-weight: 600;
+  color: #fbbf24;
+}
+
+/* Archive Undo Notification */
+.archive-undo-notification {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e293b;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 10000;
+  animation: slideUp 0.3s ease;
+}
+
+.archive-undo-notification button {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.archive-undo-notification button:hover {
+  background: #2563eb;
+}
+
+.archive-undo-countdown {
   font-weight: 600;
   color: #fbbf24;
 }
@@ -2587,7 +2624,80 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       console.log('Notes saved for:', c.name);
     }, 500);
   }
-  function archiveClient(c,flag){ preserveUIAndRender(function(){ c.archived=!!flag; }); }
+  var archiveUndoTimeout = null;
+  var archivedClientState = null;
+
+  function archiveClient(c,flag){
+    // If explicitly unarchiving, just do it without undo
+    if(flag === false){
+      preserveUIAndRender(function(){ c.archived = false; });
+      return;
+    }
+
+    // Store the client's previous archived state for potential undo
+    var wasArchived = c.archived;
+    archivedClientState = {client: c, wasArchived: wasArchived};
+
+    // Archive the client immediately
+    preserveUIAndRender(function(){ c.archived = true; });
+
+    // Clear any existing timeout
+    if(archiveUndoTimeout){
+      clearTimeout(archiveUndoTimeout);
+      var existingNotif = document.querySelector('.archive-undo-notification');
+      if(existingNotif) existingNotif.remove();
+    }
+
+    // Create undo notification
+    var notif = document.createElement('div');
+    notif.className = 'archive-undo-notification';
+
+    var message = document.createElement('span');
+    message.textContent = 'Archived "' + c.name + '" - ';
+
+    var countdown = document.createElement('span');
+    countdown.className = 'archive-undo-countdown';
+    var secondsLeft = 5;
+    countdown.textContent = secondsLeft + 's';
+
+    var undoBtn = document.createElement('button');
+    undoBtn.textContent = 'Undo';
+    undoBtn.onclick = function(){
+      clearTimeout(archiveUndoTimeout);
+      clearInterval(countdownInterval);
+
+      // Restore the client's previous archived state
+      preserveUIAndRender(function(){
+        archivedClientState.client.archived = archivedClientState.wasArchived;
+      });
+
+      notif.remove();
+      archivedClientState = null;
+    };
+
+    notif.appendChild(message);
+    notif.appendChild(countdown);
+    notif.appendChild(undoBtn);
+    document.body.appendChild(notif);
+
+    // Update countdown
+    var countdownInterval = setInterval(function(){
+      secondsLeft--;
+      if(secondsLeft > 0){
+        countdown.textContent = secondsLeft + 's';
+      } else {
+        clearInterval(countdownInterval);
+      }
+    }, 1000);
+
+    // Remove notification and clear archived client state after 5 seconds
+    archiveUndoTimeout = setTimeout(function(){
+      notif.remove();
+      archivedClientState = null;
+      clearInterval(countdownInterval);
+    }, 5000);
+  }
+
   var deleteUndoTimeout = null;
   var deletedClient = null;
 
@@ -3621,7 +3731,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   function setTip(el, text){ el.classList.add('has-tip'); el.setAttribute('data-tip', text); }
 
   /* Action icon group */
-  function buildIconBar(c, notesWrap, ta){
+  function buildIconBar(c, notesWrap, ta, row){
     var bar=document.createElement('div'); bar.className='group--icons';
     function icon(svgContent,key,tip){
       var b=document.createElement('button');
@@ -3959,7 +4069,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       actionsSection.appendChild(hotBtn);
       
       // Action icons
-      var iconbar = buildIconBar(c, notesWrap, ta);
+      var iconbar = buildIconBar(c, notesWrap, ta, row);
       iconbar.childNodes.forEach(function(btn){ actionsSection.appendChild(btn); });
       
       // Tags section
@@ -4046,7 +4156,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       bar.appendChild(hotBtn);
 
       // Notes/Schedule/Archive/Delete (icon bar)
-      var iconbar = buildIconBar(c, notesWrap, ta);
+      var iconbar = buildIconBar(c, notesWrap, ta, row);
 
       right.appendChild(quick); right.appendChild(bar); right.appendChild(iconbar);
       row.appendChild(mid); row.appendChild(right);
