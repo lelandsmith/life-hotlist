@@ -319,6 +319,7 @@
     }
 
     function showLogin() {
+      console.log('showLogin() called');
       document.getElementById('status-text').textContent = 'Not logged in';
       document.getElementById('sign-out-btn').classList.add('hidden');
       document.getElementById('login-screen').classList.remove('hidden');
@@ -326,6 +327,14 @@
     }
 
     function showApp() {
+      console.log('showApp() called with user:', currentUser);
+
+      if (!currentUser || !currentUser.email) {
+        console.error('No current user, cannot show app');
+        showLogin();
+        return;
+      }
+
       document.getElementById('status-text').textContent = currentUser.email;
       document.getElementById('sign-out-btn').classList.remove('hidden');
       document.getElementById('login-screen').classList.add('hidden');
@@ -336,9 +345,16 @@
     }
 
     async function loadAppModules() {
+      console.log('loadAppModules() called');
       // This is where we'll gradually migrate your app functionality
       // For now, let's just show it's working
       const content = document.getElementById('app-content');
+
+      if (!content) {
+        console.error('app-content element not found!');
+        return;
+      }
+
       content.innerHTML = `
         <p>Welcome back, ${currentUser.email}!</p>
         <p>App modules will be loaded here...</p>
