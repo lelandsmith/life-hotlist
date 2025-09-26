@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Simple Auth Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <h1>Simple Supabase Auth Test</h1>
+
+  <div id="status">Checking...</div>
+  <br>
+
+  <div id="not-signed-in" style="display:none">
+    <button onclick="signInGoogle()">Sign in with Google</button>
+    <br><br>
+    <input type="email" id="email" placeholder="Enter email">
+    <button onclick="signInEmail()">Send Magic Link</button>
+  </div>
+
+  <div id="signed-in" style="display:none">
+    <p>Signed in as: <span id="user-email"></span></p>
+    <button onclick="signOut()">Sign Out</button>
+  </div>
+
+  <br><br>
+  <h3>Console Output:</h3>
+  <pre id="console" style="background:#f0f0f0; padding:10px; height:300px; overflow:auto;"></pre>
+
+  <script>
+    // YOUR SUPABASE CREDENTIALS
+    const SUPABASE_URL = 'https://yoxzlejphrhtuisnptor.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlveHpsZWpwaHJodHVpc25wdG9yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1NjIwNDIsImV4cCI6MjA3NDEzODA0Mn0.azXNn6AQQcB5iJzn7ebhAh5cSBESgKwEV2aSviX8yeY';
+
+    let supabase;
+    let currentUser = null;
+
+    // Custom console log
+    function log(msg) {
+      console.log(msg);
+      const output = document.getElementById('console');
+      const time = new Date().toLocaleTimeString();
+      output.innerHTML = `[${time}] ${msg}\n` + output.innerHTML;
+    }
+
+    // Initialize Supabase
+    async function init() {
+      log('Initializing Supabase...');
+      log('URL: ' + SUPABASE_URL);
+      log('Key exists: ' + !!SUPABASE_KEY);
+      log('Key length: ' + SUPABASE_KEY.length);
+      log('First 20 chars of key: ' + SUPABASE_KEY.substring(0, 20));
+
+      try {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        log('✅ Supabase client created');
+        log('Client exists: ' + !!supabase);
+        log('Client.auth exists: ' + !!supabase.auth);
+
+        // Listen for auth changes
+        supabase.auth.onAuthStateChange((event, session) => {
+          log(`Auth event: ${event}`);
+          if (session) {
+            log(`User: ${session.user.email}`);
+            currentUser = session.user;
+            showSignedIn(session.user.email);
+          } else {
+            currentUser = null;
+            showNotSignedIn();
+          }
+        });
+
+        // Check current session
+        log('Checking current session...');
+        const { data: { session }, error } = await supabase.auth.getSession();
+
+        if (error) {
+          log(`❌ Error: ${error.message}`);
+          showNotSignedIn();
+        } else if (session) {
+          log(`✅ Found session: ${session.user.email}`);
+          currentUser = session.user;
+          showSignedIn(session.user.email);
+        } else {
+          log('No active session');
+          showNotSignedIn();
+        }
+
+      } catch (err) {
+        log(`❌ Init error: ${err.message}`);
+      }
+    }
+
+    // UI Functions
+    function showSignedIn(email) {
+      document.getElementById('status').textContent = 'Signed In';
+      document.getElementById('not-signed-in').style.display = 'none';
+      document.getElementById('signed-in').style.display = 'block';
+      document.getElementById('user-email').textContent = email;
+    }
+
+    function showNotSignedIn() {
+      document.getElementById('status').textContent = 'Not Signed In';
+      document.getElementById('not-signed-in').style.display = 'block';
+      document.getElementById('signed-in').style.display = 'none';
+    }
+
+    // Sign in with Google
+    async function signInGoogle() {
+      log('Starting Google sign in...');
+
+      try {
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: window.location.href
+          }
+        });
+
+        if (error) {
+          log(`❌ Error: ${error.message}`);
+        } else {
+          log('Redirecting to Google...');
+        }
+      } catch (err) {
+        log(`❌ Exception: ${err.message}`);
+      }
+    }
+
+    // Sign in with Email
+    async function signInEmail() {
+      const email = document.getElementById('email').value;
+      if (!email) {
+        alert('Please enter an email');
+        return;
+      }
+
+      log(`Sending magic link to ${email}...`);
+      log('Supabase client exists: ' + !!supabase);
+      log('Using auth method: signInWithOtp');
+
+      if (!supabase) {
+        log('❌ ERROR: Supabase client is null!');
+        alert('Supabase not initialized. Please refresh the page.');
+        return;
+      }
+
+      try {
+        log('Calling supabase.auth.signInWithOtp...');
+        const { error } = await supabase.auth.signInWithOtp({
+          email: email,
+          options: {
+            emailRedirectTo: window.location.href
+          }
+        });
+
+        if (error) {
+          log(`❌ Error: ${error.message}`);
+          alert(`Error: ${error.message}`);
+        } else {
+          log('✅ Magic link sent! Check your email.');
+          alert('Magic link sent! Check your email.');
+        }
+      } catch (err) {
+        log(`❌ Exception: ${err.message}`);
+      }
+    }
+
+    // Sign out
+    async function signOut() {
+      log('Signing out...');
+
+      try {
+        const { error } = await supabase.auth.signOut();
+
+        if (error) {
+          log(`❌ Error: ${error.message}`);
+        } else {
+          log('✅ Signed out');
+        }
+      } catch (err) {
+        log(`❌ Exception: ${err.message}`);
+      }
+    }
+
+    // Start
+    init();
+  </script>
+</body>
+</html>

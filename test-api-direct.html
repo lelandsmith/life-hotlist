@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Direct API Test</title>
+</head>
+<body>
+  <h1>Direct Supabase API Test</h1>
+  <button onclick="testDirectAPI()">Test Direct API Call</button>
+  <button onclick="testWithFetch()">Test with Fetch</button>
+  <br><br>
+  <pre id="output" style="background:#f0f0f0; padding:10px; height:400px; overflow:auto;"></pre>
+
+  <script>
+    const SUPABASE_URL = 'https://yoxzlejphrhtuisnptor.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlveHpsZWpwaHJodHVpc25wdG9yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1NjIwNDIsImV4cCI6MjA3NDEzODA0Mn0.azXNn6AQQcB5iJzn7ebhAh5cSBESgKwEV2aSviX8yeY';
+
+    function log(msg) {
+      console.log(msg);
+      document.getElementById('output').innerHTML += msg + '\n';
+    }
+
+    async function testDirectAPI() {
+      log('\n=== Testing Direct API Call ===');
+      log('URL: ' + SUPABASE_URL);
+      log('Key exists: ' + !!SUPABASE_KEY);
+      log('Key length: ' + SUPABASE_KEY.length);
+
+      // Test 1: Basic API health check
+      log('\n1. Testing API health endpoint...');
+      try {
+        const response = await fetch(SUPABASE_URL + '/auth/v1/health', {
+          headers: {
+            'apikey': SUPABASE_KEY
+          }
+        });
+        log('Response status: ' + response.status);
+        const text = await response.text();
+        log('Response: ' + text);
+      } catch (err) {
+        log('ERROR: ' + err.message);
+      }
+
+      // Test 2: Test REST API
+      log('\n2. Testing REST API...');
+      try {
+        const response = await fetch(SUPABASE_URL + '/rest/v1/', {
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_KEY
+          }
+        });
+        log('Response status: ' + response.status);
+        log('Response OK: ' + response.ok);
+      } catch (err) {
+        log('ERROR: ' + err.message);
+      }
+    }
+
+    async function testWithFetch() {
+      log('\n=== Testing Magic Link with Fetch ===');
+
+      const email = prompt('Enter email address:');
+      if (!email) return;
+
+      const body = JSON.stringify({
+        email: email,
+        options: {
+          emailRedirectTo: window.location.href
+        }
+      });
+
+      log('Sending to: ' + SUPABASE_URL + '/auth/v1/otp');
+      log('Email: ' + email);
+      log('Headers: apikey=' + SUPABASE_KEY.substring(0, 20) + '...');
+
+      try {
+        const response = await fetch(SUPABASE_URL + '/auth/v1/otp', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_KEY
+          },
+          body: body
+        });
+
+        log('Response status: ' + response.status);
+        const data = await response.json();
+        log('Response: ' + JSON.stringify(data, null, 2));
+
+        if (response.ok) {
+          alert('Magic link sent! Check your email.');
+        }
+      } catch (err) {
+        log('ERROR: ' + err.message);
+      }
+    }
+  </script>
+</body>
+</html>

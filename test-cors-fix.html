@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CORS Fix Test</title>
+  <!-- Load Supabase from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <h1>CORS Fix Test</h1>
+
+  <button onclick="testSupabaseLibrary()">Test with Supabase Library</button>
+  <button onclick="testWithURLParam()">Test with URL Parameter</button>
+  <button onclick="testCurlCommand()">Generate cURL Command</button>
+
+  <br><br>
+  <pre id="output" style="background:#f0f0f0; padding:10px; height:400px; overflow:auto;"></pre>
+
+  <script>
+    const SUPABASE_URL = 'https://yoxzlejphrhtuisnptor.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlveHpsZWpwaHJodHVpc25wdG9yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1NjIwNDIsImV4cCI6MjA3NDEzODA0Mn0.azXNn6AQQcB5iJzn7ebhAh5cSBESgKwEV2aSviX8yeY';
+
+    function log(msg) {
+      console.log(msg);
+      const output = document.getElementById('output');
+      output.innerHTML += msg + '\n';
+      output.scrollTop = output.scrollHeight;
+    }
+
+    // Test 1: Use the Supabase JS library properly
+    async function testSupabaseLibrary() {
+      log('\n=== Testing with Supabase JS Library ===');
+
+      try {
+        // Check if library is loaded
+        if (!window.supabase) {
+          log('ERROR: Supabase library not loaded!');
+          log('Trying to reload...');
+
+          // Try to load it dynamically
+          const script = document.createElement('script');
+          script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+          script.onload = () => {
+            log('Library loaded, try again');
+          };
+          document.head.appendChild(script);
+          return;
+        }
+
+        log('Creating Supabase client...');
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        log('Client created: ' + !!supabaseClient);
+
+        // Try to get session
+        log('Testing getSession()...');
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
+
+        if (error) {
+          log('Error: ' + error.message);
+        } else {
+          log('Success! Session: ' + (session ? 'Found' : 'None'));
+        }
+
+        // Test magic link
+        const email = prompt('Enter email for magic link test:');
+        if (email) {
+          log('Sending magic link to: ' + email);
+          const { error: otpError } = await supabaseClient.auth.signInWithOtp({
+            email: email,
+            options: {
+              emailRedirectTo: window.location.href
+            }
+          });
+
+          if (otpError) {
+            log('OTP Error: ' + otpError.message);
+          } else {
+            log('✅ SUCCESS! Magic link sent to ' + email);
+            alert('Magic link sent! Check your email.');
+          }
+        }
+
+      } catch (err) {
+        log('Exception: ' + err.message);
+        log('Stack: ' + err.stack);
+      }
+    }
+
+    // Test 2: Try with URL parameter instead of header
+    async function testWithURLParam() {
+      log('\n=== Testing with URL Parameter ===');
+
+      const email = prompt('Enter email:');
+      if (!email) return;
+
+      const url = `${SUPABASE_URL}/auth/v1/otp?apikey=${SUPABASE_KEY}`;
+
+      log('URL: ' + url.substring(0, 100) + '...');
+
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email: email,
+            options: {
+              emailRedirectTo: window.location.href
+            }
+          })
+        });
+
+        log('Response status: ' + response.status);
+        const data = await response.json();
+        log('Response: ' + JSON.stringify(data, null, 2));
+
+      } catch (err) {
+        log('Error: ' + err.message);
+      }
+    }
+
+    // Test 3: Generate a cURL command to test outside browser
+    function testCurlCommand() {
+      log('\n=== cURL Command to Test in Terminal ===');
+      log('Copy and run this in your terminal:\n');
+
+      const curl = `curl -X POST '${SUPABASE_URL}/auth/v1/otp' \\
+  -H 'apikey: ${SUPABASE_KEY}' \\
+  -H 'Content-Type: application/json' \\
+  -d '{"email":"test@example.com","options":{"emailRedirectTo":"http://localhost:3000"}}'`;
+
+      log(curl);
+      log('\nIf this works in terminal but not in browser, it\'s a CORS issue.');
+    }
+
+    // Check browser info
+    log('=== Browser Info ===');
+    log('User Agent: ' + navigator.userAgent);
+    log('Supabase library loaded: ' + !!window.supabase);
+
+    // Try to check if Supabase project is accessible
+    fetch(SUPABASE_URL + '/rest/v1/')
+      .then(r => {
+        log('Basic connectivity test: ' + r.status);
+      })
+      .catch(e => {
+        log('Basic connectivity failed: ' + e.message);
+      });
+  </script>
+</body>
+</html>
