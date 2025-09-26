@@ -84,11 +84,16 @@
             id: payload.sub || payload.user_id || 'unknown'
           };
 
-          // Show the app even though full session isn't available
-          showApp();
-
-          // Clear tokens from URL
-          window.history.replaceState(null, null, window.location.pathname);
+          // Make sure DOM is ready before showing app
+          if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+              showApp();
+              window.history.replaceState(null, null, window.location.pathname);
+            });
+          } else {
+            showApp();
+            window.history.replaceState(null, null, window.location.pathname);
+          }
 
           // Store token for future API calls
           localStorage.setItem('sb-access-token', token);
@@ -335,10 +340,26 @@
         return;
       }
 
-      document.getElementById('status-text').textContent = currentUser.email;
-      document.getElementById('sign-out-btn').classList.remove('hidden');
-      document.getElementById('login-screen').classList.add('hidden');
-      document.getElementById('main-app').classList.remove('hidden');
+      // Check if elements exist
+      const statusText = document.getElementById('status-text');
+      const signOutBtn = document.getElementById('sign-out-btn');
+      const loginScreen = document.getElementById('login-screen');
+      const mainApp = document.getElementById('main-app');
+
+      console.log('Elements found:', {
+        statusText: !!statusText,
+        signOutBtn: !!signOutBtn,
+        loginScreen: !!loginScreen,
+        mainApp: !!mainApp
+      });
+
+      if (statusText) statusText.textContent = currentUser.email;
+      if (signOutBtn) signOutBtn.classList.remove('hidden');
+      if (loginScreen) loginScreen.classList.add('hidden');
+      if (mainApp) {
+        mainApp.classList.remove('hidden');
+        console.log('main-app visibility changed, should be visible now');
+      }
 
       // Load the actual app content
       loadAppModules();
