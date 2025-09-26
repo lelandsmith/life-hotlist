@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Today Container Variations - Hotlist</title>
+<style>
+  :root{
+    --green:#0e7a5a; --green-600:#0a5e46; --green-50:#e9f5ee;
+    --bg:#f6f7fb; --card:#ffffff; --ink:#0f172a; --muted:#6b7280; --line:#e6e9f2;
+    --shadow:0 10px 24px rgba(15,23,42,.06), 0 2px 6px rgba(15,23,42,.04);
+    --orange:#f59e0b; --red:#dc2626; --blue:#4f79ff;
+    --radius:14px;
+  }
+
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0f1220; --card:#16192a; --ink:#e6e9f5; --muted:#98a2b3; --line:#232846;
+      --shadow:0 10px 24px rgba(0,0,0,.35), 0 2px 6px rgba(0,0,0,.25);
+      --green:#22c38b; --green-600:#16a374; --green-50:#0f2a22;
+    }
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    padding:20px;
+    background:var(--bg);
+    color:var(--ink);
+    font:14px/1.45 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, "Helvetica Neue", Arial;
+  }
+
+  .container{
+    max-width:1200px;
+    margin:0 auto;
+  }
+
+  h1{
+    text-align:center;
+    margin:40px 0;
+    font-size:28px;
+  }
+
+  .variation{
+    margin:60px 0;
+    padding:40px;
+    background:var(--card);
+    border-radius:16px;
+    box-shadow:var(--shadow);
+  }
+
+  .variation h2{
+    margin:0 0 20px 0;
+    font-size:18px;
+    color:var(--muted);
+  }
+
+  .description{
+    color:var(--muted);
+    margin:20px 0;
+    font-size:13px;
+  }
+
+  /* Demo row styles */
+  .row{
+    display:flex;
+    align-items:center;
+    padding:12px 16px;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    margin-bottom:8px;
+    cursor:pointer;
+  }
+
+  .row:hover{
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  .cname{
+    font-weight:600;
+    margin-right:auto;
+  }
+
+  .status{
+    background:var(--green-50);
+    color:var(--green);
+    padding:4px 12px;
+    border-radius:6px;
+    font-size:12px;
+  }
+
+  /* Table head */
+  .table-head{
+    display:flex;
+    padding:8px 16px;
+    font-size:12px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:12px;
+  }
+
+  /* VARIATION 1: Current (for reference) */
+  #todayBlock1 {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(37, 99, 235, 0.03) 100%);
+    border: 2px solid rgba(59, 130, 246, 0.25);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+
+  #todayBlock1 h2 {
+    color: #2563eb;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  #todayBlock1 h2::before {
+    content: "📅";
+    margin-right: 8px;
+    font-size: 20px;
+  }
+
+  #todayBlock1 .row {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(59, 130, 246, 0.12);
+  }
+
+  /* VARIATION 2: Subtle with top accent */
+  #todayBlock2 {
+    border-top: 3px solid var(--blue);
+    background: rgba(79, 121, 255, 0.02);
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    border-radius: 0 0 12px 12px;
+  }
+
+  #todayBlock2 h2 {
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  #todayBlock2 .row {
+    background: var(--card);
+    border: 1px solid var(--line);
+  }
+
+  /* VARIATION 3: Minimal separator */
+  #todayBlock3 {
+    padding: 12px 0;
+    margin-bottom: 24px;
+    position: relative;
+  }
+
+  #todayBlock3::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--line) 20%, var(--line) 80%, transparent);
+  }
+
+  #todayBlock3 h2 {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  #todayBlock3 h2::before {
+    content: "TODAY";
+    background: var(--blue);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+
+  #todayBlock3 .row {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--blue);
+  }
+
+  /* VARIATION 4: Card within card */
+  #todayBlock4 {
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+    padding: 8px;
+    margin-bottom: 20px;
+  }
+
+  #todayBlock4 h2 {
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 600;
+    margin: 8px 8px 12px 8px;
+  }
+
+  #todayBlock4 .inner {
+    background: var(--card);
+    border-radius: 8px;
+    padding: 12px;
+  }
+
+  #todayBlock4 .row {
+    background: rgba(79, 121, 255, 0.03);
+    border: 1px solid rgba(79, 121, 255, 0.1);
+  }
+
+  /* VARIATION 5: Inline badge style */
+  #todayBlock5 {
+    margin-bottom: 20px;
+  }
+
+  #todayBlock5 h2 {
+    display: inline-block;
+    background: var(--blue);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+
+  #todayBlock5 .row {
+    background: var(--card);
+    border: 1px solid var(--line);
+    box-shadow: 0 1px 3px rgba(79, 121, 255, 0.08);
+  }
+
+  /* VARIATION 6: Side accent */
+  #todayBlock6 {
+    border-left: 4px solid var(--blue);
+    padding-left: 16px;
+    margin-bottom: 24px;
+  }
+
+  #todayBlock6 h2 {
+    color: var(--blue);
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    opacity: 0.8;
+  }
+
+  #todayBlock6 .row {
+    background: var(--card);
+    border: 1px solid var(--line);
+    transition: transform 0.15s ease;
+  }
+
+  #todayBlock6 .row:hover {
+    transform: translateX(4px);
+  }
+
+  /* VARIATION 7: Ultra minimal */
+  #todayBlock7 {
+    margin-bottom: 24px;
+  }
+
+  #todayBlock7 h2 {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+    opacity: 0.6;
+  }
+
+  #todayBlock7 .row {
+    background: var(--card);
+    border: 1px solid var(--line);
+    margin-bottom: 4px;
+  }
+
+  #todayBlock7 .row:first-child {
+    border-top: 2px solid rgba(79, 121, 255, 0.3);
+  }
+
+  /* Dark mode adjustments */
+  @media (prefers-color-scheme: dark) {
+    #todayBlock1 {
+      background: rgba(59, 130, 246, 0.04);
+      border-color: rgba(59, 130, 246, 0.15);
+    }
+
+    #todayBlock1 h2 {
+      color: #93c5fd;
+    }
+
+    #todayBlock1 .row {
+      background: rgba(22, 25, 42, 0.3);
+      border-color: rgba(59, 130, 246, 0.1);
+    }
+
+    #todayBlock2 {
+      background: rgba(79, 121, 255, 0.03);
+    }
+
+    #todayBlock4 {
+      background: rgba(255, 255, 255, 0.02);
+      border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    #todayBlock4 .row {
+      background: rgba(79, 121, 255, 0.05);
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Today Container Variations</h1>
+
+  <!-- Variation 1: Current Design -->
+  <div class="variation">
+    <h2>Variation 1: Current Design (Reference)</h2>
+    <div class="table-head">
+      <div style="flex:1">Client • Notes</div>
+      <div>Actions</div>
+    </div>
+    <div id="todayBlock1">
+      <h2>Today</h2>
+      <div class="row">
+        <span class="cname">Sarah Chen</span>
+        <span class="status">Closing Deal</span>
+      </div>
+      <div class="row">
+        <span class="cname">David Park</span>
+        <span class="status">Initial Contact</span>
+      </div>
+    </div>
+    <div class="description">
+      Current implementation - colorful gradient background, prominent border, emoji icon
+    </div>
+  </div>
+
+  <!-- Variation 2: Subtle with top accent -->
+  <div class="variation">
+    <h2>Variation 2: Top Accent Bar</h2>
+    <div class="table-head">
+      <div style="flex:1">Client • Notes</div>
+      <div>Actions</div>
+    </div>
+    <div id="todayBlock2">
+      <h2>Today's Queue</h2>
+      <div class="row">
+        <span class="cname">Sarah Chen</span>
+        <span class="status">Closing Deal</span>
+      </div>
+      <div class="row">
+        <span class="cname">David Park</span>
+        <span class="status">Initial Contact</span>
+      </div>
+    </div>
+    <div class="description">
+      Clean top border accent, very light background, uppercase small heading
+    </div>
+  </div>
+
+  <!-- Variation 3: Minimal separator -->
+  <div class="variation">
+    <h2>Variation 3: Minimal with Badge</h2>
+    <div class="table-head">
+      <div style="flex:1">Client • Notes</div>
+      <div>Actions</div>
+    </div>
+    <div id="todayBlock3">
+      <h2>2 clients need attention</h2>
+      <div class="row">
+        <span class="cname">Sarah Chen</span>
+        <span class="status">Closing Deal</span>
+      </div>
+      <div class="row">
+        <span class="cname">David Park</span>
+        <span class="status">Initial Contact</span>
+      </div>
+    </div>
+    <div class="description">
+      Small "TODAY" badge, left border on rows, subtle bottom separator
+    </div>
+  </div>
+
+  <!-- Variation 4: Card within card -->
+  <div class="variation">
+    <h2>Variation 4: Nested Card</h2>
+    <div class="table-head">
+      <div style="flex:1">Client • Notes</div>
+      <div>Actions</div>
+    </div>
+    <div id="todayBlock4">
+      <h2>Today</h2>
+      <div class="inner">
+        <div class="row">
+          <span class="cname">Sarah Chen</span>
+          <span class="status">Closing Deal</span>
+        </div>
+        <div class="row">
+          <span class="cname">David Park</span>
+          <span class="status">Initial Contact</span>
+        </div>
+      </div>
+    </div>
+    <div class="description">
+      Subtle outer container with inner white card, creates depth without color
+    </div>
+  </div>
+
+  <!-- Variation 5: Inline badge -->
+  <div class="variation">
+    <h2>Variation 5: Pill Badge Header</h2>
+    <div class="table-head">
+      <div style="flex:1">Client • Notes</div>
+      <div>Actions</div>
+    </div>
+    <div id="todayBlock5">
+      <h2>Today • 2</h2>
+      <div class="row">
+        <span class="cname">Sarah Chen</span>
+        <span class="status">Closing Deal</span>
+      </div>
+      <div class="row">
+        <span class="cname">David Park</span>
+        <span class="status">Initial Contact</span>
+      </div>
+    </div>
+    <div class="description">
+      Compact pill-style header badge with count, subtle shadow on rows
+    </div>
+  </div>
+
+  <!-- Variation 6: Side accent -->
+  <div class="variation">
+    <h2>Variation 6: Left Border Accent</h2>
+    <div class="table-head">
+      <div style="flex:1">Client • Notes</div>
+      <div>Actions</div>
+    </div>
+    <div id="todayBlock6">
+      <h2>Today</h2>
+      <div class="row">
+        <span class="cname">Sarah Chen</span>
+        <span class="status">Closing Deal</span>
+      </div>
+      <div class="row">
+        <span class="cname">David Park</span>
+        <span class="status">Initial Contact</span>
+      </div>
+    </div>
+    <div class="description">
+      Bold left border, subtle hover animation, small caps heading
+    </div>
+  </div>
+
+  <!-- Variation 7: Ultra minimal -->
+  <div class="variation">
+    <h2>Variation 7: Ultra Minimal</h2>
+    <div class="table-head">
+      <div style="flex:1">Client • Notes</div>
+      <div>Actions</div>
+    </div>
+    <div id="todayBlock7">
+      <h2>Today</h2>
+      <div class="row">
+        <span class="cname">Sarah Chen</span>
+        <span class="status">Closing Deal</span>
+      </div>
+      <div class="row">
+        <span class="cname">David Park</span>
+        <span class="status">Initial Contact</span>
+      </div>
+    </div>
+    <div class="description">
+      Nearly invisible - tiny muted heading, subtle top border on first item only
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

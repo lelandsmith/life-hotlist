@@ -58,34 +58,12 @@
     );
     animation: hotPulse 2s ease-in-out infinite;
   }
-  /* Today's block dark mode */
-  #todayBlock {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(37, 99, 235, 0.08) 100%);
-    border-color: rgba(59, 130, 246, 0.35);
-  }
-  #todayBlock h2 {
-    color: #60a5fa;
-  }
-  #todayBlock .table-head {
-    background: rgba(59, 130, 246, 0.15);
-    border-color: rgba(59, 130, 246, 0.25);
-    color: #93c5fd;
-  }
+  /* Today's block dark mode - subtle */
   #todayBlock .row {
-    background: rgba(22, 25, 42, 0.6);
-    border-color: rgba(59, 130, 246, 0.2);
-    cursor: pointer;
-    position: relative;
-    z-index: 1;
+    border-left-color: rgba(59, 130, 246, 0.5);
   }
   #todayBlock .row:hover {
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25), 0 2px 4px rgba(59, 130, 246, 0.15);
-    transform: translateY(-1px);
-    transition: all 0.2s ease;
-  }
-  #todayBlock .row.selected {
-    outline: 2px solid var(--green);
-    outline-offset: -1px;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
   }
   .hot-badge {
     background: linear-gradient(135deg, #ff8a80, #ff6e40);
@@ -1394,41 +1372,44 @@ body[data-all-contexts="true"] .context-group > div:last-child {
 .queue-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .queue-title{font-weight:800}
 
-/* Today's section styling */
+/* Today's section styling - subtle and minimal */
 #todayBlock {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(37, 99, 235, 0.03) 100%);
-  border: 2px solid rgba(59, 130, 246, 0.25);
-  border-radius: 16px;
-  padding: 16px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.08);
+  padding: 8px 0;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+#todayBlock::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--line) 20%, var(--line) 80%, transparent);
 }
 
 #todayBlock h2 {
-  color: #2563eb;
-  font-size: 18px;
-  font-weight: 700;
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-#todayBlock h2::before {
-  content: "📅";
-  font-size: 20px;
+  color: #000;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 8px;
+  opacity: 0.7;
 }
 
 #todayBlock .table-head {
-  background: rgba(59, 130, 246, 0.08);
-  border: 1px solid rgba(59, 130, 246, 0.15);
-  color: #1e40af;
-  font-weight: 600;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-weight: 500;
 }
 
 #todayBlock .row {
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(59, 130, 246, 0.12);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-left: 3px solid rgba(59, 130, 246, 0.4);
   margin-bottom: 4px;
   cursor: pointer;
   position: relative;
@@ -1436,9 +1417,9 @@ body[data-all-contexts="true"] .context-group > div:last-child {
 }
 
 #todayBlock .row:hover {
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15), 0 2px 4px rgba(59, 130, 246, 0.08);
-  transform: translateY(-1px);
-  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.08);
+  transform: translateX(2px);
+  transition: all 0.15s ease;
 }
 
 #todayBlock .row.selected {
@@ -1777,27 +1758,27 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
     </header>
 
+    <div id="clearDemoSection" style="display:none; text-align:center; margin:20px 0;">
+      <button id="clearDemoBtn" class="btn-min orange" onclick="clearDemoData()" style="padding:8px 16px;">
+        🗑️ Clear Demo Data
+      </button>
+      <p style="margin:8px 0 0 0; font-size:0.9em; color:var(--muted);">
+        Remove the 5 demo clients to start fresh
+      </p>
+    </div>
+
+    <div id="emptyState" style="display:none;"></div>
+
+    <div class="table-head" id="mainTableHead">
+      <div>Client • Notes</div>
+      <div>Actions</div>
+    </div>
 
     <div id="todayBlock" class="section hidden">
       <h2>Today</h2>
       <div id="todayList"></div>
     </div>
 
-    <div id="emptyState" style="display:none;"></div>
-
-    <div id="clearDemoSection" style="display:none; text-align:center; margin:20px 0;">
-      <button id="clearDemoBtn" class="btn-min orange" onclick="clearDemoData()" style="padding:8px 16px;">
-        🗑️ Clear Demo Data
-      </button>
-      <p style="margin:8px 0 0 0; font-size:0.9em; color:var(--muted);">
-        Remove the 3 demo clients to start fresh
-      </p>
-    </div>
-
-    <div class="table-head" id="mainTableHead">
-      <div>Client • Notes</div>
-      <div>Actions</div>
-    </div>
     <div id="list"></div>
 
     <div id="scheduledBlock" class="section hidden">
@@ -3536,37 +3517,54 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   function calculateDaysInCurrentStage(client, currentStage) {
     if(!client || !client.history || currentStage < 0) return 0;
 
-    // Find the most recent stage transition to the current stage
-    var stageHistory = client.history.filter(function(h){
-      return h.action === 'stage' && h.to === currentStage;
+    // Get all stage and status change events sorted by date (newest first)
+    var allStatusChanges = client.history.filter(function(h){
+      return h.action === 'stage' || h.action === 'status';
     }).sort(function(a,b){
       return new Date(b.ts) - new Date(a.ts);
     });
 
-    // Also check for status history (for backward compatibility)
-    var statusHistory = client.history.filter(function(h){
-      return h.action === 'status';
-    }).sort(function(a,b){
-      return new Date(b.ts) - new Date(a.ts);
-    });
+    // Find the most recent change that set the current stage/status
+    var lastChangeToCurrentStage = null;
 
-    var lastTransition = stageHistory[0];
+    // Look for the most recent transition TO the current stage
+    for(var i = 0; i < allStatusChanges.length; i++) {
+      var change = allStatusChanges[i];
 
-    // If no stage history, try to use status history or creation date
-    if(!lastTransition) {
-      if(statusHistory.length > 0) {
-        lastTransition = statusHistory[0];
-      } else if(client.created) {
-        lastTransition = { ts: client.created };
+      if(change.action === 'stage' && change.to === currentStage) {
+        lastChangeToCurrentStage = change;
+        break;
+      }
+
+      // For backward compatibility with status-based tracking
+      if(change.action === 'status') {
+        var stageIdx = STATUS.indexOf(change.to);
+        if(stageIdx === currentStage) {
+          lastChangeToCurrentStage = change;
+          break;
+        }
+      }
+    }
+
+    // If we didn't find a transition to current stage, use creation date
+    if(!lastChangeToCurrentStage) {
+      // Only use creation date if this is stage 0 (initial stage)
+      if(currentStage === 0 && client.created) {
+        lastChangeToCurrentStage = { ts: client.created };
       } else {
         return 0;
       }
     }
 
-    var transitionDate = new Date(lastTransition.ts);
+    var transitionDate = new Date(lastChangeToCurrentStage.ts);
     var now = new Date();
     var diffTime = Math.abs(now - transitionDate);
-    var diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    var diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    // Only show days after 24 hours have passed (1+ days)
+    if(diffDays < 1) {
+      return 0;
+    }
 
     return diffDays;
   }
@@ -5363,9 +5361,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     // Life Essential Questions button is always visible
     // (removed old demo button logic)
 
-    // Show/hide clear demo section (only for Life context when demo clients exist)
+    // Show/hide clear demo section (when demo clients exist in any context)
     if(els.clearDemoSection){
-      els.clearDemoSection.style.display = (isLifeContext && hasDemoClients) ? 'block' : 'none';
+      els.clearDemoSection.style.display = hasDemoClients ? 'block' : 'none';
     }
   }
 
@@ -5382,24 +5380,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       '<button onclick="loadDemoData()" style="background:var(--info); color:white; border:none; padding:12px 24px; border-radius:8px; font-size:14px; cursor:pointer; margin-top:10px; margin-bottom:20px;">📋 Load Demo Data</button>' :
       '';
 
-    // Sign-in option (subtle)
+    // No sign-in option since auth is removed
     var signInOption = '';
-    if (!currentUser) {
-      signInOption = '<div style="margin-top:20px; padding-top:20px; border-top:1px solid rgba(0,0,0,0.05);">' +
-        '<div style="font-size:12px; color:var(--muted); margin-bottom:10px;">' +
-        'Want to sync across devices? ' +
-        '<a href="#" onclick=" return false;" style="color:var(--green); text-decoration:underline;">Enable cloud sync</a> ' +
-        '(optional)' +
-        '</div>' +
-        '</div>';
-    } else {
-      signInOption = '<div style="margin-top:20px; padding-top:20px; border-top:1px solid rgba(0,0,0,0.05);">' +
-        '<div style="font-size:12px; color:var(--muted);">' +
-        '☁️ Cloud sync enabled • ' +
-        '<a href="#" onclick="signOut(); return false;" style="color:var(--muted); text-decoration:underline;">Sign out</a>' +
-        '</div>' +
-        '</div>';
-    }
 
     els.emptyState.innerHTML = '<div style="padding:40px 20px; text-align:center; color:var(--muted);">' +
       '<div style="font-size:16px; margin-bottom:10px;">No clients yet</div>' +
@@ -5658,68 +5640,123 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   function createDemoClients(){
 
     var now = new Date().toISOString();
+    var today = new Date().toISOString();
     var yesterday = new Date(Date.now() - 24*60*60*1000).toISOString();
     var twoDaysAgo = new Date(Date.now() - 2*24*60*60*1000).toISOString();
+    var threeDaysAgo = new Date(Date.now() - 3*24*60*60*1000).toISOString();
+    var weekAgo = new Date(Date.now() - 7*24*60*60*1000).toISOString();
+    var twoWeeksAgo = new Date(Date.now() - 14*24*60*60*1000).toISOString();
 
     var demoClients = [
       {
         id: 'demo-' + Date.now() + '-1',
-        name: 'Sarah Johnson',
+        name: 'Sarah Chen',
         context: 'life',
-        status: 'Sent Quote',
-        stage: 1,  // Quoted stage
-        notes: 'Interested in term life insurance for $500K coverage.\nHas 2 young children, budget around $150/month.\nPrefers to meet on weekends due to work schedule.',
-        callCount: 2,
-        msgCount: 1,
+        status: 'Closing Deal',
+        stage: 2,
+        notes: '🎯 $50K Enterprise deal - Decision maker at TechCorp\n⏰ Budget approved, legal review in progress\n💡 Wants to expand to 3 departments if pilot succeeds\n📅 Final meeting scheduled for Friday',
+        callCount: 5,
+        msgCount: 12,
         lastTouch: yesterday,
-        created: twoDaysAgo,
-        createdAt: twoDaysAgo,
-        hot: false,
+        created: twoWeeksAgo,
+        createdAt: twoWeeksAgo,
+        hot: true,  // HOT client to demonstrate feature
         archived: false,
-        queueToday: false,
+        queueToday: true,  // In today's queue
         queueTomorrow: false,
+        encouragements: ['You got this! Sarah trusts your expertise.', 'Remember: Focus on ROI, she loves numbers'],
         history: [
-          { ts: twoDaysAgo, action: 'created' }
+          { ts: twoWeeksAgo, action: 'created' },
+          { ts: weekAgo, action: 'call', notes: 'Great discovery call' },
+          { ts: threeDaysAgo, action: 'msg', notes: 'Sent proposal' },
+          { ts: yesterday, action: 'call', notes: 'Addressed concerns' }
         ]
       },
       {
         id: 'demo-' + Date.now() + '-2',
-        name: 'Michael Chen',
+        name: 'Mike Johnson',
         context: 'life',
-        stage: 0,  // Initial Contact stage
-        notes: 'Self-employed business owner looking for disability insurance.\nRuns a successful consulting firm, needs income protection.\nVery detail-oriented, asks lots of questions.',
-        callCount: 0,
-        msgCount: 0,
-        lastTouch: new Date(Date.now() - 5*24*60*60*1000).toISOString(),
-        created: new Date(Date.now() - 5*24*60*60*1000).toISOString(),
-        createdAt: new Date(Date.now() - 5*24*60*60*1000).toISOString(),
+        status: 'Following Up',
+        stage: 1,
+        notes: '☕ Coffee chat went well - interested in our solution\n🏢 Mid-size company, 200 employees\n💬 Prefers email communication\n🎯 Next step: Technical demo with his team',
+        callCount: 2,
+        msgCount: 5,
+        lastTouch: threeDaysAgo,
+        created: weekAgo,
+        createdAt: weekAgo,
         hot: false,
         archived: false,
         queueToday: false,
-        queueTomorrow: false,
+        queueTomorrow: true,  // Scheduled for tomorrow
         history: [
-          { ts: new Date(Date.now() - 5*24*60*60*1000).toISOString(), action: 'created' }
+          { ts: weekAgo, action: 'created' },
+          { ts: threeDaysAgo, action: 'msg', notes: 'Sent follow-up' }
         ]
       },
       {
         id: 'demo-' + Date.now() + '-3',
-        name: 'Jennifer Martinez',
+        name: 'Emma Davis',
         context: 'life',
-        status: 'Issued',
-        stage: 5,  // Issued/Issued stage
-        notes: 'Issued whole life policy for $250K.\nEasy client, referred by existing customer.\nInterested in additional coverage for spouse.',
-        callCount: 1,
-        msgCount: 0,
-        lastTouch: yesterday,
-        created: new Date(Date.now() - 7*24*60*60*1000).toISOString(),
-        createdAt: new Date(Date.now() - 7*24*60*60*1000).toISOString(),
-        purchaseDate: yesterday,
+        status: '',  // No status set
+        stage: -1,  // No stage
+        notes: '⭐ Potential high-value client\n🚀 Interested in comprehensive coverage\n🤝 Referred by trusted colleague\n💪 Ready to move forward soon',
+        callCount: 8,
+        msgCount: 15,
+        lastTouch: twoDaysAgo,
+        created: new Date(Date.now() - 30*24*60*60*1000).toISOString(),
+        createdAt: new Date(Date.now() - 30*24*60*60*1000).toISOString(),
         hot: false,
         archived: false,
         queueToday: false,
         queueTomorrow: false,
+        encouragements: ['Emma appreciates your consistent service!', 'Ask about her expansion plans'],
         history: [
-          { ts: new Date(Date.now() - 7*24*60*60*1000).toISOString(), action: 'created' }
+          { ts: new Date(Date.now() - 30*24*60*60*1000).toISOString(), action: 'created' },
+          { ts: twoWeeksAgo, action: 'call', notes: 'Quarterly check-in' },
+          { ts: twoDaysAgo, action: 'msg', notes: 'Shared success metrics' }
+        ]
+      },
+      {
+        id: 'demo-' + Date.now() + '-4',
+        name: 'David Park',
+        context: 'life',
+        status: 'Initial Contact',
+        stage: 0,
+        notes: '🤝 Met at industry conference\n💡 Entrepreneur, needs business insurance\n🎯 Interested in liability coverage\n📱 Prefers text communication',
+        callCount: 0,
+        msgCount: 0,
+        lastTouch: new Date(Date.now() - 8*24*60*60*1000).toISOString(),  // 8 days ago
+        created: new Date(Date.now() - 8*24*60*60*1000).toISOString(),
+        createdAt: new Date(Date.now() - 8*24*60*60*1000).toISOString(),
+        hot: false,
+        archived: false,
+        queueToday: true,  // Follow up today
+        queueTomorrow: false,
+        history: [
+          { ts: threeDaysAgo, action: 'created' },
+          { ts: twoDaysAgo, action: 'msg', notes: 'Connection request accepted' }
+        ]
+      },
+      {
+        id: 'demo-' + Date.now() + '-5',
+        name: 'Robert Williams',
+        context: 'life',
+        status: 'Sent Quote',
+        stage: 1,
+        notes: '🏠 Young family, first home purchase\n📚 Teacher, stable income\n☕ Wants life insurance for mortgage\n💎 Very organized, asks good questions',
+        callCount: 1,
+        msgCount: 2,
+        lastTouch: new Date(Date.now() - 5*24*60*60*1000).toISOString(),  // 5 days ago - will show "5" in status
+        created: new Date(Date.now() - 12*24*60*60*1000).toISOString(),
+        createdAt: new Date(Date.now() - 12*24*60*60*1000).toISOString(),
+        hot: false,
+        archived: false,
+        queueToday: false,
+        queueTomorrow: false,
+        encouragements: ['Follow up on the quote', 'Address any concerns about coverage'],
+        history: [
+          { ts: new Date(Date.now() - 12*24*60*60*1000).toISOString(), action: 'created' },
+          { ts: new Date(Date.now() - 5*24*60*60*1000).toISOString(), action: 'status', to: 'Sent Quote' }
         ]
       }
     ];
@@ -5728,7 +5765,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   }
 
   function loadDemoData(){
-    if(!confirm('This will add 3 demo clients to your list. Continue?')) return;
+    if(!confirm('This will add 5 demo clients to your list showcasing all app features. Continue?')) return;
 
     var demoClients = createDemoClients();
 
@@ -5742,12 +5779,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     // Show success message
     setTimeout(function(){
-      alert('Demo data loaded! 📋\n\n• Sarah Johnson (Sent Quote)\n• Michael Chen (No status - try setting one!)\n• Jennifer Martinez (Issued)\n\nExplore the features and use keyboard shortcuts 1-6!');
+      alert('Demo data loaded! 🚀\n\n🔥 Sarah Chen - Hot lead closing deal today\n☕ Mike Johnson - Tomorrow\'s meeting\n⭐ Emma Davis - No status yet (try setting one!)\n🤝 David Park - Needs follow up (8 days old)\n🏠 Robert Williams - Sent quote 5 days ago\n\nTry these features:\n• Press H to mark as hot\n• Press 1-6 to change client statuses\n• Notice the day counters on some statuses');
     }, 100);
   }
 
   function clearDemoData(){
-    if(!confirm('This will remove all demo clients (names starting with demo-). Your real clients will remain. Continue?')) return;
+    if(!confirm('This will remove all 5 demo clients. Your real clients (if any) will remain. Continue?')) return;
 
     // Remove all clients with demo IDs
     state.clients = state.clients.filter(function(client){
@@ -5789,6 +5826,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         console.log('Demo data loaded! Client count:', state.clients.length);
         console.log('Demo clients:', state.clients.map(function(c){ return c.name; }));
+
+        // Start onboarding experience after a brief delay
+        setTimeout(function(){
+          startOnboardingExperience();
+        }, 500);
       } else {
         console.log('User has had data before (flag:', hasEverHadData, '), not loading demo data');
       }
@@ -5805,6 +5847,104 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         localStorage.setItem('hotlist_ever_had_data', 'demo');
       }
     }
+  }
+
+  function startOnboardingExperience(){
+    console.log('Starting onboarding experience...');
+
+    // Create onboarding overlay
+    var overlay = document.createElement('div');
+    overlay.id = 'onboarding-overlay';
+    overlay.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:10000; display:flex; align-items:center; justify-content:center; animation:fadeIn 0.3s ease;';
+
+    var modal = document.createElement('div');
+    modal.style.cssText = 'background:var(--card); border-radius:20px; padding:40px; max-width:600px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.3); animation:slideUp 0.4s ease;';
+
+    modal.innerHTML =
+      '<div style="text-align:center;">' +
+      '<h1 style="font-size:32px; margin:0 0 20px 0; background:linear-gradient(135deg, #ea580c, #fb923c); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">Welcome to Hotlist! 🔥</h1>' +
+      '<p style="font-size:18px; color:var(--muted); margin-bottom:30px;">Your leads manager that helps you track prospects and never miss important follow-ups.</p>' +
+
+      '<div style="text-align:left; background:rgba(0,0,0,0.03); border-radius:12px; padding:20px; margin-bottom:30px;">' +
+      '<h3 style="margin:0 0 15px 0;">We\'ve loaded demo data to show you around:</h3>' +
+      '<div style="display:grid; gap:10px; font-size:15px;">' +
+      '<div>🔥 <strong>Sarah Chen</strong> - Hot lead closing deal (in stage 2)</div>' +
+      '<div>📅 <strong>Mike Johnson</strong> - Scheduled for tomorrow</div>' +
+      '<div>⭐ <strong>Emma Davis</strong> - No status set yet (try it!)</div>' +
+      '<div>🤝 <strong>David Park</strong> - Initial contact (8 days old)</div>' +
+      '<div>🏠 <strong>Robert Williams</strong> - Quote sent 5 days ago</div>' +
+      '</div>' +
+      '</div>' +
+
+      '<div style="background:linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.05)); border-radius:12px; padding:20px; margin-bottom:30px;">' +
+      '<h3 style="margin:0 0 10px 0;">Try these features:</h3>' +
+      '<ol style="margin:10px 0; padding-left:20px; text-align:left;">' +
+      '<li style="margin-bottom:8px;">Click on <strong>Sarah Chen</strong> to see her full details</li>' +
+      '<li style="margin-bottom:8px;">Press <strong>H</strong> to mark her as a "Hot Lead" (high priority) 🔥</li>' +
+      '<li style="margin-bottom:8px;">Press <strong>1-6</strong> keys to quickly change client statuses</li>' +
+      '<li style="margin-bottom:8px;">Use the search bar to add new clients instantly</li>' +
+      '</ol>' +
+      '</div>' +
+
+      '<button onclick="document.getElementById(\'onboarding-overlay\').remove(); highlightFirstClient();" style="background:linear-gradient(135deg, #ea580c, #fb923c); color:white; border:none; padding:15px 40px; border-radius:12px; font-size:18px; font-weight:600; cursor:pointer; box-shadow:0 4px 15px rgba(234, 88, 12, 0.3);">Start Exploring 🚀</button>' +
+      '<div style="margin-top:15px;">' +
+      '<button onclick="document.getElementById(\'onboarding-overlay\').remove();" style="background:transparent; border:none; color:var(--muted); font-size:14px; cursor:pointer; text-decoration:underline;">Skip tour</button>' +
+      '</div>' +
+      '</div>';
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    // Add animations
+    var style = document.createElement('style');
+    style.textContent =
+      '@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }' +
+      '@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }' +
+      '@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }' +
+      '@keyframes highlight { 0%, 100% { box-shadow: 0 0 0 0 rgba(251, 146, 60, 0); } 50% { box-shadow: 0 0 20px 10px rgba(251, 146, 60, 0.5); } }';
+    document.head.appendChild(style);
+  }
+
+  function highlightFirstClient(){
+    // Find Sarah Chen's row and highlight it
+    var rows = document.querySelectorAll('.row');
+    for(var i = 0; i < rows.length; i++){
+      var nameEl = rows[i].querySelector('.cname');
+      if(nameEl && nameEl.textContent.includes('Sarah Chen')){
+        rows[i].style.animation = 'highlight 2s ease-in-out 3';
+        rows[i].scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        // Show tooltip
+        showOnboardingTooltip(rows[i], 'Click here to see Sarah\'s details, then press H to mark as a Hot Lead!');
+        break;
+      }
+    }
+  }
+
+  function showOnboardingTooltip(element, text){
+    var tooltip = document.createElement('div');
+    tooltip.id = 'onboarding-tooltip';
+    tooltip.style.cssText = 'position:absolute; background:var(--orange); color:white; padding:10px 15px; border-radius:8px; font-size:14px; z-index:10001; box-shadow:0 4px 12px rgba(0,0,0,0.2); animation:pulse 2s ease-in-out infinite;';
+    tooltip.innerHTML = text + '<div style="position:absolute; bottom:-8px; left:20px; width:0; height:0; border-left:8px solid transparent; border-right:8px solid transparent; border-top:8px solid var(--orange);"></div>';
+
+    var rect = element.getBoundingClientRect();
+    tooltip.style.top = (rect.top - 50) + 'px';
+    tooltip.style.left = rect.left + 'px';
+
+    document.body.appendChild(tooltip);
+
+    // Remove tooltip after 5 seconds or on any click
+    setTimeout(function(){
+      if(document.getElementById('onboarding-tooltip')){
+        document.getElementById('onboarding-tooltip').remove();
+      }
+    }, 5000);
+
+    document.addEventListener('click', function(){
+      if(document.getElementById('onboarding-tooltip')){
+        document.getElementById('onboarding-tooltip').remove();
+      }
+    }, { once: true });
   }
 
   /* Debug/Reset Functions */
@@ -5844,6 +5984,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   window.clearDemoData = clearDemoData;
   window.resetForTesting = resetForTesting;
   window.forceLoadDemo = forceLoadDemo;
+  window.startOnboardingExperience = startOnboardingExperience;
+  window.highlightFirstClient = highlightFirstClient;
+  window.showOnboardingTooltip = showOnboardingTooltip;
   window.debugCurrentState = debugCurrentState;
 
   /* Click handler for unscheduling and clearing purchases */
