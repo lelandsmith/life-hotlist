@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Supabase Diagnostic</title>
+</head>
+<body>
+  <h1>Supabase Project Diagnostic</h1>
+
+  <button onclick="runTests()">Run All Tests</button>
+
+  <pre id="output" style="background: #f0f0f0; padding: 20px; margin: 20px 0; height: 500px; overflow: auto;"></pre>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    const SUPABASE_URL = 'https://yoxzlejphrhtuisnptor.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlveHpsZWpwaHJodHVpc25wdG9yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1NjIwNDIsImV4cCI6MjA3NDEzODA0Mn0.azXNn6AQQcB5iJzn7ebhAh5cSBESgKwEV2aSviX8yeY';
+
+    function log(msg, type = 'info') {
+      const output = document.getElementById('output');
+      const time = new Date().toLocaleTimeString();
+      const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+      output.innerHTML += `[${time}] ${icon} ${msg}\n`;
+      console.log(msg);
+    }
+
+    async function runTests() {
+      log('Starting diagnostic tests...', 'info');
+
+      // Test 1: Check if Supabase URL is accessible
+      log('\n=== Test 1: Basic Connectivity ===');
+      try {
+        const response = await fetch(SUPABASE_URL + '/rest/v1/', {
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_KEY
+          }
+        });
+        if (response.ok) {
+          log('REST API is accessible', 'success');
+        } else {
+          log(`REST API returned status ${response.status}`, 'error');
+        }
+      } catch (err) {
+        log('Cannot connect to Supabase: ' + err.message, 'error');
+      }
+
+      // Test 2: Check auth endpoint directly
+      log('\n=== Test 2: Auth Endpoint Direct ===');
+      try {
+        const response = await fetch(SUPABASE_URL + '/auth/v1/health');
+        const text = await response.text();
+        log(`Auth health check: ${response.status} - ${text}`, response.ok ? 'success' : 'error');
+      } catch (err) {
+        log('Auth endpoint error: ' + err.message, 'error');
+      }
+
+      // Test 3: Try creating a client
+      log('\n=== Test 3: Client Creation ===');
+      try {
+        const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        log('Client created successfully', 'success');
+
+        // Test 4: Try getSession with error handling
+        log('\n=== Test 4: Session Check ===');
+        const startTime = Date.now();
+
+        try {
+          const { data, error } = await Promise.race([
+            client.auth.getSession(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout after 5s')), 5000))
+          ]);
+
+          const duration = Date.now() - startTime;
+
+          if (error) {
+            log(`Session error after ${duration}ms: ${error.message}`, 'error');
+          } else {
+            log(`Session check completed in ${duration}ms - Session: ${data.session ? 'Found' : 'None'}`, 'success');
+          }
+        } catch (err) {
+          const duration = Date.now() - startTime;
+          log(`Session check failed after ${duration}ms: ${err.message}`, 'error');
+        }
+
+      } catch (err) {
+        log('Failed to create client: ' + err.message, 'error');
+      }
+
+      // Test 5: Check the actual API key
+      log('\n=== Test 5: API Key Validation ===');
+      try {
+        const parts = SUPABASE_KEY.split('.');
+        if (parts.length !== 3) {
+          log('API key format is invalid', 'error');
+        } else {
+          const payload = JSON.parse(atob(parts[1]));
+          log('API Key Details:', 'info');
+          log(`  - Issuer: ${payload.iss}`, 'info');
+          log(`  - Project Ref: ${payload.ref}`, 'info');
+          log(`  - Role: ${payload.role}`, 'info');
+          log(`  - Issued At: ${new Date(payload.iat * 1000).toLocaleString()}`, 'info');
+          log(`  - Expires: ${new Date(payload.exp * 1000).toLocaleString()}`, 'info');
+
+          if (payload.exp * 1000 < Date.now()) {
+            log('API KEY HAS EXPIRED!', 'error');
+          } else {
+            log('API key is valid', 'success');
+          }
+        }
+      } catch (err) {
+        log('Cannot parse API key: ' + err.message, 'error');
+      }
+
+      // Test 6: Try the magic link endpoint directly
+      log('\n=== Test 6: Magic Link Endpoint ===');
+      try {
+        const response = await fetch(SUPABASE_URL + '/auth/v1/otp', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_KEY
+          },
+          body: JSON.stringify({
+            email: 'test@example.com',
+            options: {
+              emailRedirectTo: window.location.href
+            }
+          })
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+          log('Magic link endpoint works (would send to test@example.com)', 'success');
+        } else {
+          log(`Magic link error: ${response.status} - ${data.message || data.error || JSON.stringify(data)}`, 'error');
+        }
+      } catch (err) {
+        log('Magic link endpoint failed: ' + err.message, 'error');
+      }
+
+      log('\n=== Diagnostic Complete ===', 'info');
+      log('\nRECOMMENDATION:', 'info');
+      log('If tests are failing, you may need to:', 'info');
+      log('1. Check if your Supabase project is paused (free tier pauses after inactivity)', 'info');
+      log('2. Verify the project URL and API key are correct', 'info');
+      log('3. Check Supabase dashboard for any issues', 'info');
+    }
+  </script>
+</body>
+</html>
