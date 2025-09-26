@@ -60,15 +60,41 @@
     let supabase = null;
     let currentUser = null;
 
+    let initAttempts = 0;
+
     // Wait for DOM and Supabase library
     function init() {
+      initAttempts++;
+      console.log('Initializing... Attempt:', initAttempts, { supabaseExists: !!window.supabase });
+
       if (!window.supabase) {
+        console.log('Waiting for Supabase library...');
+        document.getElementById('status-text').textContent = 'Loading Supabase...';
+
+        if (initAttempts > 50) { // 5 seconds timeout
+          console.error('Supabase library failed to load after 5 seconds');
+          document.getElementById('status-text').textContent = 'Failed to load auth library';
+          document.getElementById('login-screen').classList.remove('hidden');
+          document.getElementById('login-screen').innerHTML = '<h2>Error: Authentication library failed to load. Please refresh the page.</h2>';
+          return;
+        }
+
         setTimeout(init, 100);
         return;
       }
 
+      console.log('Supabase library loaded, creating client...');
+      document.getElementById('status-text').textContent = 'Connecting...';
+
       // Create client
-      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      try {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        console.log('Client created successfully');
+      } catch (error) {
+        console.error('Failed to create Supabase client:', error);
+        document.getElementById('status-text').textContent = 'Error: ' + error.message;
+        return;
+      }
 
       // Listen for auth changes
       supabase.auth.onAuthStateChange((event, session) => {
@@ -82,13 +108,24 @@
       });
 
       // Check initial session
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session) {
+      console.log('Checking for existing session...');
+      supabase.auth.getSession().then(({ data: { session }, error }) => {
+        if (error) {
+          console.error('Session check error:', error);
+          document.getElementById('status-text').textContent = 'Auth error: ' + error.message;
+          showLogin();
+        } else if (session) {
+          console.log('Session found:', session.user.email);
           currentUser = session.user;
           showApp();
         } else {
+          console.log('No session found');
           showLogin();
         }
+      }).catch(err => {
+        console.error('Session check failed:', err);
+        document.getElementById('status-text').textContent = 'Connection failed';
+        showLogin();
       });
 
       // Wire up buttons
