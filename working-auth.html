@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Working Auth - Fresh Start</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+  <h1>Fresh Auth Test</h1>
+
+  <div id="app">
+    <h2>Status: <span id="status">Loading...</span></h2>
+
+    <div id="logged-out" style="display:none;">
+      <h3>Sign In Options</h3>
+      <button onclick="signInWithGoogle()">Sign in with Google</button>
+      <br><br>
+      <input type="email" id="email" placeholder="your@email.com">
+      <button onclick="sendMagicLink()">Send Magic Link</button>
+    </div>
+
+    <div id="logged-in" style="display:none;">
+      <h3>Welcome!</h3>
+      <p>Email: <span id="user-email"></span></p>
+      <button onclick="signOut()">Sign Out</button>
+    </div>
+  </div>
+
+  <h3>Debug Log:</h3>
+  <pre id="log" style="background: #f0f0f0; padding: 10px; min-height: 200px;"></pre>
+
+  <!-- Supabase from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    // Wait for Supabase to load
+    function waitForSupabase(callback) {
+      if (window.supabase) {
+        callback();
+      } else {
+        setTimeout(() => waitForSupabase(callback), 100);
+      }
+    }
+    // HARDCODED CREDENTIALS - NO VARIABLES
+    let supabaseClient = null;
+
+    function log(msg) {
+      const logEl = document.getElementById('log');
+      const time = new Date().toLocaleTimeString();
+      logEl.textContent = `[${time}] ${msg}\n${logEl.textContent}`;
+      console.log(msg);
+    }
+
+    // Initialize
+    function init() {
+      log('Starting initialization...');
+      log('window.supabase exists: ' + !!window.supabase);
+
+      if (!window.supabase) {
+        log('ERROR: Supabase library not loaded yet, retrying...');
+        setTimeout(init, 500);
+        return;
+      }
+
+      try {
+        // Create client with hardcoded values
+        supabaseClient = window.supabase.createClient(
+          'https://yoxzlejphrhtuisnptor.supabase.co',
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlveHpsZWpwaHJodHVpc25wdG9yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1NjIwNDIsImV4cCI6MjA3NDEzODA0Mn0.azXNn6AQQcB5iJzn7ebhAh5cSBESgKwEV2aSviX8yeY'
+        );
+
+        log('Client created: ' + (supabaseClient ? 'YES' : 'NO'));
+
+        // Listen for auth changes
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+          log('Auth event: ' + event);
+          if (session) {
+            log('Session user: ' + session.user.email);
+            showLoggedIn(session.user);
+
+            // Clear URL if it has tokens
+            if (window.location.hash && window.location.hash.includes('access_token')) {
+              window.history.replaceState(null, null, window.location.pathname);
+            }
+          } else {
+            showLoggedOut();
+          }
+        });
+
+        // Check current session
+        checkSession();
+
+      } catch (err) {
+        log('ERROR in init: ' + err.message);
+      }
+    }
+
+    async function checkSession() {
+      try {
+        const { data, error } = await supabaseClient.auth.getSession();
+
+        if (error) {
+          log('Session check error: ' + error.message);
+          showLoggedOut();
+        } else if (data.session) {
+          log('Session found: ' + data.session.user.email);
+          showLoggedIn(data.session.user);
+        } else {
+          log('No session');
+          showLoggedOut();
+        }
+      } catch (err) {
+        log('ERROR checking session: ' + err.message);
+        showLoggedOut();
+      }
+    }
+
+    function showLoggedIn(user) {
+      document.getElementById('status').textContent = 'Logged In';
+      document.getElementById('logged-out').style.display = 'none';
+      document.getElementById('logged-in').style.display = 'block';
+      document.getElementById('user-email').textContent = user.email;
+    }
+
+    function showLoggedOut() {
+      document.getElementById('status').textContent = 'Logged Out';
+      document.getElementById('logged-out').style.display = 'block';
+      document.getElementById('logged-in').style.display = 'none';
+    }
+
+    async function signInWithGoogle() {
+      log('Starting Google sign in...');
+
+      try {
+        const { data, error } = await supabaseClient.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: window.location.href
+          }
+        });
+
+        if (error) {
+          log('Google error: ' + error.message);
+          alert('Google sign in failed: ' + error.message);
+        } else {
+          log('Redirecting to Google...');
+        }
+      } catch (err) {
+        log('ERROR: ' + err.message);
+        alert('Error: ' + err.message);
+      }
+    }
+
+    async function sendMagicLink() {
+      const email = document.getElementById('email').value;
+      if (!email) {
+        alert('Enter an email');
+        return;
+      }
+
+      log('Sending magic link to: ' + email);
+
+      // Method 1: Try with Supabase client first
+      try {
+        const { error } = await supabaseClient.auth.signInWithOtp({
+          email: email,
+          options: {
+            emailRedirectTo: window.location.href
+          }
+        });
+
+        if (error) {
+          log('Client method failed: ' + error.message);
+          // Try method 2
+          sendMagicLinkDirect(email);
+        } else {
+          log('Magic link sent!');
+          alert('Check your email for the magic link!');
+        }
+      } catch (err) {
+        log('ERROR: ' + err.message);
+        // Try method 2
+        sendMagicLinkDirect(email);
+      }
+    }
+
+    async function sendMagicLinkDirect(email) {
+      log('Trying direct API method...');
+
+      const url = 'https://yoxzlejphrhtuisnptor.supabase.co/auth/v1/otp';
+      const apikey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlveHpsZWpwaHJodHVpc25wdG9yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1NjIwNDIsImV4cCI6MjA3NDEzODA0Mn0.azXNn6AQQcB5iJzn7ebhAh5cSBESgKwEV2aSviX8yeY';
+
+      try {
+        const response = await fetch(url + '?apikey=' + apikey, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email: email,
+            options: {
+              emailRedirectTo: window.location.href
+            }
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          log('Direct method success!');
+          alert('Check your email for the magic link!');
+        } else {
+          log('Direct method failed: ' + JSON.stringify(data));
+          alert('Failed to send magic link: ' + (data.message || data.msg || 'Unknown error'));
+        }
+      } catch (err) {
+        log('Direct method error: ' + err.message);
+        alert('Error: ' + err.message);
+      }
+    }
+
+    async function signOut() {
+      log('Signing out...');
+
+      try {
+        const { error } = await supabaseClient.auth.signOut();
+
+        if (error) {
+          log('Sign out error: ' + error.message);
+        } else {
+          log('Signed out');
+        }
+      } catch (err) {
+        log('ERROR: ' + err.message);
+      }
+    }
+
+    // Start when page loads
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+</body>
+</html>
