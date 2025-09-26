@@ -2092,14 +2092,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       // Use the exact same pattern that works in working-auth.html
       supabase = window.supabase.createClient(
         'https://yoxzlejphrhtuisnptor.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlveHpsZWpwaHJodHVpc25wdG9yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1NjIwNDIsImV4cCI6MjA3NDEzODA0Mn0.azXNn6AQQcB5iJzn7ebhAh5cSBESgKwEV2aSviX8yeY', {
-          auth: {
-            autoRefreshToken: true,
-            persistSession: true,
-            detectSessionInUrl: true
-          }
-        });
-        console.log('Supabase client initialized successfully with detectSessionInUrl enabled');
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlveHpsZWpwaHJodHVpc25wdG9yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1NjIwNDIsImV4cCI6MjA3NDEzODA0Mn0.azXNn6AQQcB5iJzn7ebhAh5cSBESgKwEV2aSviX8yeY'
+      );
+        console.log('Supabase client initialized successfully');
         window.supabaseClient = supabase;  // Store globally for access
 
         // CRITICAL: Process OAuth tokens if they're in the URL
