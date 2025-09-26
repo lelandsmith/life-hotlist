@@ -2088,44 +2088,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     console.log('🚀 Starting Supabase initialization...');
 
-    // Use window-level variables to ensure they're accessible
-    const url = window.SUPABASE_URL || SUPABASE_URL;
-    const key = window.SUPABASE_ANON_KEY || SUPABASE_ANON_KEY;
-
-    if (url && url !== 'https://YOUR_PROJECT_ID.supabase.co' && key && key !== 'YOUR_ANON_KEY') {
-      try {
-        console.log('Creating Supabase client with URL:', url);
-        console.log('Anon key present:', !!key);
-        console.log('Anon key length:', key.length);
-
-        supabase = window.supabase.createClient(url, key, {
+    try {
+      // Use the exact same pattern that works in working-auth.html
+      supabase = window.supabase.createClient(
+        'https://yoxzlejphrhtuisnptor.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlveHpsZWpwaHJodHVpc25wdG9yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1NjIwNDIsImV4cCI6MjA3NDEzODA0Mn0.azXNn6AQQcB5iJzn7ebhAh5cSBESgKwEV2aSviX8yeY', {
           auth: {
             autoRefreshToken: true,
             persistSession: true,
-            detectSessionInUrl: true,
-            storage: {
-              getItem: (key) => {
-                try {
-                  return localStorage.getItem(key);
-                } catch {
-                  return null;
-                }
-              },
-              setItem: (key, value) => {
-                try {
-                  localStorage.setItem(key, value);
-                } catch {
-                  console.warn('Failed to save to localStorage:', key);
-                }
-              },
-              removeItem: (key) => {
-                try {
-                  localStorage.removeItem(key);
-                } catch {
-                  console.warn('Failed to remove from localStorage:', key);
-                }
-              }
-            }
+            detectSessionInUrl: true
           }
         });
         console.log('Supabase client initialized successfully with detectSessionInUrl enabled');
