@@ -62,14 +62,31 @@
 
     let initAttempts = 0;
 
+    // Check for auth tokens in URL (from magic link or OAuth callback)
+    function checkForAuthTokens() {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const hasTokens = hashParams.has('access_token') || hashParams.has('refresh_token');
+
+      if (hasTokens) {
+        console.log('Auth tokens found in URL!');
+        console.log('Access token:', hashParams.get('access_token')?.substring(0, 20) + '...');
+        document.getElementById('status-text').textContent = 'Processing login...';
+      }
+
+      return hasTokens;
+    }
+
     // Wait for DOM and Supabase library
     function init() {
       initAttempts++;
       console.log('Initializing... Attempt:', initAttempts, { supabaseExists: !!window.supabase });
 
+      // Check for tokens first
+      const hasTokens = checkForAuthTokens();
+
       if (!window.supabase) {
         console.log('Waiting for Supabase library...');
-        document.getElementById('status-text').textContent = 'Loading Supabase...';
+        document.getElementById('status-text').textContent = hasTokens ? 'Processing login...' : 'Loading Supabase...';
 
         if (initAttempts > 50) { // 5 seconds timeout
           console.error('Supabase library failed to load after 5 seconds');
@@ -98,12 +115,28 @@
 
       // Listen for auth changes
       supabase.auth.onAuthStateChange((event, session) => {
-        if (session) {
+        console.log('Auth state change:', event, session ? 'Session found' : 'No session');
+
+        if (event === 'SIGNED_IN' && session) {
+          console.log('User signed in:', session.user.email);
           currentUser = session.user;
           showApp();
-        } else {
+          // Clear URL tokens after successful sign in
+          if (window.location.hash.includes('access_token')) {
+            window.history.replaceState(null, null, window.location.pathname);
+          }
+        } else if (event === 'SIGNED_OUT') {
+          console.log('User signed out');
           currentUser = null;
           showLogin();
+        } else if (event === 'TOKEN_REFRESHED') {
+          console.log('Token refreshed');
+        } else if (event === 'USER_UPDATED') {
+          console.log('User updated');
+          if (session) {
+            currentUser = session.user;
+            showApp();
+          }
         }
       });
 
@@ -140,11 +173,30 @@
       });
 
       // Wire up buttons
-      document.getElementById('google-login').onclick = () => {
-        supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: { redirectTo: window.location.origin + window.location.pathname }
-        });
+      document.getElementById('google-login').onclick = async () => {
+        console.log('Starting Google OAuth...');
+        try {
+          const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+              redirectTo: window.location.origin + window.location.pathname,
+              skipBrowserRedirect: false
+            }
+          });
+
+          if (error) {
+            console.error('Google OAuth error:', error);
+            alert('Google sign-in error: ' + error.message);
+          } else if (data?.url) {
+            console.log('Redirecting to Google:', data.url);
+            // Shouldn't reach here normally as browser redirects automatically
+          } else {
+            console.log('Google OAuth initiated, should redirect...');
+          }
+        } catch (err) {
+          console.error('Google OAuth exception:', err);
+          alert('Failed to start Google sign-in: ' + err.message);
+        }
       };
 
       document.getElementById('magic-link-btn').onclick = async () => {
