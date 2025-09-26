@@ -117,30 +117,56 @@
       supabase.auth.onAuthStateChange((event, session) => {
         console.log('Auth state change:', event, session ? 'Session found' : 'No session');
 
-        if (event === 'SIGNED_IN' && session) {
-          console.log('User signed in:', session.user.email);
+        // Handle any auth event with a valid session
+        if (session) {
+          console.log('Session detected for user:', session.user.email);
           currentUser = session.user;
           showApp();
+
           // Clear URL tokens after successful sign in
           if (window.location.hash.includes('access_token')) {
+            console.log('Clearing auth tokens from URL');
             window.history.replaceState(null, null, window.location.pathname);
           }
-        } else if (event === 'SIGNED_OUT') {
-          console.log('User signed out');
+        } else if (event === 'SIGNED_OUT' || !session) {
+          console.log('No session - showing login');
           currentUser = null;
           showLogin();
-        } else if (event === 'TOKEN_REFRESHED') {
-          console.log('Token refreshed');
-        } else if (event === 'USER_UPDATED') {
-          console.log('User updated');
-          if (session) {
-            currentUser = session.user;
-            showApp();
-          }
         }
       });
 
-      // Check initial session with timeout
+      // Check if we have tokens in the URL that need processing
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const hasAccessToken = hashParams.has('access_token');
+
+      if (hasAccessToken) {
+        console.log('Processing auth tokens from URL...');
+
+        // Manually set the session from URL tokens
+        const access_token = hashParams.get('access_token');
+        const refresh_token = hashParams.get('refresh_token');
+
+        console.log('Setting session from tokens...');
+        supabase.auth.setSession({
+          access_token: access_token,
+          refresh_token: refresh_token
+        }).then(({ data, error }) => {
+          if (error) {
+            console.error('Failed to set session:', error);
+            showLogin();
+          } else if (data?.session) {
+            console.log('Session set successfully:', data.session.user.email);
+            currentUser = data.session.user;
+            showApp();
+            // Clear tokens from URL
+            window.history.replaceState(null, null, window.location.pathname);
+          }
+        });
+
+        return; // Don't check session yet, we're processing tokens
+      }
+
+      // Only check session if no tokens in URL
       console.log('Checking for existing session...');
 
       // Create a timeout promise
