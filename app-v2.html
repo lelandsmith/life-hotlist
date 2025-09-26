@@ -510,17 +510,36 @@
 
         console.log('Fetching contacts for user:', userId);
 
-        const { data: contacts, error } = await supabase
-          .from('contacts')
-          .select('*')
-          .eq('user_id', userId)
-          .limit(10);
+        // Get the access token to use for the query
+        const accessToken = localStorage.getItem('sb-access-token');
 
-        if (error) {
-          console.error('Supabase query error:', error);
+        if (!accessToken) {
+          console.error('No access token available');
           showDataNotification('error');
-          container.innerHTML = 'Error loading data from cloud: ' + error.message;
-        } else if (contacts && contacts.length > 0) {
+          container.innerHTML = 'Authentication expired - please sign in again';
+          return;
+        }
+
+        // Make direct API call with token in URL to bypass CORS
+        const response = await fetch(
+          `${SUPABASE_URL}/rest/v1/contacts?user_id=eq.${userId}&limit=10&apikey=${SUPABASE_KEY}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('API error:', response.status, errorText);
+          throw new Error(`API error: ${response.status}`);
+        }
+
+        const contacts = await response.json();
+
+        if (contacts && contacts.length > 0) {
           console.log(`Loaded ${contacts.length} contacts from cloud`);
           showDataNotification('cloud', contacts.length);
 
