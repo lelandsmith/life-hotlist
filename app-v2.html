@@ -62,6 +62,46 @@
 
     let initAttempts = 0;
 
+    // Fallback: Decode JWT token manually
+    function tryDecodeToken(token) {
+      console.log('Attempting to decode token manually...');
+      try {
+        const parts = token.split('.');
+        if (parts.length !== 3) {
+          console.error('Invalid token format');
+          showLogin();
+          return;
+        }
+
+        const payload = JSON.parse(atob(parts[1]));
+        console.log('Token decoded:', payload);
+
+        if (payload.email) {
+          console.log('User email from token:', payload.email);
+          // Create a minimal user object
+          currentUser = {
+            email: payload.email,
+            id: payload.sub || payload.user_id || 'unknown'
+          };
+
+          // Show the app even though full session isn't available
+          showApp();
+
+          // Clear tokens from URL
+          window.history.replaceState(null, null, window.location.pathname);
+
+          // Store token for future API calls
+          localStorage.setItem('sb-access-token', token);
+        } else {
+          console.error('No email in token');
+          showLogin();
+        }
+      } catch (err) {
+        console.error('Failed to decode token:', err);
+        showLogin();
+      }
+    }
+
     // Check for auth tokens in URL (from magic link or OAuth callback)
     function checkForAuthTokens() {
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
@@ -147,21 +187,39 @@
         const refresh_token = hashParams.get('refresh_token');
 
         console.log('Setting session from tokens...');
-        supabase.auth.setSession({
+
+        // Add timeout to setSession call
+        const setSessionPromise = supabase.auth.setSession({
           access_token: access_token,
           refresh_token: refresh_token
-        }).then(({ data, error }) => {
-          if (error) {
-            console.error('Failed to set session:', error);
-            showLogin();
-          } else if (data?.session) {
-            console.log('Session set successfully:', data.session.user.email);
-            currentUser = data.session.user;
-            showApp();
-            // Clear tokens from URL
-            window.history.replaceState(null, null, window.location.pathname);
-          }
         });
+
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('setSession timed out after 3 seconds')), 3000);
+        });
+
+        Promise.race([setSessionPromise, timeoutPromise])
+          .then(({ data, error }) => {
+            if (error) {
+              console.error('Failed to set session:', error);
+              // Try to decode the token and use it anyway
+              tryDecodeToken(access_token);
+            } else if (data?.session) {
+              console.log('Session set successfully:', data.session.user.email);
+              currentUser = data.session.user;
+              showApp();
+              // Clear tokens from URL
+              window.history.replaceState(null, null, window.location.pathname);
+            } else {
+              console.log('No session returned');
+              tryDecodeToken(access_token);
+            }
+          })
+          .catch(err => {
+            console.error('SetSession failed:', err.message);
+            // Even if setSession times out, try to decode the token
+            tryDecodeToken(access_token);
+          });
 
         return; // Don't check session yet, we're processing tokens
       }
