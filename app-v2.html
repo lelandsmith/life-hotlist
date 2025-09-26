@@ -456,15 +456,15 @@
       console.log('loadUserData called, currentUser:', currentUser);
 
       // First check localStorage for cached data
-      const cachedData = localStorage.getItem('hotlist-contacts');
+      const cachedData = localStorage.getItem('hotlist-encouragements');
       if (cachedData) {
         try {
-          const contacts = JSON.parse(cachedData);
-          showDataNotification('local', contacts.length);
+          const items = JSON.parse(cachedData);
+          showDataNotification('local', items.length);
           container.innerHTML = `
-            <p>Found ${contacts.length} contacts (from cache)</p>
+            <p>Found ${items.length} encouragements (from cache)</p>
             <ul>
-              ${contacts.map(c => `<li>${c.name || c.email || 'Contact'}</li>`).join('')}
+              ${items.map(item => `<li>${item.content || item.message || 'Item'}</li>`).join('')}
             </ul>
           `;
         } catch (e) {
@@ -521,8 +521,9 @@
         }
 
         // Make direct API call with token in URL to bypass CORS
+        // Using 'encouragements' table since 'contacts' doesn't exist
         const response = await fetch(
-          `${SUPABASE_URL}/rest/v1/contacts?user_id=eq.${userId}&limit=10&apikey=${SUPABASE_KEY}`,
+          `${SUPABASE_URL}/rest/v1/encouragements?user_id=eq.${userId}&limit=10&apikey=${SUPABASE_KEY}`,
           {
             headers: {
               'Authorization': `Bearer ${accessToken}`,
@@ -537,25 +538,25 @@
           throw new Error(`API error: ${response.status}`);
         }
 
-        const contacts = await response.json();
+        const items = await response.json();
 
-        if (contacts && contacts.length > 0) {
-          console.log(`Loaded ${contacts.length} contacts from cloud`);
-          showDataNotification('cloud', contacts.length);
+        if (items && items.length > 0) {
+          console.log(`Loaded ${items.length} encouragements from cloud`);
+          showDataNotification('cloud', items.length);
 
           // Cache to localStorage
-          localStorage.setItem('hotlist-contacts', JSON.stringify(contacts));
+          localStorage.setItem('hotlist-encouragements', JSON.stringify(items));
 
           container.innerHTML = `
-            <p>Found ${contacts.length} contacts (from cloud)</p>
+            <p>Found ${items.length} encouragements (from cloud)</p>
             <ul>
-              ${contacts.map(c => `<li>${c.name || c.email || 'Contact'}</li>`).join('')}
+              ${items.map(item => `<li>${item.content || item.message || 'Encouragement'}</li>`).join('')}
             </ul>
           `;
         } else {
-          console.log('No contacts found in database');
+          console.log('No encouragements found in database');
           showDataNotification('cloud', 0);
-          container.innerHTML = 'No contacts found in cloud. Start adding some!';
+          container.innerHTML = 'No encouragements found in cloud. Start adding some!';
         }
       } catch (err) {
         console.error('Failed to load from cloud:', err);
