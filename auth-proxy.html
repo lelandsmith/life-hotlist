@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hotlist CRM - Auth Proxy</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+  <h1>Authentication Solution</h1>
+
+  <div id="status">
+    <h2>Current Status: <span id="status-text">Checking...</span></h2>
+  </div>
+
+  <div id="options">
+    <h2>Choose Your Path:</h2>
+
+    <h3>Option A: Deploy and Test on Vercel (Recommended)</h3>
+    <p>This will work immediately with both Google and Magic Links:</p>
+    <button onclick="deployToVercel()">Deploy app-v2.html to Vercel</button>
+    <p>Once deployed, test at: https://hotlist.vercel.app/app-v2.html</p>
+
+    <h3>Option B: Use Production Auth Locally</h3>
+    <p>Sign in on production, then use that session locally:</p>
+    <ol>
+      <li><button onclick="window.open('https://hotlist.vercel.app/working-auth.html', '_blank')">Sign in on Production</button></li>
+      <li>After signing in there, come back here and click:</li>
+      <li><button onclick="copySession()">Copy Session to Localhost</button></li>
+    </ol>
+
+    <h3>Option C: Direct API Test (Without CORS)</h3>
+    <p>Use the Supabase REST API directly:</p>
+    <button onclick="testDirectAPI()">Test Direct API Access</button>
+  </div>
+
+  <pre id="log" style="background: #f0f0f0; padding: 10px; margin-top: 20px;"></pre>
+
+  <script>
+    const SUPABASE_URL = 'https://yoxzlejphrhtuisnptor.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlveHpsZWpwaHJodHVpc25wdG9yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1NjIwNDIsImV4cCI6MjA3NDEzODA0Mn0.azXNn6AQQcB5iJzn7ebhAh5cSBESgKwEV2aSviX8yeY';
+
+    function log(msg) {
+      const logEl = document.getElementById('log');
+      const time = new Date().toLocaleTimeString();
+      logEl.textContent += `[${time}] ${msg}\n`;
+    }
+
+    function deployToVercel() {
+      log('To deploy to Vercel:');
+      log('1. Run: git add app-v2.html');
+      log('2. Run: git commit -m "Add new auth implementation"');
+      log('3. Run: git push origin teams');
+      log('4. Run: vercel --prod --yes');
+      log('');
+      log('Then test at: https://hotlist.vercel.app/app-v2.html');
+    }
+
+    function copySession() {
+      // Check if we have a session in localStorage from production
+      const session = localStorage.getItem('sb-yoxzlejphrhtuisnptor-auth-token');
+      if (session) {
+        log('Session found in localStorage!');
+        log('You can now use the app locally with your production session.');
+        window.location.href = '/app-v2.html';
+      } else {
+        log('No session found. Make sure you:');
+        log('1. Signed in on production first');
+        log('2. Are using the same browser');
+        log('3. Haven\'t cleared your browser data');
+      }
+    }
+
+    async function testDirectAPI() {
+      log('Testing direct API access...');
+
+      try {
+        // Test basic connectivity
+        const response = await fetch(SUPABASE_URL + '/rest/v1/', {
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_KEY
+          }
+        });
+
+        if (response.ok) {
+          log('✅ Direct API access works!');
+          log('The issue is definitely CORS on localhost.');
+          log('Recommendation: Deploy to Vercel for testing.');
+        } else {
+          log('❌ API returned status: ' + response.status);
+        }
+      } catch (err) {
+        log('Error: ' + err.message);
+      }
+    }
+
+    // Check current environment
+    document.getElementById('status-text').textContent =
+      window.location.hostname === 'localhost' ? 'Running Locally (Limited Auth)' : 'Running on ' + window.location.hostname;
+  </script>
+</body>
+</html>

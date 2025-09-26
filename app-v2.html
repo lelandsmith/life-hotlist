@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hotlist CRM</title>
+  <style>
+    /* Core styles only - we'll migrate your styles gradually */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    #auth-status {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      padding: 10px;
+      background: #f0f0f0;
+      border-radius: 5px;
+    }
+    #app-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .loading { opacity: 0.5; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div id="auth-status">
+    <span id="status-text">Initializing...</span>
+    <button id="sign-out-btn" class="hidden">Sign Out</button>
+  </div>
+
+  <div id="app-container">
+    <div id="login-screen" class="hidden">
+      <h1>Hotlist CRM</h1>
+      <button id="google-login">Sign in with Google</button>
+      <br><br>
+      <input type="email" id="email-input" placeholder="your@email.com">
+      <button id="magic-link-btn">Send Magic Link</button>
+    </div>
+
+    <div id="main-app" class="hidden">
+      <!-- We'll inject your app content here once auth works -->
+      <h1>Hotlist CRM</h1>
+      <div id="app-content"></div>
+    </div>
+  </div>
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    // SIMPLE, CLEAN INITIALIZATION - ONE WAY ONLY
+    const SUPABASE_URL = 'https://yoxzlejphrhtuisnptor.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlveHpsZWpwaHJodHVpc25wdG9yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1NjIwNDIsImV4cCI6MjA3NDEzODA0Mn0.azXNn6AQQcB5iJzn7ebhAh5cSBESgKwEV2aSviX8yeY';
+
+    let supabase = null;
+    let currentUser = null;
+
+    // Wait for DOM and Supabase library
+    function init() {
+      if (!window.supabase) {
+        setTimeout(init, 100);
+        return;
+      }
+
+      // Create client
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+      // Listen for auth changes
+      supabase.auth.onAuthStateChange((event, session) => {
+        if (session) {
+          currentUser = session.user;
+          showApp();
+        } else {
+          currentUser = null;
+          showLogin();
+        }
+      });
+
+      // Check initial session
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          currentUser = session.user;
+          showApp();
+        } else {
+          showLogin();
+        }
+      });
+
+      // Wire up buttons
+      document.getElementById('google-login').onclick = () => {
+        supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo: window.location.origin + window.location.pathname }
+        });
+      };
+
+      document.getElementById('magic-link-btn').onclick = async () => {
+        const email = document.getElementById('email-input').value;
+        if (!email) return alert('Please enter an email');
+
+        const { error } = await supabase.auth.signInWithOtp({
+          email: email,
+          options: { emailRedirectTo: window.location.origin + window.location.pathname }
+        });
+
+        if (error) {
+          alert('Error: ' + error.message);
+        } else {
+          alert('Check your email for the magic link!');
+        }
+      };
+
+      document.getElementById('sign-out-btn').onclick = () => {
+        supabase.auth.signOut();
+      };
+    }
+
+    function showLogin() {
+      document.getElementById('status-text').textContent = 'Not logged in';
+      document.getElementById('sign-out-btn').classList.add('hidden');
+      document.getElementById('login-screen').classList.remove('hidden');
+      document.getElementById('main-app').classList.add('hidden');
+    }
+
+    function showApp() {
+      document.getElementById('status-text').textContent = currentUser.email;
+      document.getElementById('sign-out-btn').classList.remove('hidden');
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('main-app').classList.remove('hidden');
+
+      // Load the actual app content
+      loadAppModules();
+    }
+
+    async function loadAppModules() {
+      // This is where we'll gradually migrate your app functionality
+      // For now, let's just show it's working
+      const content = document.getElementById('app-content');
+      content.innerHTML = `
+        <p>Welcome back, ${currentUser.email}!</p>
+        <p>App modules will be loaded here...</p>
+        <hr>
+        <h3>Your Data</h3>
+        <div id="data-container">Loading...</div>
+      `;
+
+      // Load user's data from Supabase
+      loadUserData();
+    }
+
+    async function loadUserData() {
+      // Fetch contacts, companies, etc.
+      const { data: contacts, error } = await supabase
+        .from('contacts')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .limit(10);
+
+      const container = document.getElementById('data-container');
+      if (error) {
+        container.innerHTML = 'Error loading data: ' + error.message;
+      } else if (contacts && contacts.length > 0) {
+        container.innerHTML = `
+          <p>Found ${contacts.length} contacts</p>
+          <ul>
+            ${contacts.map(c => `<li>${c.name || c.email || 'Contact'}</li>`).join('')}
+          </ul>
+        `;
+      } else {
+        container.innerHTML = 'No contacts found. Start adding some!';
+      }
+    }
+
+    // Start when ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+</body>
+</html>
