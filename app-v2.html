@@ -25,6 +25,31 @@
     }
     .loading { opacity: 0.5; }
     .hidden { display: none; }
+
+    /* Notification styles */
+    #data-source-notification {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 24px;
+      background: #333;
+      color: white;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 1000;
+      transition: opacity 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    #data-source-notification.cloud {
+      background: #10b981; /* Green for cloud */
+    }
+    #data-source-notification.local {
+      background: #f59e0b; /* Orange for localStorage */
+    }
+    #data-source-notification.error {
+      background: #ef4444; /* Red for errors */
+    }
   </style>
 </head>
 <body>
@@ -49,6 +74,9 @@
     </div>
   </div>
 
+  <!-- Data source notification -->
+  <div id="data-source-notification" class="hidden"></div>
+
   <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -61,6 +89,40 @@
     let currentUser = null;
 
     let initAttempts = 0;
+
+    // Show data source notification
+    function showDataNotification(source, count = null) {
+      const notification = document.getElementById('data-source-notification');
+      if (!notification) return;
+
+      notification.className = ''; // Reset classes
+      notification.classList.add(source);
+
+      switch(source) {
+        case 'cloud':
+          notification.textContent = count !== null
+            ? `☁️ Loaded ${count} items from cloud database`
+            : '☁️ Loading from cloud...';
+          break;
+        case 'local':
+          notification.textContent = count !== null
+            ? `💾 Loaded ${count} items from localStorage`
+            : '💾 Loading from localStorage...';
+          break;
+        case 'error':
+          notification.textContent = '⚠️ Failed to load data';
+          break;
+        default:
+          notification.textContent = '🔄 Syncing data...';
+      }
+
+      notification.classList.remove('hidden');
+
+      // Auto-hide after 5 seconds
+      setTimeout(() => {
+        notification.classList.add('hidden');
+      }, 5000);
+    }
 
     // Fallback: Decode JWT token manually
     function tryDecodeToken(token) {
@@ -389,25 +451,62 @@
     }
 
     async function loadUserData() {
-      // Fetch contacts, companies, etc.
-      const { data: contacts, error } = await supabase
-        .from('contacts')
-        .select('*')
-        .eq('user_id', currentUser.id)
-        .limit(10);
-
       const container = document.getElementById('data-container');
-      if (error) {
-        container.innerHTML = 'Error loading data: ' + error.message;
-      } else if (contacts && contacts.length > 0) {
-        container.innerHTML = `
-          <p>Found ${contacts.length} contacts</p>
-          <ul>
-            ${contacts.map(c => `<li>${c.name || c.email || 'Contact'}</li>`).join('')}
-          </ul>
-        `;
-      } else {
-        container.innerHTML = 'No contacts found. Start adding some!';
+
+      // First check localStorage for cached data
+      const cachedData = localStorage.getItem('hotlist-contacts');
+      if (cachedData) {
+        try {
+          const contacts = JSON.parse(cachedData);
+          showDataNotification('local', contacts.length);
+          container.innerHTML = `
+            <p>Found ${contacts.length} contacts (from cache)</p>
+            <ul>
+              ${contacts.map(c => `<li>${c.name || c.email || 'Contact'}</li>`).join('')}
+            </ul>
+          `;
+        } catch (e) {
+          console.error('Failed to parse cached data:', e);
+        }
+      }
+
+      // Then try to fetch from cloud
+      showDataNotification('cloud');
+
+      try {
+        const { data: contacts, error } = await supabase
+          .from('contacts')
+          .select('*')
+          .eq('user_id', currentUser.id)
+          .limit(10);
+
+        if (error) {
+          showDataNotification('error');
+          container.innerHTML = 'Error loading data from cloud: ' + error.message;
+        } else if (contacts && contacts.length > 0) {
+          showDataNotification('cloud', contacts.length);
+
+          // Cache to localStorage
+          localStorage.setItem('hotlist-contacts', JSON.stringify(contacts));
+
+          container.innerHTML = `
+            <p>Found ${contacts.length} contacts (from cloud)</p>
+            <ul>
+              ${contacts.map(c => `<li>${c.name || c.email || 'Contact'}</li>`).join('')}
+            </ul>
+          `;
+        } else {
+          showDataNotification('cloud', 0);
+          container.innerHTML = 'No contacts found in cloud. Start adding some!';
+        }
+      } catch (err) {
+        console.error('Failed to load from cloud:', err);
+
+        // If cloud fails and no cache, show error
+        if (!cachedData) {
+          showDataNotification('error');
+          container.innerHTML = 'Unable to connect to cloud database';
+        }
       }
     }
 
