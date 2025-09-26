@@ -107,9 +107,19 @@
         }
       });
 
-      // Check initial session
+      // Check initial session with timeout
       console.log('Checking for existing session...');
-      supabase.auth.getSession().then(({ data: { session }, error }) => {
+
+      // Create a timeout promise
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Session check timed out after 3 seconds')), 3000);
+      });
+
+      // Race between session check and timeout
+      Promise.race([
+        supabase.auth.getSession(),
+        timeoutPromise
+      ]).then(({ data: { session }, error }) => {
         if (error) {
           console.error('Session check error:', error);
           document.getElementById('status-text').textContent = 'Auth error: ' + error.message;
@@ -123,8 +133,9 @@
           showLogin();
         }
       }).catch(err => {
-        console.error('Session check failed:', err);
-        document.getElementById('status-text').textContent = 'Connection failed';
+        console.error('Session check failed or timed out:', err.message);
+        document.getElementById('status-text').textContent = 'Session check timed out';
+        // Just show login on timeout - user can still sign in
         showLogin();
       });
 
