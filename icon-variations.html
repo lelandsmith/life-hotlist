@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Icon Set Variations - Hotlist</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: #f8fafc;
+      padding: 40px 20px;
+      color: #1e293b;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+      color: #0f172a;
+    }
+
+    .subtitle {
+      color: #64748b;
+      margin-bottom: 40px;
+      font-size: 14px;
+    }
+
+    .variation-group {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .variation-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #334155;
+    }
+
+    .variation-description {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 24px;
+    }
+
+    .icon-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 20px;
+    }
+
+    .icon-item {
+      text-align: center;
+      padding: 20px;
+      border-radius: 8px;
+      background: #f8fafc;
+      transition: all 0.2s;
+    }
+
+    .icon-item:hover {
+      background: #f1f5f9;
+      transform: translateY(-2px);
+    }
+
+    .icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+      display: block;
+      height: 30px;
+      line-height: 30px;
+    }
+
+    .icon-label {
+      font-size: 11px;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 500;
+    }
+
+    .current-set {
+      background: #fef3c7;
+      border: 2px solid #f59e0b;
+    }
+
+    .current-badge {
+      display: inline-block;
+      background: #f59e0b;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Icon Set Variations</h1>
+    <p class="subtitle">Exploring flat, minimal icon designs for status indicators</p>
+
+    <!-- Current Design -->
+    <div class="variation-group current-set">
+      <div class="variation-title">
+        Current Design
+        <span class="current-badge">IN USE</span>
+      </div>
+      <div class="variation-description">
+        The existing emoji-based design - colorful and expressive but not flat
+      </div>
+      <div class="icon-grid">
+        <div class="icon-item">
+          <span class="icon">📧</span>
+          <div class="icon-label">Email</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon">📞</span>
+          <div class="icon-label">Call</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon">💬</span>
+          <div class="icon-label">Message</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon">📋</span>
+          <div class="icon-label">Quote</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon">📝</span>
+          <div class="icon-label">Application</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon">✅</span>
+          <div class="icon-label">Purchased</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon">⏰</span>
+          <div class="icon-label">Follow-up</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon">📝</span>
+          <div class="icon-label">Notes</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Variation 1: Minimal Geometric -->
+    <div class="variation-group">
+      <div class="variation-title">Variation 1: Minimal Geometric</div>
+      <div class="variation-description">
+        Ultra-flat geometric shapes with single colors, inspired by Material Design
+      </div>
+      <div class="icon-grid">
+        <div class="icon-item">
+          <span class="icon" style="color: #3b82f6;">▣</span>
+          <div class="icon-label">Email</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #10b981;">◉</span>
+          <div class="icon-label">Call</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #8b5cf6;">◈</span>
+          <div class="icon-label">Message</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #f59e0b;">▤</span>
+          <div class="icon-label">Quote</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #ec4899;">▥</span>
+          <div class="icon-label">Application</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #10b981;">✓</span>
+          <div class="icon-label">Purchased</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #ef4444;">◐</span>
+          <div class="icon-label">Follow-up</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #6b7280;">▬</span>
+          <div class="icon-label">Notes</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Variation 2: Letter-Based -->
+    <div class="variation-group">
+      <div class="variation-title">Variation 2: Letter-Based Badges</div>
+      <div class="variation-description">
+        Single letter indicators with colored backgrounds, extremely minimal
+      </div>
+      <div class="icon-grid">
+        <div class="icon-item">
+          <span class="icon" style="background: #3b82f6; color: white; padding: 4px 8px; border-radius: 4px; font-size: 14px; font-weight: 600;">E</span>
+          <div class="icon-label">Email</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="background: #10b981; color: white; padding: 4px 8px; border-radius: 4px; font-size: 14px; font-weight: 600;">C</span>
+          <div class="icon-label">Call</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="background: #8b5cf6; color: white; padding: 4px 8px; border-radius: 4px; font-size: 14px; font-weight: 600;">M</span>
+          <div class="icon-label">Message</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="background: #f59e0b; color: white; padding: 4px 8px; border-radius: 4px; font-size: 14px; font-weight: 600;">Q</span>
+          <div class="icon-label">Quote</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="background: #ec4899; color: white; padding: 4px 8px; border-radius: 4px; font-size: 14px; font-weight: 600;">A</span>
+          <div class="icon-label">Application</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="background: #10b981; color: white; padding: 4px 8px; border-radius: 4px; font-size: 14px; font-weight: 600;">P</span>
+          <div class="icon-label">Purchased</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="background: #ef4444; color: white; padding: 4px 8px; border-radius: 4px; font-size: 14px; font-weight: 600;">F</span>
+          <div class="icon-label">Follow-up</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="background: #6b7280; color: white; padding: 4px 8px; border-radius: 4px; font-size: 14px; font-weight: 600;">N</span>
+          <div class="icon-label">Notes</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Variation 3: Outline Icons -->
+    <div class="variation-group">
+      <div class="variation-title">Variation 3: Outline Style</div>
+      <div class="variation-description">
+        Minimalist outline style with thin strokes, similar to Feather Icons
+      </div>
+      <div class="icon-grid">
+        <div class="icon-item">
+          <span class="icon" style="color: #3b82f6; font-weight: 300;">☐</span>
+          <div class="icon-label">Email</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #10b981; font-weight: 300;">○</span>
+          <div class="icon-label">Call</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #8b5cf6; font-weight: 300;">◇</span>
+          <div class="icon-label">Message</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #f59e0b; font-weight: 300;">□</span>
+          <div class="icon-label">Quote</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #ec4899; font-weight: 300;">△</span>
+          <div class="icon-label">Application</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #10b981; font-weight: 300;">✓</span>
+          <div class="icon-label">Purchased</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #ef4444; font-weight: 300;">◯</span>
+          <div class="icon-label">Follow-up</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #6b7280; font-weight: 300;">−</span>
+          <div class="icon-label">Notes</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Variation 4: Dots and Badges -->
+    <div class="variation-group">
+      <div class="variation-title">Variation 4: Status Dots</div>
+      <div class="variation-description">
+        Simple colored dots with different sizes for hierarchy, inspired by notification badges
+      </div>
+      <div class="icon-grid">
+        <div class="icon-item">
+          <span class="icon" style="color: #3b82f6;">●</span>
+          <div class="icon-label">Email</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #10b981;">●</span>
+          <div class="icon-label">Call</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #8b5cf6;">●</span>
+          <div class="icon-label">Message</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #f59e0b; font-size: 28px;">●</span>
+          <div class="icon-label">Quote</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #ec4899; font-size: 28px;">●</span>
+          <div class="icon-label">Application</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #10b981; font-size: 32px;">●</span>
+          <div class="icon-label">Purchased</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #ef4444;">⬤</span>
+          <div class="icon-label">Follow-up</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #94a3b8;">●</span>
+          <div class="icon-label">Notes</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Variation 5: Unicode Symbols -->
+    <div class="variation-group">
+      <div class="variation-title">Variation 5: Typography Symbols</div>
+      <div class="variation-description">
+        Using typography and unicode symbols for a clean, professional look
+      </div>
+      <div class="icon-grid">
+        <div class="icon-item">
+          <span class="icon" style="color: #3b82f6; font-weight: 600;">@</span>
+          <div class="icon-label">Email</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #10b981; font-weight: 600;">☎</span>
+          <div class="icon-label">Call</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #8b5cf6; font-weight: 600;">✉</span>
+          <div class="icon-label">Message</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #f59e0b; font-weight: 600;">≣</span>
+          <div class="icon-label">Quote</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #ec4899; font-weight: 600;">✎</span>
+          <div class="icon-label">Application</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #10b981; font-weight: 600;">✔</span>
+          <div class="icon-label">Purchased</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #ef4444; font-weight: 600;">⟲</span>
+          <div class="icon-label">Follow-up</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #6b7280; font-weight: 600;">≡</span>
+          <div class="icon-label">Notes</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Implementation Note -->
+    <div style="margin-top: 60px; padding: 30px; background: #f0f9ff; border-radius: 12px; border: 1px solid #0ea5e9;">
+      <h3 style="color: #0c4a6e; margin-bottom: 12px;">Implementation Notes</h3>
+      <p style="color: #075985; font-size: 14px; line-height: 1.6;">
+        Each variation uses only HTML/CSS without external dependencies. The letter-based badges (Variation 2) and status dots (Variation 4) would be the easiest to implement and most performant. The geometric shapes provide good visual differentiation while maintaining a flat, modern aesthetic.
+      </p>
+      <p style="color: #075985; font-size: 14px; line-height: 1.6; margin-top: 12px;">
+        <strong>Recommended:</strong> Variation 2 (Letter Badges) for clarity and simplicity, or Variation 4 (Status Dots) for minimal visual footprint.
+      </p>
+    </div>
+  </div>
+</body>
+</html>

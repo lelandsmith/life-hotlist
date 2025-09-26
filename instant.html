@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Instant CRM</title>
+  <style>
+    body { font-family: system-ui; padding: 20px; }
+    button { padding: 10px; margin: 5px; }
+    .item { background: #f0f0f0; padding: 10px; margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <h1>Instant CRM - No Delays</h1>
+
+  <div>
+    <input type="text" id="name" placeholder="Name">
+    <input type="text" id="email" placeholder="Email">
+    <button onclick="add()">Add Contact</button>
+  </div>
+
+  <div id="list"></div>
+
+  <script>
+    // Ultra simple, ultra fast
+    let contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+
+    function render() {
+      document.getElementById('list').innerHTML = contacts.map((c, i) =>
+        `<div class="item">
+          ${c.name} - ${c.email}
+          <button onclick="remove(${i})">Delete</button>
+        </div>`
+      ).join('') || '<p>No contacts yet</p>';
+    }
+
+    function add() {
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      if (!name) return;
+
+      contacts.push({ name, email });
+      localStorage.setItem('contacts', JSON.stringify(contacts));
+      document.getElementById('name').value = '';
+      document.getElementById('email').value = '';
+      render();
+    }
+
+    function remove(index) {
+      contacts.splice(index, 1);
+      localStorage.setItem('contacts', JSON.stringify(contacts));
+      render();
+    }
+
+    // Instant render on load
+    render();
+  </script>
+</body>
+</html>

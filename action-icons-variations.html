@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Action Icons Variations - Hotlist</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: #f8fafc;
+      padding: 40px 20px;
+      color: #1e293b;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+      color: #0f172a;
+    }
+
+    .subtitle {
+      color: #64748b;
+      margin-bottom: 40px;
+      font-size: 14px;
+    }
+
+    .variation-group {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .variation-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #334155;
+    }
+
+    .variation-description {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 24px;
+    }
+
+    .icon-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .icon-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .icon-item {
+      text-align: center;
+      padding: 24px 20px;
+      border-radius: 8px;
+      background: #f8fafc;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .icon-item:hover {
+      background: #f1f5f9;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .icon {
+      font-size: 24px;
+      margin-bottom: 12px;
+      display: block;
+      height: 32px;
+      line-height: 32px;
+    }
+
+    .icon-svg {
+      width: 24px;
+      height: 24px;
+      margin: 0 auto 12px;
+      display: block;
+    }
+
+    .icon-label {
+      font-size: 11px;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 500;
+    }
+
+    .current-set {
+      background: #fef3c7;
+      border: 2px solid #f59e0b;
+    }
+
+    .current-badge {
+      display: inline-block;
+      background: #f59e0b;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-left: 10px;
+    }
+
+    .demo-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px;
+      background: #f8fafc;
+      border-radius: 8px;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+
+    .demo-row .icon {
+      margin: 0;
+      font-size: 16px;
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      line-height: 20px;
+    }
+
+    .demo-row .icon-svg {
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      display: inline-block;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Action Icon Variations</h1>
+    <p class="subtitle">Flat, minimal icon designs for Notes, Schedule, Archive, and Delete actions</p>
+
+    <!-- Current Design -->
+    <div class="variation-group current-set">
+      <div class="variation-title">
+        Current Design
+        <span class="current-badge">IN USE</span>
+      </div>
+      <div class="variation-description">
+        The existing emoji-based design currently in use
+      </div>
+      <div class="icon-grid">
+        <div class="icon-item">
+          <span class="icon">📝</span>
+          <div class="icon-label">Notes</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon">📅</span>
+          <div class="icon-label">Schedule</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon">📦</span>
+          <div class="icon-label">Archive</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon">🗑️</span>
+          <div class="icon-label">Delete</div>
+        </div>
+      </div>
+      <div class="demo-row">
+        <strong>In context:</strong>
+        <span class="icon">📝</span>
+        <span class="icon">📅</span>
+        <span class="icon">📦</span>
+        <span class="icon">🗑️</span>
+        <span style="color: #64748b; margin-left: 12px;">← How they appear together in the UI</span>
+      </div>
+    </div>
+
+    <!-- Variation 1: Minimalist Line Icons -->
+    <div class="variation-group">
+      <div class="variation-title">Variation 1: Minimalist Line Icons</div>
+      <div class="variation-description">
+        Ultra-thin line icons with consistent stroke weight, inspired by iOS SF Symbols
+      </div>
+      <div class="icon-grid">
+        <div class="icon-item">
+          <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            <path d="M13 3v5a1 1 0 001 1h5"/>
+          </svg>
+          <div class="icon-label">Notes</div>
+        </div>
+        <div class="icon-item">
+          <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <div class="icon-label">Schedule</div>
+        </div>
+        <div class="icon-item">
+          <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M21 8v13H3V8"/>
+            <path d="M1 3h22v5H1z"/>
+            <path d="M10 12h4"/>
+          </svg>
+          <div class="icon-label">Archive</div>
+        </div>
+        <div class="icon-item">
+          <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M3 6h18"/>
+            <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/>
+            <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+            <line x1="10" y1="11" x2="10" y2="17"/>
+            <line x1="14" y1="11" x2="14" y2="17"/>
+          </svg>
+          <div class="icon-label">Delete</div>
+        </div>
+      </div>
+      <div class="demo-row">
+        <strong>In context:</strong>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="display: inline-block; vertical-align: middle;">
+          <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="display: inline-block; vertical-align: middle; margin-left: 8px;">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="display: inline-block; vertical-align: middle; margin-left: 8px;">
+          <path d="M21 8v13H3V8"/>
+          <path d="M1 3h22v5H1z"/>
+        </svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="display: inline-block; vertical-align: middle; margin-left: 8px;">
+          <path d="M3 6h18"/>
+          <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Variation 2: Geometric Shapes -->
+    <div class="variation-group">
+      <div class="variation-title">Variation 2: Abstract Geometric</div>
+      <div class="variation-description">
+        Simple geometric shapes that represent each action abstractly
+      </div>
+      <div class="icon-grid">
+        <div class="icon-item">
+          <span class="icon" style="color: #6b7280;">▬</span>
+          <div class="icon-label">Notes</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #3b82f6;">◳</span>
+          <div class="icon-label">Schedule</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #a78bfa;">▦</span>
+          <div class="icon-label">Archive</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #ef4444;">⊗</span>
+          <div class="icon-label">Delete</div>
+        </div>
+      </div>
+      <div class="demo-row">
+        <strong>In context:</strong>
+        <span class="icon" style="color: #6b7280; font-size: 16px;">▬</span>
+        <span class="icon" style="color: #3b82f6; font-size: 16px;">◳</span>
+        <span class="icon" style="color: #a78bfa; font-size: 16px;">▦</span>
+        <span class="icon" style="color: #ef4444; font-size: 16px;">⊗</span>
+      </div>
+    </div>
+
+    <!-- Variation 3: Unicode Symbols -->
+    <div class="variation-group">
+      <div class="variation-title">Variation 3: Typography Symbols</div>
+      <div class="variation-description">
+        Clean typographic symbols that work at any size and color
+      </div>
+      <div class="icon-grid">
+        <div class="icon-item">
+          <span class="icon" style="color: #6b7280; font-weight: 400;">≡</span>
+          <div class="icon-label">Notes</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #3b82f6; font-weight: 400;">◷</span>
+          <div class="icon-label">Schedule</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #a78bfa; font-weight: 400;">⊟</span>
+          <div class="icon-label">Archive</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="color: #ef4444; font-weight: 400;">×</span>
+          <div class="icon-label">Delete</div>
+        </div>
+      </div>
+      <div class="demo-row">
+        <strong>In context:</strong>
+        <span class="icon" style="color: #6b7280; font-size: 16px;">≡</span>
+        <span class="icon" style="color: #3b82f6; font-size: 16px;">◷</span>
+        <span class="icon" style="color: #a78bfa; font-size: 16px;">⊟</span>
+        <span class="icon" style="color: #ef4444; font-size: 16px;">×</span>
+      </div>
+    </div>
+
+    <!-- Variation 4: Letter-Based -->
+    <div class="variation-group">
+      <div class="variation-title">Variation 4: Single Letters</div>
+      <div class="variation-description">
+        Ultra-minimal single letter indicators with optional backgrounds
+      </div>
+      <div class="icon-grid">
+        <div class="icon-item">
+          <span class="icon" style="font-weight: 600; color: #6b7280; font-size: 18px; font-family: monospace;">N</span>
+          <div class="icon-label">Notes</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="font-weight: 600; color: #3b82f6; font-size: 18px; font-family: monospace;">S</span>
+          <div class="icon-label">Schedule</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="font-weight: 600; color: #a78bfa; font-size: 18px; font-family: monospace;">A</span>
+          <div class="icon-label">Archive</div>
+        </div>
+        <div class="icon-item">
+          <span class="icon" style="font-weight: 600; color: #ef4444; font-size: 18px; font-family: monospace;">D</span>
+          <div class="icon-label">Delete</div>
+        </div>
+      </div>
+      <div class="demo-row">
+        <strong>In context:</strong>
+        <span style="font-weight: 600; color: #6b7280; font-size: 14px; font-family: monospace;">N</span>
+        <span style="font-weight: 600; color: #3b82f6; font-size: 14px; font-family: monospace; margin-left: 8px;">S</span>
+        <span style="font-weight: 600; color: #a78bfa; font-size: 14px; font-family: monospace; margin-left: 8px;">A</span>
+        <span style="font-weight: 600; color: #ef4444; font-size: 14px; font-family: monospace; margin-left: 8px;">D</span>
+        <span style="color: #64748b; margin-left: 16px;">or with backgrounds →</span>
+        <span style="background: #f3f4f6; color: #6b7280; padding: 2px 6px; border-radius: 3px; font-size: 12px; font-weight: 600; margin-left: 8px;">N</span>
+        <span style="background: #dbeafe; color: #3b82f6; padding: 2px 6px; border-radius: 3px; font-size: 12px; font-weight: 600; margin-left: 4px;">S</span>
+        <span style="background: #ede9fe; color: #a78bfa; padding: 2px 6px; border-radius: 3px; font-size: 12px; font-weight: 600; margin-left: 4px;">A</span>
+        <span style="background: #fee2e2; color: #ef4444; padding: 2px 6px; border-radius: 3px; font-size: 12px; font-weight: 600; margin-left: 4px;">D</span>
+      </div>
+    </div>
+
+    <!-- Variation 5: Material Design Style -->
+    <div class="variation-group">
+      <div class="variation-title">Variation 5: Rounded Icons</div>
+      <div class="variation-description">
+        Rounded, friendly icons with thicker strokes for better visibility
+      </div>
+      <div class="icon-grid">
+        <div class="icon-item">
+          <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+            <path d="M14 2v6h6"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <line x1="10" y1="9" x2="8" y2="9"/>
+          </svg>
+          <div class="icon-label">Notes</div>
+        </div>
+        <div class="icon-item">
+          <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+            <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
+          </svg>
+          <div class="icon-label">Schedule</div>
+        </div>
+        <div class="icon-item">
+          <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="21 8 21 21 3 21 3 8"/>
+            <rect x="1" y="3" width="22" height="5"/>
+            <line x1="10" y1="12" x2="14" y2="12"/>
+          </svg>
+          <div class="icon-label">Archive</div>
+        </div>
+        <div class="icon-item">
+          <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+          </svg>
+          <div class="icon-label">Delete</div>
+        </div>
+      </div>
+      <div class="demo-row">
+        <strong>In context:</strong>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" style="display: inline-block; vertical-align: middle;">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <path d="M14 2v6h6"/>
+        </svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" style="display: inline-block; vertical-align: middle; margin-left: 8px;">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" style="display: inline-block; vertical-align: middle; margin-left: 8px;">
+          <polyline points="21 8 21 21 3 21 3 8"/>
+          <rect x="1" y="3" width="22" height="5"/>
+        </svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" style="display: inline-block; vertical-align: middle; margin-left: 8px;">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Implementation Note -->
+    <div style="margin-top: 60px; padding: 30px; background: #f0f9ff; border-radius: 12px; border: 1px solid #0ea5e9;">
+      <h3 style="color: #0c4a6e; margin-bottom: 12px;">Implementation Recommendation</h3>
+      <p style="color: #075985; font-size: 14px; line-height: 1.6;">
+        <strong>Best Options:</strong>
+      </p>
+      <ul style="color: #075985; font-size: 14px; line-height: 1.8; margin-top: 8px; padding-left: 20px;">
+        <li><strong>Variation 1 (Line Icons)</strong> - Most professional and scalable, works well at any size</li>
+        <li><strong>Variation 3 (Typography)</strong> - Easiest to implement, no external dependencies, very lightweight</li>
+        <li><strong>Variation 5 (Rounded Icons)</strong> - Best balance of clarity and modern design</li>
+      </ul>
+      <p style="color: #075985; font-size: 14px; line-height: 1.6; margin-top: 16px;">
+        For the Hotlist app, I'd recommend <strong>Variation 1 or 5</strong> as they provide clear visual distinction while maintaining a flat, modern aesthetic. The SVG icons can be inlined directly in the HTML for best performance.
+      </p>
+      <p style="color: #075985; font-size: 14px; line-height: 1.6; margin-top: 12px;">
+        <strong>Color suggestions:</strong> Keep notes neutral (gray), schedule blue, archive purple, and delete red for consistency with common UI patterns.
+      </p>
+    </div>
+  </div>
+</body>
+</html>

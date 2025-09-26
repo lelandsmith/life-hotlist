@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hotlist CRM - Simple & Working</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      border-bottom: 2px solid #007bff;
+      padding-bottom: 10px;
+    }
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+      border-bottom: 1px solid #ddd;
+    }
+    .tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-size: 16px;
+      color: #666;
+      border-bottom: 2px solid transparent;
+    }
+    .tab.active {
+      color: #007bff;
+      border-bottom-color: #007bff;
+    }
+    .tab-content {
+      display: none;
+      padding: 20px 0;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: #555;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .item-list {
+      margin-top: 20px;
+    }
+    .item {
+      background: #f8f9fa;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+    }
+    .item-content {
+      flex: 1;
+    }
+    .item h3 {
+      margin: 0 0 5px 0;
+      color: #333;
+    }
+    .item p {
+      margin: 5px 0;
+      color: #666;
+      font-size: 14px;
+    }
+    .item-actions {
+      display: flex;
+      gap: 10px;
+    }
+    .btn-delete {
+      background: #dc3545;
+      padding: 5px 10px;
+      font-size: 12px;
+    }
+    .btn-delete:hover {
+      background: #c82333;
+    }
+    .btn-edit {
+      background: #28a745;
+      padding: 5px 10px;
+      font-size: 12px;
+    }
+    .btn-edit:hover {
+      background: #218838;
+    }
+    .status-bar {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background: #333;
+      color: white;
+      border-radius: 20px;
+      font-size: 14px;
+      display: none;
+    }
+    .status-bar.show {
+      display: block;
+      animation: fadeIn 0.3s;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .search-box {
+      margin-bottom: 20px;
+    }
+    .search-box input {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+    }
+    .stats {
+      display: flex;
+      gap: 20px;
+      margin: 20px 0;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+    .stat {
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #007bff;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Hotlist CRM</h1>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value" id="total-contacts">0</div>
+        <div class="stat-label">Contacts</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="total-companies">0</div>
+        <div class="stat-label">Companies</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="total-activities">0</div>
+        <div class="stat-label">Activities</div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('contacts')">Contacts</button>
+      <button class="tab" onclick="switchTab('companies')">Companies</button>
+      <button class="tab" onclick="switchTab('activities')">Activities</button>
+      <button class="tab" onclick="switchTab('settings')">Settings</button>
+    </div>
+
+    <!-- Contacts Tab -->
+    <div id="contacts-tab" class="tab-content active">
+      <div class="search-box">
+        <input type="text" placeholder="Search contacts..." onkeyup="searchContacts(this.value)">
+      </div>
+
+      <button onclick="showAddContact()">Add New Contact</button>
+
+      <div id="contact-form" style="display:none; margin-top:20px; padding:20px; background:#f8f9fa; border-radius:8px;">
+        <h3>Add/Edit Contact</h3>
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" id="contact-name">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="contact-email">
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="text" id="contact-phone">
+        </div>
+        <div class="form-group">
+          <label>Company</label>
+          <input type="text" id="contact-company">
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea id="contact-notes" rows="3"></textarea>
+        </div>
+        <button onclick="saveContact()">Save Contact</button>
+        <button onclick="cancelContact()" style="background:#6c757d; margin-left:10px;">Cancel</button>
+      </div>
+
+      <div id="contacts-list" class="item-list"></div>
+    </div>
+
+    <!-- Companies Tab -->
+    <div id="companies-tab" class="tab-content">
+      <div class="search-box">
+        <input type="text" placeholder="Search companies..." onkeyup="searchCompanies(this.value)">
+      </div>
+
+      <button onclick="showAddCompany()">Add New Company</button>
+
+      <div id="company-form" style="display:none; margin-top:20px; padding:20px; background:#f8f9fa; border-radius:8px;">
+        <h3>Add/Edit Company</h3>
+        <div class="form-group">
+          <label>Company Name</label>
+          <input type="text" id="company-name">
+        </div>
+        <div class="form-group">
+          <label>Industry</label>
+          <input type="text" id="company-industry">
+        </div>
+        <div class="form-group">
+          <label>Website</label>
+          <input type="text" id="company-website">
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea id="company-notes" rows="3"></textarea>
+        </div>
+        <button onclick="saveCompany()">Save Company</button>
+        <button onclick="cancelCompany()" style="background:#6c757d; margin-left:10px;">Cancel</button>
+      </div>
+
+      <div id="companies-list" class="item-list"></div>
+    </div>
+
+    <!-- Activities Tab -->
+    <div id="activities-tab" class="tab-content">
+      <button onclick="showAddActivity()">Add New Activity</button>
+
+      <div id="activity-form" style="display:none; margin-top:20px; padding:20px; background:#f8f9fa; border-radius:8px;">
+        <h3>Add Activity</h3>
+        <div class="form-group">
+          <label>Type</label>
+          <select id="activity-type">
+            <option>Call</option>
+            <option>Email</option>
+            <option>Meeting</option>
+            <option>Note</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Contact/Company</label>
+          <input type="text" id="activity-subject">
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="activity-description" rows="3"></textarea>
+        </div>
+        <button onclick="saveActivity()">Save Activity</button>
+        <button onclick="cancelActivity()" style="background:#6c757d; margin-left:10px;">Cancel</button>
+      </div>
+
+      <div id="activities-list" class="item-list"></div>
+    </div>
+
+    <!-- Settings Tab -->
+    <div id="settings-tab" class="tab-content">
+      <h3>Data Management</h3>
+      <button onclick="exportData()">Export All Data (JSON)</button>
+      <button onclick="document.getElementById('import-file').click()" style="margin-left:10px;">Import Data</button>
+      <input type="file" id="import-file" style="display:none;" onchange="importData(this)">
+
+      <br><br>
+      <button onclick="if(confirm('Delete all data?')) clearAllData()" style="background:#dc3545;">Clear All Data</button>
+
+      <h3 style="margin-top:30px;">Storage Info</h3>
+      <p>All data is stored locally in your browser. No authentication required. No cloud sync.</p>
+      <p id="storage-info"></p>
+    </div>
+  </div>
+
+  <div class="status-bar" id="status-bar"></div>
+
+  <script>
+    // Simple localStorage-based CRM
+    let data = {
+      contacts: [],
+      companies: [],
+      activities: []
+    };
+
+    let editingId = null;
+    let currentTab = 'contacts';
+
+    // Initialize - with timing debug
+    function init() {
+      console.time('init');
+      console.time('loadData');
+      loadData();
+      console.timeEnd('loadData');
+
+      console.time('renderContacts');
+      renderContacts();
+      console.timeEnd('renderContacts');
+
+      console.time('updateStats');
+      updateStats();
+      console.timeEnd('updateStats');
+
+      console.time('updateStorageInfo');
+      updateStorageInfo();
+      console.timeEnd('updateStorageInfo');
+
+      console.timeEnd('init');
+    }
+
+    // Load data from localStorage - INSTANT
+    function loadData() {
+      const stored = localStorage.getItem('hotlist-data');
+      if (stored) {
+        try {
+          data = JSON.parse(stored);
+          // No status message - just load instantly
+        } catch (e) {
+          console.error('Failed to parse stored data:', e);
+          saveData(); // Initialize with empty data
+        }
+      } else {
+        saveData(); // Initialize with empty data
+      }
+    }
+
+    // Save data to localStorage
+    function saveData() {
+      localStorage.setItem('hotlist-data', JSON.stringify(data));
+      updateStats();
+      updateStorageInfo();
+    }
+
+    // Show status message - FAST with shorter duration
+    function showStatus(message) {
+      const bar = document.getElementById('status-bar');
+      bar.textContent = message;
+      bar.classList.add('show');
+      setTimeout(() => bar.classList.remove('show'), 1000); // Reduced from 3 seconds to 1
+    }
+
+    // Switch tabs
+    function switchTab(tab) {
+      currentTab = tab;
+
+      // Update tab buttons
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+
+      // Update tab content
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.getElementById(tab + '-tab').classList.add('active');
+
+      // Render appropriate content
+      if (tab === 'contacts') renderContacts();
+      else if (tab === 'companies') renderCompanies();
+      else if (tab === 'activities') renderActivities();
+    }
+
+    // Update statistics
+    function updateStats() {
+      document.getElementById('total-contacts').textContent = data.contacts.length;
+      document.getElementById('total-companies').textContent = data.companies.length;
+      document.getElementById('total-activities').textContent = data.activities.length;
+    }
+
+    // CONTACTS FUNCTIONS
+    function showAddContact() {
+      document.getElementById('contact-form').style.display = 'block';
+      editingId = null;
+    }
+
+    function cancelContact() {
+      document.getElementById('contact-form').style.display = 'none';
+      document.getElementById('contact-name').value = '';
+      document.getElementById('contact-email').value = '';
+      document.getElementById('contact-phone').value = '';
+      document.getElementById('contact-company').value = '';
+      document.getElementById('contact-notes').value = '';
+      editingId = null;
+    }
+
+    function saveContact() {
+      const contact = {
+        id: editingId || Date.now().toString(),
+        name: document.getElementById('contact-name').value,
+        email: document.getElementById('contact-email').value,
+        phone: document.getElementById('contact-phone').value,
+        company: document.getElementById('contact-company').value,
+        notes: document.getElementById('contact-notes').value,
+        created: editingId ? data.contacts.find(c => c.id === editingId).created : new Date().toISOString()
+      };
+
+      if (editingId) {
+        const index = data.contacts.findIndex(c => c.id === editingId);
+        data.contacts[index] = contact;
+        showStatus('Contact updated');
+      } else {
+        data.contacts.push(contact);
+        showStatus('Contact added');
+      }
+
+      saveData();
+      renderContacts();
+      cancelContact();
+    }
+
+    function editContact(id) {
+      const contact = data.contacts.find(c => c.id === id);
+      if (!contact) return;
+
+      document.getElementById('contact-name').value = contact.name;
+      document.getElementById('contact-email').value = contact.email;
+      document.getElementById('contact-phone').value = contact.phone || '';
+      document.getElementById('contact-company').value = contact.company || '';
+      document.getElementById('contact-notes').value = contact.notes || '';
+      document.getElementById('contact-form').style.display = 'block';
+      editingId = id;
+    }
+
+    function deleteContact(id) {
+      if (confirm('Delete this contact?')) {
+        data.contacts = data.contacts.filter(c => c.id !== id);
+        saveData();
+        renderContacts();
+        showStatus('Contact deleted');
+      }
+    }
+
+    function renderContacts(searchTerm = '') {
+      const list = document.getElementById('contacts-list');
+      const filtered = data.contacts.filter(c =>
+        !searchTerm ||
+        c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (c.company && c.company.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+
+      list.innerHTML = filtered.map(contact => `
+        <div class="item">
+          <div class="item-content">
+            <h3>${contact.name}</h3>
+            <p>📧 ${contact.email}</p>
+            ${contact.phone ? `<p>📱 ${contact.phone}</p>` : ''}
+            ${contact.company ? `<p>🏢 ${contact.company}</p>` : ''}
+            ${contact.notes ? `<p>📝 ${contact.notes}</p>` : ''}
+          </div>
+          <div class="item-actions">
+            <button class="btn-edit" onclick="editContact('${contact.id}')">Edit</button>
+            <button class="btn-delete" onclick="deleteContact('${contact.id}')">Delete</button>
+          </div>
+        </div>
+      `).join('');
+
+      if (filtered.length === 0) {
+        list.innerHTML = '<p style="text-align:center; color:#999;">No contacts found</p>';
+      }
+    }
+
+    function searchContacts(term) {
+      renderContacts(term);
+    }
+
+    // COMPANIES FUNCTIONS
+    function showAddCompany() {
+      document.getElementById('company-form').style.display = 'block';
+      editingId = null;
+    }
+
+    function cancelCompany() {
+      document.getElementById('company-form').style.display = 'none';
+      document.getElementById('company-name').value = '';
+      document.getElementById('company-industry').value = '';
+      document.getElementById('company-website').value = '';
+      document.getElementById('company-notes').value = '';
+      editingId = null;
+    }
+
+    function saveCompany() {
+      const company = {
+        id: editingId || Date.now().toString(),
+        name: document.getElementById('company-name').value,
+        industry: document.getElementById('company-industry').value,
+        website: document.getElementById('company-website').value,
+        notes: document.getElementById('company-notes').value,
+        created: editingId ? data.companies.find(c => c.id === editingId).created : new Date().toISOString()
+      };
+
+      if (editingId) {
+        const index = data.companies.findIndex(c => c.id === editingId);
+        data.companies[index] = company;
+        showStatus('Company updated');
+      } else {
+        data.companies.push(company);
+        showStatus('Company added');
+      }
+
+      saveData();
+      renderCompanies();
+      cancelCompany();
+    }
+
+    function editCompany(id) {
+      const company = data.companies.find(c => c.id === id);
+      if (!company) return;
+
+      document.getElementById('company-name').value = company.name;
+      document.getElementById('company-industry').value = company.industry || '';
+      document.getElementById('company-website').value = company.website || '';
+      document.getElementById('company-notes').value = company.notes || '';
+      document.getElementById('company-form').style.display = 'block';
+      editingId = id;
+    }
+
+    function deleteCompany(id) {
+      if (confirm('Delete this company?')) {
+        data.companies = data.companies.filter(c => c.id !== id);
+        saveData();
+        renderCompanies();
+        showStatus('Company deleted');
+      }
+    }
+
+    function renderCompanies(searchTerm = '') {
+      const list = document.getElementById('companies-list');
+      const filtered = data.companies.filter(c =>
+        !searchTerm ||
+        c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (c.industry && c.industry.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+
+      list.innerHTML = filtered.map(company => `
+        <div class="item">
+          <div class="item-content">
+            <h3>${company.name}</h3>
+            ${company.industry ? `<p>🏭 ${company.industry}</p>` : ''}
+            ${company.website ? `<p>🌐 ${company.website}</p>` : ''}
+            ${company.notes ? `<p>📝 ${company.notes}</p>` : ''}
+          </div>
+          <div class="item-actions">
+            <button class="btn-edit" onclick="editCompany('${company.id}')">Edit</button>
+            <button class="btn-delete" onclick="deleteCompany('${company.id}')">Delete</button>
+          </div>
+        </div>
+      `).join('');
+
+      if (filtered.length === 0) {
+        list.innerHTML = '<p style="text-align:center; color:#999;">No companies found</p>';
+      }
+    }
+
+    function searchCompanies(term) {
+      renderCompanies(term);
+    }
+
+    // ACTIVITIES FUNCTIONS
+    function showAddActivity() {
+      document.getElementById('activity-form').style.display = 'block';
+    }
+
+    function cancelActivity() {
+      document.getElementById('activity-form').style.display = 'none';
+      document.getElementById('activity-subject').value = '';
+      document.getElementById('activity-description').value = '';
+    }
+
+    function saveActivity() {
+      const activity = {
+        id: Date.now().toString(),
+        type: document.getElementById('activity-type').value,
+        subject: document.getElementById('activity-subject').value,
+        description: document.getElementById('activity-description').value,
+        created: new Date().toISOString()
+      };
+
+      data.activities.unshift(activity); // Add to beginning
+      saveData();
+      renderActivities();
+      cancelActivity();
+      showStatus('Activity added');
+    }
+
+    function deleteActivity(id) {
+      if (confirm('Delete this activity?')) {
+        data.activities = data.activities.filter(a => a.id !== id);
+        saveData();
+        renderActivities();
+        showStatus('Activity deleted');
+      }
+    }
+
+    function renderActivities() {
+      const list = document.getElementById('activities-list');
+
+      list.innerHTML = data.activities.map(activity => `
+        <div class="item">
+          <div class="item-content">
+            <h3>${activity.type}: ${activity.subject}</h3>
+            <p>${activity.description}</p>
+            <p style="font-size:12px; color:#999;">${new Date(activity.created).toLocaleString()}</p>
+          </div>
+          <div class="item-actions">
+            <button class="btn-delete" onclick="deleteActivity('${activity.id}')">Delete</button>
+          </div>
+        </div>
+      `).join('');
+
+      if (data.activities.length === 0) {
+        list.innerHTML = '<p style="text-align:center; color:#999;">No activities yet</p>';
+      }
+    }
+
+    // SETTINGS FUNCTIONS
+    function exportData() {
+      const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'hotlist-backup-' + new Date().toISOString().split('T')[0] + '.json';
+      a.click();
+      showStatus('Data exported');
+    }
+
+    function importData(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (imported.contacts && imported.companies && imported.activities) {
+            data = imported;
+            saveData();
+            renderContacts();
+            showStatus('Data imported successfully');
+          } else {
+            alert('Invalid data format');
+          }
+        } catch (err) {
+          alert('Failed to import: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function clearAllData() {
+      data = {
+        contacts: [],
+        companies: [],
+        activities: []
+      };
+      saveData();
+      renderContacts();
+      showStatus('All data cleared');
+    }
+
+    function updateStorageInfo() {
+      const used = new Blob([JSON.stringify(data)]).size;
+      const kb = (used / 1024).toFixed(2);
+      document.getElementById('storage-info').textContent = `Storage used: ${kb} KB`;
+    }
+
+    // Initialize on load
+    init();
+  </script>
+</body>
+</html>

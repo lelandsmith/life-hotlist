@@ -13,11 +13,11 @@
 <meta name="timestamp" content="1737166800" />
 <title>Hotlist</title>
 <link rel="manifest" href="/manifest.json?v=1.7.2">
-
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='28'%3E🔥%3C/text%3E%3C/svg%3E">
 <meta name="theme-color" content="#ff5722">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Hotlist">
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%23ff5722' rx='20'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='96' fill='white'%3E🔥%3C/text%3E%3C/svg%3E">
@@ -327,8 +327,7 @@ body[data-font-size="xsmall"] .row .name { font-size: 15px; } /* Keep name at st
 body[data-font-size="xsmall"] .row .qbtn { font-size: 18px; padding: 4px 8px; } /* Keep group icons at minimum 18px */
 body[data-font-size="xsmall"] .row .sbtn { font-size: 11px; padding: 3px 6px; }
 body[data-font-size="xsmall"] .row .sbtn .ico { font-size: 12px; }
-body[data-font-size="xsmall"] .row .iconbtn { font-size: 18px; padding: 4px; }
-body[data-font-size="xsmall"] .row .iconbtn svg { width: 16px; height: 16px; }
+body[data-font-size="xsmall"] .row .iconbtn { font-size: 18px; padding: 4px 7px; }
 body[data-font-size="xsmall"] .row .badge { font-size: 9px; }
 body[data-font-size="xsmall"] .row .notes-preview { font-size: 10px; }
 body[data-font-size="xsmall"] .row .status-icon { font-size: 12px; }
@@ -340,8 +339,7 @@ body[data-font-size="small"] .row .name { font-size: 15px; }
 body[data-font-size="small"] .row .qbtn { font-size: 20px; padding: 5px 9px; }
 body[data-font-size="small"] .row .sbtn { font-size: 12px; padding: 4px 7px; }
 body[data-font-size="small"] .row .sbtn .ico { font-size: 14px; }
-body[data-font-size="small"] .row .iconbtn { font-size: 20px; padding: 5px; }
-body[data-font-size="small"] .row .iconbtn svg { width: 17px; height: 17px; }
+body[data-font-size="small"] .row .iconbtn { font-size: 20px; padding: 5px 8px; }
 body[data-font-size="small"] .row .badge { font-size: 10px; }
 body[data-font-size="small"] .row .notes-preview { font-size: 11px; }
 body[data-font-size="small"] .row .status-icon { font-size: 14px; }
@@ -353,8 +351,7 @@ body[data-font-size="medium"] .row .name { font-size: 15px; }
 body[data-font-size="medium"] .row .qbtn { font-size: 22px; padding: 0 9px 5px 9px; }
 body[data-font-size="medium"] .row .sbtn { font-size: 13px; padding: 5px 8px; }
 body[data-font-size="medium"] .row .sbtn .ico { font-size: 16px; }
-body[data-font-size="medium"] .row .iconbtn { font-size: 22px; padding: 6px; }
-body[data-font-size="medium"] .row .iconbtn svg { width: 18px; height: 18px; }
+body[data-font-size="medium"] .row .iconbtn { font-size: 22px; padding: 6px 9px; }
 body[data-font-size="medium"] .row .badge { font-size: 11px; }
 body[data-font-size="medium"] .row .notes-preview { font-size: 12px; }
 body[data-font-size="medium"] .row .status-icon { font-size: 16px; }
@@ -366,8 +363,7 @@ body[data-font-size="large"] .row .name { font-size: 16px; }
 body[data-font-size="large"] .row .qbtn { font-size: 24px; padding: 6px 10px; }
 body[data-font-size="large"] .row .sbtn { font-size: 14px; padding: 6px 9px; }
 body[data-font-size="large"] .row .sbtn .ico { font-size: 18px; }
-body[data-font-size="large"] .row .iconbtn { font-size: 24px; padding: 7px; }
-body[data-font-size="large"] .row .iconbtn svg { width: 20px; height: 20px; }
+body[data-font-size="large"] .row .iconbtn { font-size: 24px; padding: 7px 10px; }
 body[data-font-size="large"] .row .badge { font-size: 12px; }
 body[data-font-size="large"] .row .notes-preview { font-size: 13px; }
 body[data-font-size="large"] .row .status-icon { font-size: 18px; }
@@ -379,8 +375,7 @@ body[data-font-size="xlarge"] .row .name { font-size: 18px; }
 body[data-font-size="xlarge"] .row .qbtn { font-size: 26px; padding: 7px 11px; }
 body[data-font-size="xlarge"] .row .sbtn { font-size: 15px; padding: 7px 10px; }
 body[data-font-size="xlarge"] .row .sbtn .ico { font-size: 20px; }
-body[data-font-size="xlarge"] .row .iconbtn { font-size: 26px; padding: 8px; }
-body[data-font-size="xlarge"] .row .iconbtn svg { width: 22px; height: 22px; }
+body[data-font-size="xlarge"] .row .iconbtn { font-size: 26px; padding: 8px 11px; }
 body[data-font-size="xlarge"] .row .badge { font-size: 13px; }
 body[data-font-size="xlarge"] .row .notes-preview { font-size: 14px; }
 body[data-font-size="xlarge"] .row .status-icon { font-size: 20px; }
@@ -1412,21 +1407,11 @@ body[data-all-contexts="true"] .context-group > div:last-child {
 /* Icon buttons row (📝 📅 📂 🗑) */
 .iconbtn{
   position:relative;border:none;background:transparent;
-  cursor:pointer;font-size:16px;line-height:1;padding:6px;
-  display:inline-flex;align-items:center;justify-content:center;min-width:32px;
+  cursor:pointer;font-size:16px;line-height:1;padding:8px 10px;
+  display:inline-flex;align-items:center;justify-content:center;min-width:42px;border-radius:12px
 }
-.iconbtn svg{
-  width:18px;height:18px;
-  stroke:currentColor;
-  display:block;
-}
-.iconbtn:hover svg{
-  stroke:var(--blue);
-}
-.iconbtn:focus-visible{outline:none;}
-.group--icons{gap:2px;}
-.group--icons .iconbtn{border:none;background:transparent;color:#6b7280;}
-.group--icons .iconbtn:hover{background:transparent;}
+.iconbtn:focus-visible{outline:none; box-shadow:var(--ring)}
+.group--icons .iconbtn{border:none;background:transparent}
 
 /* Chips */
 .tag-chip{
@@ -1472,8 +1457,7 @@ body[data-density="compact"] .name{font-size:14px}
 body[data-density="compact"] .notes-preview{font-size:11px}
 body[data-density="compact"] .group--quick{gap:6px; margin-right:6px}
 body[data-density="compact"] .group--status{gap:6px; margin-right:6px}
-body[data-density="compact"] .iconbtn{min-width:30px; padding:4px; font-size:14px}
-body[data-density="compact"] .iconbtn svg{width:16px; height:16px;}
+body[data-density="compact"] .iconbtn{min-width:34px; padding:4px 6px; font-size:14px}
 body[data-density="compact"] .qbtn{min-width:36px; padding:4px 6px; font-size:14px}
 body[data-density="compact"] .sbtn{min-width:38px; padding:4px 6px}
 body[data-density="compact"] .sbtn .ico{font-size:16px}
@@ -1491,8 +1475,7 @@ body[data-density="titles-only"] .group--status{gap:6px; margin-right:10px}
 body[data-density="titles-only"] .qbtn{min-width:32px; padding:3px 5px; font-size:14px}
 body[data-density="titles-only"] .sbtn{min-width:34px; padding:3px 5px; font-size:10px}
 body[data-density="titles-only"] .sbtn .ico{font-size:14px}
-body[data-density="titles-only"] .iconbtn{min-width:28px; padding:3px; font-size:12px}
-body[data-density="titles-only"] .iconbtn svg{width:14px; height:14px;}
+body[data-density="titles-only"] .iconbtn{min-width:30px; padding:3px 5px; font-size:12px}
 body[data-density="titles-only"] .sbtn .label{display:none}
 body[data-density="titles-only"] .qbtn .badge{font-size:8px; padding:1px 3px}
 body[data-density="titles-only"] .qbtn .last-contact{display:none}
@@ -1780,11 +1763,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <strong style="color:#475569">Shortcuts:</strong> ↑/↓ or J/K navigate • 1–5 status • <b>0</b> clear • N notes • A call • L message • <b>Shift+A/L</b> remove • <b>H</b> hot • <b>F</b> today • <b>D</b> tomorrow • <span style="opacity:0.7; font-weight:600">⌘/ for help</span>
       </div>
       <div style="display:flex; align-items:center; gap:16px; font-size:12px; color:#64748b;">
-        <a href="#" onclick="showChangelogModal(); return false;" style="color:#3b82f6; text-decoration:none;">v<span id="versionNumber">1.0.0</span></a>
-        <!-- Cloud sync removed - localStorage only -->
-        <a href="teams-dashboard.html" style="color:#3b82f6; text-decoration:none; display:none;" id="teamsLink">Teams</a>
+        <a href="#" onclick="showChangelogModal(); return false;" style="color:#3b82f6; text-decoration:none; hover:text-decoration:underline;">v<span id="versionNumber">1.0.0</span></a>
+        <span style="color:#cbd5e1;">|</span>
+        <a href="#" onclick="showSignInDialog(); return false;" style="color:#3b82f6; text-decoration:none; hover:text-decoration:underline;" id="cloudSyncLink">Cloud sync</a>
+        <span style="color:#cbd5e1;" id="cloudSyncSeparator">|</span>
+        <a href="teams-dashboard.html" style="color:#3b82f6; text-decoration:none; hover:text-decoration:underline; display:none;" id="teamsLink">Teams</a>
         <span style="color:#cbd5e1; display:none;" id="teamsSeparator">|</span>
-        <a href="#" onclick="openSuggestEmail(); return false;" style="color:#3b82f6; text-decoration:none;">Suggest a change</a>
+        <a href="#" onclick="openSuggestEmail(); return false;" style="color:#3b82f6; text-decoration:none; hover:text-decoration:underline;">Suggest a change</a>
       </div>
     </div>
   </section>
@@ -1883,13 +1868,1205 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   /* =========================
    *  Version & Changelog
    * ========================= */
-  var VERSION = '3.1.0';
+  var VERSION = '3.0.0';
 
-  // Global variables
+  // Supabase Configuration - Replace these with your actual Supabase project credentials
+  // Use window-level variables to ensure they're accessible from all functions
+  window.SUPABASE_URL = 'https://yoxzlejphrhtuisnptor.supabase.co';  // Replace with your Supabase project URL
+  window.SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlveHpsZWpwaHJodHVpc25wdG9yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1NjIwNDIsImV4cCI6MjA3NDEzODA0Mn0.azXNn6AQQcB5iJzn7ebhAh5cSBESgKwEV2aSviX8yeY';  // Replace with your Supabase anon/public key
+  const SUPABASE_URL = window.SUPABASE_URL;
+  const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY;
+  var supabase = null;  // Supabase client instance
+  var currentUser = null;  // Current authenticated user
+  var syncEnabled = false;  // Whether to sync to cloud
+  var initialSyncCompleted = false;  // Track if initial sync has already been done
+  window.currentUser = null;  // Global reference for Teams page
 
-  // Changelog
+  // Test Supabase connection
+  window.testSupabase = async function() {
+    console.log('Testing Supabase...');
+    console.log('1. Supabase library loaded:', typeof window.supabase);
+    console.log('2. Supabase client exists:', !!supabase);
+    console.log('3. SUPABASE_URL:', window.SUPABASE_URL || 'NOT DEFINED');
+    console.log('4. SUPABASE_ANON_KEY exists:', !!window.SUPABASE_ANON_KEY);
+    console.log('5. SUPABASE_ANON_KEY first 20 chars:', window.SUPABASE_ANON_KEY ? window.SUPABASE_ANON_KEY.substring(0, 20) + '...' : 'NOT DEFINED');
+
+    if (!supabase) {
+      console.error('Supabase not initialized!');
+
+      // Try to initialize it manually
+      if (window.supabase && window.supabase.createClient) {
+        console.log('Attempting manual initialization...');
+        try {
+          if (!window.SUPABASE_URL || !window.SUPABASE_ANON_KEY) {
+            console.error('CRITICAL: Supabase credentials not available on window object!');
+            return;
+          }
+          supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY, {
+            auth: {
+              autoRefreshToken: true,
+              persistSession: true,
+              detectSessionInUrl: true,
+              storage: {
+                getItem: (key) => {
+                  try {
+                    return localStorage.getItem(key);
+                  } catch {
+                    return null;
+                  }
+                },
+                setItem: (key, value) => {
+                  try {
+                    localStorage.setItem(key, value);
+                  } catch {
+                    console.warn('Failed to save to localStorage:', key);
+                  }
+                },
+                removeItem: (key) => {
+                  try {
+                    localStorage.removeItem(key);
+                  } catch {
+                    console.warn('Failed to remove from localStorage:', key);
+                  }
+                }
+              }
+            }
+          });
+          console.log('Manual init success, client created');
+          window.supabaseClient = supabase; // Also store globally
+        } catch (e) {
+          console.error('Manual init failed:', e);
+        }
+      }
+      return;
+    }
+
+    console.log('6. Testing Supabase auth methods...');
+
+    // Test with timeout
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Timeout after 5 seconds')), 5000)
+    );
+
+    try {
+      const result = await Promise.race([
+        supabase.auth.getSession(),
+        timeoutPromise
+      ]);
+      console.log('6. getSession result:', result);
+    } catch (err) {
+      console.error('Test error:', err.message);
+    }
+  };
+
+  // Manual OAuth login function for testing
+  window.testLogin = async function() {
+    const client = supabase || window.supabaseClient;
+    if (!client) {
+      console.error('Supabase not initialized');
+      return;
+    }
+
+    console.log('Starting OAuth login...');
+    const redirectUrl = window.location.href.split('#')[0].split('?')[0];
+    console.log('Redirect URL:', redirectUrl);
+
+    const { data, error } = await client.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: redirectUrl,
+        queryParams: {
+          prompt: 'select_account'
+        }
+      }
+    });
+
+    if (error) {
+      console.error('OAuth error:', error);
+    } else {
+      console.log('OAuth initiated:', data);
+    }
+  };
+
+  // Debug function to check auth state
+  window.debugAuth = async function() {
+    console.log('=== AUTH DEBUG INFO ===');
+    console.log('1. Supabase initialized:', !!supabase);
+    console.log('2. Current user (local):', !!currentUser, currentUser?.email);
+    console.log('3. Window user (global):', !!window.currentUser, window.currentUser?.email);
+    console.log('4. Sync enabled:', syncEnabled);
+
+    if (supabase) {
+      try {
+        const { data: { session }, error: sessionError } = await (supabase || window.supabaseClient).auth.getSession();
+        console.log('5. Session from getSession():', !!session, session?.user?.email);
+        if (sessionError) console.log('   Session error:', sessionError);
+        if (session) {
+          console.log('   Session expires:', new Date(session.expires_at * 1000));
+          console.log('   Access token (first 20 chars):', session.access_token?.substring(0, 20));
+        }
+
+        const { data: { user }, error: userError } = await (supabase || window.supabaseClient).auth.getUser();
+        console.log('6. User from getUser():', !!user, user?.email);
+        if (userError) console.log('   User error:', userError);
+      } catch (error) {
+        console.log('5-6. Error checking session/user:', error.message);
+      }
+
+      // Check localStorage for Supabase session
+      const keys = Object.keys(localStorage).filter(k => k.includes('supabase'));
+      console.log('7. Supabase keys in localStorage:', keys);
+      keys.forEach(key => {
+        const value = localStorage.getItem(key);
+        if (value && value.includes('access_token')) {
+          console.log(`   ${key}: [contains session data]`);
+        }
+      });
+    }
+
+    console.log('8. Teams link visible:', document.getElementById('teamsLink')?.style.display);
+    console.log('9. URL has tokens:', window.location.hash.includes('access_token'));
+    console.log('10. Current URL:', window.location.href);
+    console.log('======================');
+  };
+
+  // Debug sync status
+  window.debugSync = async function() {
+    console.log('=== SYNC DEBUG INFO ===');
+    console.log('1. Sync enabled:', syncEnabled);
+    console.log('2. Current user:', currentUser ? currentUser.email : 'none');
+    console.log('3. Supabase client:', !!(supabase || window.supabaseClient));
+    console.log('4. Local state clients:', state?.clients?.length || 0);
+
+    // Try to load from cloud
+    const client = supabase || window.supabaseClient;
+    if (client && currentUser) {
+      try {
+        console.log('5. Attempting to load from cloud...');
+        const { data, error } = await client
+          .from('hotlist_data')
+          .select('data, updated_at')
+          .eq('user_id', currentUser.id)
+          .single();
+
+        if (error) {
+          console.log('   Cloud load error:', error.message);
+          if (error.code === 'PGRST116') {
+            console.log('   No data found in cloud for this user');
+          }
+        } else if (data) {
+          const cloudState = JSON.parse(data.data);
+          console.log('   Cloud data found:');
+          console.log('     - Clients:', cloudState?.clients?.length || 0);
+          console.log('     - Updated at:', data.updated_at);
+        }
+      } catch (e) {
+        console.error('   Error loading from cloud:', e);
+      }
+    } else {
+      console.log('5. Cannot load from cloud - missing client or user');
+    }
+
+    console.log('6. Save function will sync:', currentUser && syncEnabled);
+    console.log('===================');
+  };
+
+  // Initialize Supabase
+  async function initSupabase() {
+    // Prevent double initialization
+    if (supabase) {
+      console.log('Supabase already initialized');
+      return;
+    }
+
+    // Check if the Supabase library is loaded
+    if (!window.supabase || !window.supabase.createClient) {
+      console.log('Supabase library not loaded yet. Retrying...');
+      setTimeout(initSupabase, 500);
+      return;
+    }
+
+    console.log('🚀 Starting Supabase initialization...');
+
+    try {
+      // Use the exact same pattern that works in working-auth.html
+      supabase = window.supabase.createClient(
+        'https://yoxzlejphrhtuisnptor.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlveHpsZWpwaHJodHVpc25wdG9yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1NjIwNDIsImV4cCI6MjA3NDEzODA0Mn0.azXNn6AQQcB5iJzn7ebhAh5cSBESgKwEV2aSviX8yeY'
+      );
+        console.log('Supabase client initialized successfully');
+        window.supabaseClient = supabase;  // Store globally for access
+
+        // CRITICAL: Process OAuth tokens if they're in the URL
+        if (window.location.hash && window.location.hash.includes('access_token')) {
+          console.log('🔴 OAuth tokens detected in URL, processing manually...');
+
+          // Extract tokens from URL
+          const hashParams = new URLSearchParams(window.location.hash.substring(1));
+          const accessToken = hashParams.get('access_token');
+          const refreshToken = hashParams.get('refresh_token');
+
+          console.log('Access token found:', !!accessToken, 'length:', accessToken?.length);
+          console.log('Refresh token found:', !!refreshToken);
+
+          if (accessToken && refreshToken) {
+            console.log('Setting session with tokens...');
+            try {
+              const { data, error } = await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken
+              });
+
+              console.log('setSession response:', { data: !!data, error, session: data?.session ? 'present' : 'missing' });
+
+              if (error) {
+                console.error('Failed to set session:', error);
+                // Don't return early on error - let normal auth flow continue
+              } else if (data && data.session) {
+                console.log('✅ Session set successfully:', data.session.user.email);
+                currentUser = data.session.user;
+                window.currentUser = data.session.user;
+                syncEnabled = true;
+
+                // Clear tokens from URL
+                window.history.replaceState(null, null, window.location.pathname);
+
+                // Update UI - ensure Teams link is visible
+                const teamsLink = document.getElementById('teamsLink');
+                const teamsSeparator = document.getElementById('teamsSeparator');
+                if (teamsLink) {
+                  teamsLink.style.display = 'inline';
+                  console.log('Teams link made visible');
+                } else {
+                  console.error('Teams link element not found!');
+                }
+                if (teamsSeparator) teamsSeparator.style.display = 'inline';
+
+                updateAuthUI();
+
+                // Show success banner
+                showAuthSuccessBanner(data.session.user.email);
+                sessionStorage.setItem('authenticated', 'true');
+
+                // Handle initial sync
+                await handleInitialSync();
+
+                // Skip the normal session check since we just set it
+                return;
+              } else {
+                console.error('setSession returned no error but also no session:', data);
+              }
+            } catch (e) {
+              console.error('Error setting session:', e);
+            }
+          } else {
+            console.error('Missing tokens - access:', !!accessToken, 'refresh:', !!refreshToken);
+          }
+        }
+
+        // Check for existing session (for non-OAuth cases)
+        console.log('Checking for existing session...');
+
+        // Skip the session check in initSupabase - it will be handled by checkAuthStatus later
+        // This avoids the hanging issue with getSession() during initialization
+        console.log('Session check will be handled by checkAuthStatus after init completes');
+
+        // Listen for auth state changes
+        supabase.auth.onAuthStateChange(async (event, session) => {
+          console.log('Auth state changed:', event, session ? session.user.email : 'no session');
+
+          if (event === 'SIGNED_IN' && session) {
+            console.log('🟢 Processing SIGNED_IN event for:', session.user.email);
+            console.log('Auth provider:', session.user.app_metadata?.provider || 'email');
+            currentUser = session.user;
+            window.currentUser = session.user;  // Set global for Teams page
+            syncEnabled = true;
+            console.log('Auth state set - currentUser:', !!currentUser, 'syncEnabled:', syncEnabled);
+
+            // Show success banner for new sign-ins (both magic link and OAuth)
+            // Check if we just signed in (URL has auth params or we don't have a stored session flag)
+            const isNewSignIn = window.location.hash && (
+              window.location.hash.includes('access_token') ||
+              window.location.hash.includes('token_type') ||
+              window.location.hash.includes('provider_token')
+            );
+
+            const justSignedIn = !sessionStorage.getItem('authenticated');
+
+            if (isNewSignIn || justSignedIn) {
+              // Clear the tokens from URL
+              if (window.location.hash) {
+                window.history.replaceState(null, null, window.location.pathname);
+              }
+              showAuthSuccessBanner(session.user.email);
+              sessionStorage.setItem('authenticated', 'true');
+            }
+
+            // Ensure UI elements are updated
+            const teamsLink = document.getElementById('teamsLink');
+            const teamsSeparator = document.getElementById('teamsSeparator');
+            if (teamsLink) teamsLink.style.display = 'inline';
+            if (teamsSeparator) teamsSeparator.style.display = 'inline';
+
+            // Force UI update
+            updateAuthUI();
+
+            // Handle initial sync and load cloud data
+            await handleInitialSync();
+
+          } else if (event === 'SIGNED_OUT') {
+            console.log('🔴 Processing SIGNED_OUT event');
+            currentUser = null;
+            window.currentUser = null;  // Clear global
+            syncEnabled = false;
+
+            // Clear sync interval
+            if (window.syncInterval) {
+              clearInterval(window.syncInterval);
+              window.syncInterval = null;
+            }
+
+            sessionStorage.removeItem('authenticated');
+            updateAuthUI();
+          } else if (event === 'TOKEN_REFRESHED') {
+            console.log('Token refreshed successfully');
+          } else if (event === 'USER_UPDATED') {
+            console.log('User updated:', session ? session.user.email : 'no session');
+            if (session) {
+              currentUser = session.user;
+              window.currentUser = session.user;  // Update global
+            }
+          }
+        });
+
+        // CRITICAL: Handle OAuth redirect immediately
+        if (window.location.hash && window.location.hash.includes('access_token')) {
+          console.log('OAuth redirect detected, processing tokens...');
+          // Extract tokens directly from URL
+          const hashParams = new URLSearchParams(window.location.hash.substring(1));
+          const accessToken = hashParams.get('access_token');
+          const refreshToken = hashParams.get('refresh_token');
+
+          if (accessToken && refreshToken) {
+            console.log('Found OAuth tokens, setting session directly...');
+            console.log('Calling supabase.auth.setSession...');
+
+            const setSessionPromise = supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken
+            });
+
+            console.log('setSession promise created:', !!setSessionPromise);
+
+            setSessionPromise.then(({ data, error }) => {
+              console.log('setSession promise resolved');
+              if (error) {
+                console.error('Failed to set session:', error);
+              } else if (data && data.session) {
+                console.log('✅ OAuth session set successfully:', data.session.user.email);
+                currentUser = data.session.user;
+                window.currentUser = data.session.user;
+                syncEnabled = true;
+
+                // Update UI
+                const teamsLink = document.getElementById('teamsLink');
+                const teamsSeparator = document.getElementById('teamsSeparator');
+                if (teamsLink) teamsLink.style.display = 'inline';
+                if (teamsSeparator) teamsSeparator.style.display = 'inline';
+
+                updateAuthUI();
+
+                // Clear URL
+                window.history.replaceState(null, null, window.location.pathname);
+
+                // Show success banner
+                if (!sessionStorage.getItem('authenticated')) {
+                  showAuthSuccessBanner(data.session.user.email);
+                  sessionStorage.setItem('authenticated', 'true');
+                }
+
+                handleInitialSync();
+              }
+            }).catch(err => {
+              console.error('Exception setting session:', err);
+            });
+          }
+        }
+
+        // Auth check is now handled in the main initialization flow after initSupabase completes
+        // This prevents duplicate checks and ensures proper sequencing
+      } catch (error) {
+        console.error('Failed to initialize Supabase client:', error);
+      }
+  }
+
+  // Manual session restoration function
+  window.restoreSession = async function() {
+    const client = supabase || window.supabaseClient;
+    if (!client) {
+      console.log('No Supabase client available');
+      return false;
+    }
+
+    try {
+      console.log('Manually restoring session...');
+      const { data: { session }, error } = await client.auth.getSession();
+
+      if (error) {
+        console.error('Error getting session:', error);
+        return false;
+      }
+
+      if (session && session.user) {
+        console.log('✅ Session restored for:', session.user.email);
+        currentUser = session.user;
+        window.currentUser = session.user;
+        syncEnabled = true;
+
+        // Update UI
+        updateAuthUI();
+
+        // Load cloud data
+        await handleInitialSync();
+
+        return true;
+      } else {
+        console.log('No session to restore');
+        return false;
+      }
+    } catch (e) {
+      console.error('Failed to restore session:', e);
+      return false;
+    }
+  };
+
+  // Check if user is signed in
+  async function checkAuthStatus() {
+    console.log('🔍 checkAuthStatus function started');
+
+    // Show connecting notification
+    showNotification('Connecting', 'Checking authentication status...');
+
+    const client = supabase || window.supabaseClient;
+    if (!client) {
+      console.log('checkAuthStatus: No Supabase client available');
+      showNotification('Error', 'Unable to connect to authentication service');
+      return;
+    }
+
+    console.log('🔍 checkAuthStatus called - currentUser:', currentUser ? currentUser.email : 'none');
+    console.log('🔍 Supabase client exists:', !!client);
+
+    // If we already have a user from onAuthStateChange, just sync
+    if (currentUser && syncEnabled) {
+      console.log('🔍 User already authenticated via onAuthStateChange, proceeding with sync');
+      console.log('🔄 Calling handleInitialSync from checkAuthStatus for existing session');
+      await handleInitialSync();
+      return;
+    }
+
+    // Check if the URL actually has OAuth/magic link tokens
+    const hashString = window.location.hash.substring(1); // Remove the # character
+    const hasAuthTokens = hashString && (
+      hashString.includes('access_token=') ||
+      hashString.includes('token_type=') ||
+      hashString.includes('provider_token=')
+    );
+
+    // Don't manually process auth tokens - Supabase handles them with detectSessionInUrl
+    // This includes both magic links and OAuth returns
+    if (hasAuthTokens) {
+      console.log('Auth tokens detected in URL, waiting for Supabase to process...');
+      // The onAuthStateChange listener will handle the SIGNED_IN event
+      // For OAuth, Supabase needs a moment to exchange the tokens
+      // Wait a bit longer for OAuth to complete, then check for session
+      let retryCount = 0;
+      const maxRetries = 5;
+
+      const checkOAuthSession = async () => {
+        retryCount++;
+        console.log(`🔄 OAuth check attempt ${retryCount}/${maxRetries}`);
+
+        try {
+          // First, try to set the session manually from the URL tokens
+          if (retryCount === 1 && window.location.hash) {
+            console.log('Attempting to manually set session from URL tokens...');
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            const accessToken = hashParams.get('access_token');
+            const refreshToken = hashParams.get('refresh_token');
+
+            if (accessToken && refreshToken) {
+              console.log('Found tokens, attempting to set session...');
+              console.log('Access token length:', accessToken.length);
+              console.log('Refresh token:', refreshToken);
+
+              try {
+                const { data, error } = await supabase.auth.setSession({
+                  access_token: accessToken,
+                  refresh_token: refreshToken
+                });
+
+                console.log('setSession result:', { data, error });
+
+                if (!error && data && data.session) {
+                  console.log('✅ Successfully set session from URL tokens');
+                  const user = data.session.user;
+                  currentUser = user;
+                  window.currentUser = user;
+                  syncEnabled = true;
+
+                // Clear the URL hash
+                window.history.replaceState(null, null, window.location.pathname);
+
+                // Update UI - guard against missing elements
+                const teamsLink = document.getElementById('teamsLink');
+                const teamsSeparator = document.getElementById('teamsSeparator');
+                if (teamsLink) teamsLink.style.display = 'inline';
+                if (teamsSeparator) teamsSeparator.style.display = 'inline';
+                updateAuthUI();
+
+                // Show success banner
+                if (!sessionStorage.getItem('authenticated')) {
+                  showAuthSuccessBanner(user.email);
+                  sessionStorage.setItem('authenticated', 'true');
+                }
+
+                await handleInitialSync();
+                  return; // Success, no need to retry
+                } else {
+                  console.error('Failed to set session from tokens:', error);
+                  console.error('Data returned:', data);
+                }
+              } catch (err) {
+                console.error('Exception setting session:', err);
+              }
+            } else {
+              console.log('Missing tokens - access:', !!accessToken, 'refresh:', !!refreshToken);
+            }
+          }
+
+          // Fallback to getSession
+          const { data: { session }, error } = await client.auth.getSession();
+
+          if (error) {
+            console.error('Error getting session during OAuth check:', error);
+            if (retryCount < maxRetries) {
+              setTimeout(checkOAuthSession, 1000);
+            }
+            return;
+          }
+
+          if (session && session.user && !currentUser) {
+            const user = session.user;
+            // OAuth completed but onAuthStateChange might not have fired yet
+            console.log('🟡 OAuth fallback: Found user via getSession()', user.email);
+            currentUser = user;
+            window.currentUser = user;  // Set global for Teams page
+            syncEnabled = true;
+
+            // Clear the URL hash
+            if (window.location.hash) {
+              window.history.replaceState(null, null, window.location.pathname);
+            }
+
+            // Update all UI elements
+            const teamsLink = document.getElementById('teamsLink');
+            const teamsSeparator = document.getElementById('teamsSeparator');
+            if (teamsLink) teamsLink.style.display = 'inline';
+            if (teamsSeparator) teamsSeparator.style.display = 'inline';
+
+            updateAuthUI();
+
+            // Show success banner for OAuth users
+            if (!sessionStorage.getItem('authenticated')) {
+              showAuthSuccessBanner(user.email);
+              sessionStorage.setItem('authenticated', 'true');
+            }
+
+            await handleInitialSync();
+          } else if (!session && retryCount < maxRetries) {
+            // No session yet, keep trying
+            console.log('No session found yet, retrying...');
+            setTimeout(checkOAuthSession, 1000);
+          }
+        } catch (err) {
+          console.error('Unexpected error in OAuth check:', err);
+        }
+      };
+
+      setTimeout(checkOAuthSession, 1500);
+      return;
+    }
+
+    // Check for auth errors in the URL
+    if (window.location.hash) {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const errorCode = hashParams.get('error_code');
+      const errorDescription = hashParams.get('error_description');
+
+      if (errorCode) {
+        console.log('Auth error detected:', errorCode, errorDescription);
+
+        // Clear the error from URL
+        window.history.replaceState(null, null, window.location.pathname + window.location.search);
+
+        // Show user-friendly error messages
+        if (errorCode === 'otp_expired') {
+          alert('⏰ Magic link expired\n\nThe sign-in link has expired. This can happen if:\n\n• The link was pre-scanned by email security\n• More than 1 hour passed since it was sent\n• The link was already used\n\nPlease request a new magic link.\n\n💡 Tip: Try using a personal email address to avoid corporate email scanners.');
+          return;
+        } else if (errorCode === 'access_denied') {
+          alert('❌ Access denied\n\nSign-in was cancelled or denied.');
+          return;
+        }
+      }
+    }
+
+    try {
+      console.log('🔍 About to call getSession in checkAuthStatus...');
+
+      // Add timeout to prevent hanging (reduced based on modular auth)
+      const timeout = new Promise((resolve) => {
+        setTimeout(() => {
+          console.log('⏱️ getSession timeout triggered after 3 seconds');
+          resolve({ data: { session: null }, error: { message: 'Timeout after 3 seconds' }, timeout: true });
+        }, 3000);
+      });
+
+      const sessionPromise = client.auth.getSession();
+      console.log('🔍 getSession promise created');
+
+      const result = await Promise.race([sessionPromise, timeout]);
+      console.log('🔍 getSession completed or timed out');
+
+      if (result.timeout) {
+        console.error('❌ getSession() timed out in checkAuthStatus!');
+        showNotification('Connection Slow', 'Cloud connection timed out, checking local storage...');
+
+        // Try to recover session from localStorage manually (modular pattern)
+        console.log('🔧 Attempting localStorage session recovery...');
+        const keys = Object.keys(localStorage).filter(k => k.includes('supabase'));
+        console.log('Found Supabase keys:', keys);
+
+        let recoveredSession = null;
+        for (const key of keys) {
+          if (key.includes('auth-token')) {
+            try {
+              const stored = localStorage.getItem(key);
+              if (stored) {
+                const parsed = JSON.parse(stored);
+                if (parsed.access_token && parsed.user) {
+                  console.log('✅ Recovered session from localStorage');
+                  recoveredSession = { user: parsed.user, access_token: parsed.access_token };
+                  break;
+                }
+              }
+            } catch (e) {
+              console.log('Failed to parse stored auth:', e);
+            }
+          }
+        }
+
+        if (recoveredSession) {
+          currentUser = recoveredSession.user;
+          syncEnabled = true;
+          updateAuthUI();
+          showNotification('Session Recovered', 'Using cached authentication');
+          await handleInitialSync();
+        } else {
+          showNotification('Offline Mode', 'Using local data only');
+        }
+        return;
+      }
+
+      const { data: { session }, error } = result;
+
+      if (!error && session) {
+        const user = session.user;
+        console.log('🔍 checkAuthStatus: Found user:', user ? user.email : 'none');
+        showNotification('Authenticated', `Signed in as ${user.email}`);
+        currentUser = user;
+        window.currentUser = user;  // Set global for Teams page
+        syncEnabled = true;
+
+        // Show Teams link when authenticated - guard against missing elements
+        const teamsLink = document.getElementById('teamsLink');
+        const teamsSeparator = document.getElementById('teamsSeparator');
+        if (teamsLink) teamsLink.style.display = 'inline';
+        if (teamsSeparator) teamsSeparator.style.display = 'inline';
+        updateAuthUI();
+
+        // Handle initial sync
+        console.log('🔄 Calling handleInitialSync from checkAuthStatus for existing session');
+        await handleInitialSync();
+      } else {
+        console.log('No active session found');
+        showNotification('Not Signed In', 'Using local storage only');
+      }
+    } catch (error) {
+      console.log('Auth check failed:', error);
+    }
+  }
+
+  // Sign in with email (magic link)
+  async function signInWithEmail(email) {
+    // Try both supabase and window.supabaseClient
+    const client = supabase || window.supabaseClient;
+
+    if (!client) {
+      console.error('Supabase client not available');
+      alert('Authentication service not available. Please refresh the page.');
+      return;
+    }
+
+    try {
+      console.log('Sending magic link to:', email);
+
+      // Check if we have the credentials
+      if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+        throw new Error('Supabase credentials not found. URL: ' + !!SUPABASE_URL + ', Key: ' + !!SUPABASE_ANON_KEY);
+      }
+
+      // Always use the URL parameter method since Supabase JS client has issues
+      console.log('Using direct API call for magic link');
+      const response = await fetch(`${SUPABASE_URL}/auth/v1/otp?apikey=${SUPABASE_ANON_KEY}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: email,
+          options: {
+            emailRedirectTo: window.location.href
+          }
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.msg || errorData.message || 'Failed to send magic link');
+      }
+
+      console.log('Magic link sent successfully');
+
+      alert('✅ Magic Link Sent!\n\nCheck your email for the sign-in link.\n\n📧 Check spam folder if not in inbox\n⏰ Link expires in 1 hour\n🔄 Refresh this page after clicking the link\n\n⚠️ Note: If using corporate email with link scanning, the link may expire. Try using a personal email instead.');
+    } catch (error) {
+      console.error('Sign in error:', error);
+
+      // Provide helpful error messages
+      if (error.message && error.message.includes('Email provider is not enabled')) {
+        alert('⚠️ Email Sign-In Not Enabled\n\nTo fix:\n1. Go to your Supabase dashboard\n2. Navigate to Authentication → Providers\n3. Enable "Email" provider\n4. Try again');
+      } else if (error.message && error.message.includes('Invalid API key')) {
+        alert('❌ Invalid Supabase Credentials\n\nPlease check:\n• Project URL is correct\n• Anon Key is correct\n\nFind these in Settings → API in your Supabase dashboard');
+      } else {
+        alert('Sign in failed: ' + error.message);
+      }
+    }
+  }
+
+  // Handle initial sync when user is authenticated
+  async function handleInitialSync() {
+    console.log('Handling initial sync...');
+    console.log('Current user:', currentUser ? currentUser.email : 'none');
+    console.log('Sync enabled:', syncEnabled);
+    console.log('Supabase client available:', !!(supabase || window.supabaseClient));
+    console.log('Initial sync already completed:', initialSyncCompleted);
+
+    // Prevent duplicate syncs
+    if (initialSyncCompleted) {
+      console.log('Initial sync already completed, skipping...');
+      return;
+    }
+
+    try {
+      // Show notification that we're loading from cloud
+      if (currentUser) {
+        showNotification('Loading Data', 'Fetching data from cloud database...');
+      }
+
+      // Load cloud data
+      const cloudData = await loadFromCloud();
+
+      if (cloudData && Object.keys(cloudData).length > 0) {
+        // Cloud has data - use it as the source of truth
+        console.log('Loading data from cloud');
+        showNotification('Cloud Data Loaded', `Loaded ${cloudData.clients?.length || 0} clients from cloud`);
+        state = coerceState(cloudData);
+
+        // Save to local for offline access
+        var dataStr = JSON.stringify(state);
+        localStorage.setItem(STABLE_KEY, dataStr);
+        // IndexedDB removed - localStorage only
+
+        // Re-render with cloud data
+        render();
+      } else {
+        // No cloud data returned - but don't clear existing state!
+        console.log('No cloud data returned from loadFromCloud');
+
+        // Only migrate local data if we don't already have data loaded
+        if (!state || !state.clients || state.clients.length === 0) {
+          console.log('No existing state, checking localStorage for data to migrate...');
+          // Try to load from local storage
+          const localData = loadFromLocalStorage();
+          if (localData && localData.clients && localData.clients.length > 0) {
+            console.log('Found local data with', localData.clients.length, 'clients - using it');
+            showNotification('Local Data', `Loaded ${localData.clients.length} clients from local storage`);
+            state = localData;
+            // Try to save to cloud
+            await saveToCloud(state);
+            console.log('Local data migrated to cloud');
+            showNotification('Synced', 'Local data uploaded to cloud');
+          } else {
+            console.log('No local data to migrate');
+            showNotification('No Data', 'No data found in cloud or local storage');
+          }
+        } else {
+          console.log('Already have state with', state.clients.length, 'clients - keeping it');
+          showNotification('Data Retained', `Keeping existing ${state.clients.length} clients`);
+        }
+      }
+
+      // Set up real-time sync
+      setupRealtimeSync();
+
+      // Mark initial sync as completed
+      initialSyncCompleted = true;
+      console.log('✅ Initial sync completed successfully');
+
+    } catch (error) {
+      console.error('Error during initial sync:', error);
+    }
+  }
+
+  // Set up real-time sync to detect changes from other devices
+  function setupRealtimeSync() {
+    const client = supabase || window.supabaseClient;
+    if (!client || !currentUser) return;
+
+    console.log('Setting up real-time sync...');
+
+    // Clear any existing interval
+    if (window.syncInterval) {
+      clearInterval(window.syncInterval);
+    }
+
+    // Poll for changes every 30 seconds (reduced frequency)
+    window.syncInterval = setInterval(async () => {
+      if (currentUser && syncEnabled && !window.isSaving) {  // Don't sync while saving
+        try {
+          const cloudData = await loadFromCloud();
+          if (cloudData && cloudData.lastModified) {
+            // Check if cloud data is actually different (not just timestamp)
+            const cloudTime = new Date(cloudData.lastModified).getTime();
+            const localTime = state.lastModified ? new Date(state.lastModified).getTime() : 0;
+
+            // Only sync if cloud is significantly newer (more than 2 seconds difference)
+            // This avoids syncing our own recent saves
+            if (cloudTime > localTime + 2000) {
+              // Additional check: compare actual data content
+              const cloudDataStr = JSON.stringify(cloudData.clients || []);
+              const localDataStr = JSON.stringify(state.clients || []);
+
+              if (cloudDataStr !== localDataStr) {
+                console.log('Detected different data from cloud, syncing...');
+                state = coerceState(cloudData);
+
+                // Save to local for offline access
+                var dataStr = JSON.stringify(state);
+                localStorage.setItem(STABLE_KEY, dataStr);
+                // IndexedDB removed - localStorage only
+
+                // Re-render UI
+                render();
+              }
+            }
+          }
+        } catch (error) {
+          // Silently ignore errors to avoid console spam
+          // console.error('Error checking for cloud updates:', error);
+        }
+      }
+    }, 30000); // Check every 30 seconds
+  }
+
+  // Sign out
+  async function signOut() {
+    const client = supabase || window.supabaseClient;
+    if (!client) return;
+
+    try {
+      // Clear sync interval
+      if (window.syncInterval) {
+        clearInterval(window.syncInterval);
+        window.syncInterval = null;
+      }
+
+      await client.auth.signOut();
+      currentUser = null;
+      syncEnabled = false;
+
+      // Clear session storage flags
+      sessionStorage.removeItem('hasSynced');
+      sessionStorage.removeItem('authenticated');
+
+      // Hide teams link immediately - guard against missing elements
+      const teamsLink = document.getElementById('teamsLink');
+      const teamsSeparator = document.getElementById('teamsSeparator');
+      if (teamsLink) teamsLink.style.display = 'none';
+      if (teamsSeparator) teamsSeparator.style.display = 'none';
+
+      updateAuthUI();
+      // Continue using local storage
+      console.log('Signed out - continuing with local storage');
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
+  }
+
+  // Save to cloud (for signed-in users)
+  async function saveToCloud(data) {
+    const client = supabase || window.supabaseClient;
+    if (!client || !currentUser || !syncEnabled) {
+      console.log('Cannot save to cloud - client:', !!client, 'user:', !!currentUser, 'sync:', syncEnabled);
+      return;
+    }
+
+    // Set flag to prevent real-time sync during save
+    window.isSaving = true;
+
+    try {
+      console.log('Saving to cloud for user:', currentUser.email);
+      console.log('User ID:', currentUser.id);
+      console.log('Data to save has', data.clients ? data.clients.length : 0, 'clients');
+
+      const saveData = {
+        user_id: currentUser.id,
+        data: JSON.stringify(data),
+        updated_at: new Date().toISOString()
+      };
+      console.log('Save payload:', { ...saveData, data: saveData.data.substring(0, 100) + '...' });
+
+      const { error } = await client
+        .from('hotlist_data')
+        .upsert(saveData, {
+          onConflict: 'user_id'
+        });
+
+      if (error) {
+        console.error('Cloud save error:', error);
+        if (error.message && (error.message.includes('hotlist_data') || error.message.includes('relation'))) {
+          console.error('Note: Run SQL from supabase_setup.sql in Supabase SQL Editor');
+        }
+      } else {
+        console.log('Cloud saved:', new Date().toLocaleTimeString());
+      }
+    } catch (error) {
+      console.error('Cloud save failed:', error);
+    } finally {
+      // Clear the saving flag
+      window.isSaving = false;
+    }
+  }
+
+  // Load from cloud
+  async function loadFromCloud() {
+    const client = supabase || window.supabaseClient;
+    if (!client || !currentUser) {
+      console.log('Cannot load from cloud - client:', !!client, 'user:', !!currentUser);
+      return null;
+    }
+
+    try {
+      console.log('Loading from cloud for user:', currentUser.email);
+      console.log('User ID:', currentUser.id);
+
+      // Add timeout to prevent hanging (increased to 15 seconds for slower connections)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        controller.abort();
+        console.error('❌ Cloud load aborted after 15 seconds - network may be slow');
+      }, 15000);
+
+      try {
+        const { data, error } = await client
+          .from('hotlist_data')
+          .select('data')
+          .eq('user_id', currentUser.id)
+          .single();
+
+        clearTimeout(timeoutId);
+
+        if (error) {
+          if (error.code === 'PGRST116') {
+            // No data found for user - this is OK for new users
+            console.log('No cloud data found for user (new user or no saved data)');
+            return null;
+          }
+          console.error('Cloud load error:', error);
+          console.error('Error details:', JSON.stringify(error));
+          throw error;
+        }
+
+        console.log('✅ Cloud data loaded successfully');
+        console.log('Data received:', data);
+        if (data && data.data) {
+          const parsedData = JSON.parse(data.data);
+          console.log('Parsed data has', parsedData.clients ? parsedData.clients.length : 0, 'clients');
+          return parsedData;
+        }
+        return null;
+      } catch (innerError) {
+        clearTimeout(timeoutId);
+        throw innerError;
+      }
+    } catch (error) {
+      console.error('Cloud load failed:', error);
+      return null;
+    }
+  }
+
+  // Show success banner when authenticated
+  function showAuthSuccessBanner(email) {
+    var banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed; top:20px; right:20px; background:linear-gradient(135deg, #10b981, #059669); color:white; padding:20px 24px; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.2); z-index:10000; max-width:400px; animation:slideIn 0.3s ease-out;';
+
+    banner.innerHTML =
+      '<div style="display:flex; align-items:flex-start; gap:12px;">' +
+        '<div style="font-size:24px;">✅</div>' +
+        '<div style="flex:1;">' +
+          '<h3 style="margin:0 0 8px; font-size:16px; font-weight:bold;">Successfully Signed In!</h3>' +
+          '<p style="margin:0 0 12px; font-size:14px; opacity:0.95;">' + email + '</p>' +
+          '<div style="display:flex; flex-direction:column; gap:8px; font-size:13px;">' +
+            '<div>☁️ Your data now syncs across all devices</div>' +
+            '<div>👥 <a href="teams-dashboard.html" style="color:white; font-weight:bold; text-decoration:underline;">Open Teams Dashboard</a> to collaborate</div>' +
+            '<div>🏆 Share progress & compete with colleagues</div>' +
+          '</div>' +
+        '</div>' +
+        '<button onclick="this.parentElement.parentElement.remove()" style="background:transparent; border:none; color:white; font-size:20px; cursor:pointer; padding:0; margin-left:8px;">×</button>' +
+      '</div>';
+
+    // Add animation keyframes
+    var style = document.createElement('style');
+    style.textContent = '@keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }';
+    document.head.appendChild(style);
+
+    document.body.appendChild(banner);
+
+    // Auto-remove after 8 seconds
+    setTimeout(function() {
+      if (banner.parentNode) {
+        banner.style.animation = 'slideIn 0.3s ease-out reverse';
+        setTimeout(function() {
+          if (banner.parentNode) banner.remove();
+        }, 300);
+      }
+    }, 8000);
+  }
+
+  // Update UI based on auth status
+  function updateAuthUI() {
+    console.log('🎨 updateAuthUI called - currentUser:', !!currentUser, currentUser?.email);
+
+    // This will be called to update the UI when auth status changes
+    var authStatus = document.getElementById('authStatus');
+    var cloudSyncLink = document.getElementById('cloudSyncLink');
+    var teamsLink = document.getElementById('teamsLink');
+    var teamsSeparator = document.getElementById('teamsSeparator');
+
+    // Log element existence
+    console.log('UI Elements found:', {
+      authStatus: !!authStatus,
+      cloudSyncLink: !!cloudSyncLink,
+      teamsLink: !!teamsLink,
+      teamsSeparator: !!teamsSeparator
+    });
+
+    if (currentUser) {
+      console.log('🟢 Updating UI for authenticated user:', currentUser.email);
+
+      // Update header status with user email
+      if (authStatus) {
+        var userEmail = currentUser.email || 'Signed in';
+        authStatus.innerHTML = '☁️ <span style="color:var(--green);">' + userEmail + '</span> • <a href="#" onclick="signOut(); return false;" style="color:var(--muted); text-decoration:underline;">Sign out</a>';
+      }
+      // Update footer link
+      if (cloudSyncLink) {
+        cloudSyncLink.innerHTML = '☁️ Synced (' + (currentUser.email || 'signed in') + ')';
+        cloudSyncLink.style.color = '#10b981';  // Green color to indicate active
+        cloudSyncLink.onclick = function() {
+          if (confirm('Sign out from cloud sync?\n\n' + (currentUser.email || ''))) {
+            signOut();
+          }
+          return false;
+        };
+      }
+      // Show Teams link prominently
+      if (teamsLink) {
+        teamsLink.style.display = 'inline';
+        teamsLink.style.fontWeight = 'bold';
+        teamsLink.style.color = '#10b981';
+        console.log('✅ Teams link shown');
+      }
+      if (teamsSeparator) {
+        teamsSeparator.style.display = 'inline';
+      }
+    } else {
+      console.log('🔴 Updating UI for unauthenticated state');
+
+      // Clear header status
+      if (authStatus) {
+        authStatus.innerHTML = '';
+      }
+      // Reset footer link
+      if (cloudSyncLink) {
+        cloudSyncLink.innerHTML = 'Cloud sync';
+        cloudSyncLink.style.color = '#3b82f6';  // Default blue
+        cloudSyncLink.onclick = function() {
+          showSignInDialog();
+          return false;
+        };
+      }
+      // Hide Teams link
+      if (teamsLink) {
+        teamsLink.style.display = 'none';
+        teamsLink.style.fontWeight = 'normal';
+        teamsLink.style.color = '#3b82f6';
+        console.log('❌ Teams link hidden');
+      }
+      if (teamsSeparator) {
+        teamsSeparator.style.display = 'none';
+      }
+    }
+
+    // Force a re-render of the footer in case DOM wasn't ready
+    if (!teamsLink || !teamsSeparator) {
+      console.log('⚠️ Some UI elements not found, scheduling retry...');
+      setTimeout(updateAuthUI, 1000);
+    }
+  }
+
+  // Recent commits from git log
   var CHANGELOG = [
-    { version: '3.1.0', date: '2025-01-25', changes: '🚀 MAJOR UPDATE: Complete removal of all authentication and cloud sync. App now uses localStorage exclusively for instant loading. Removed 1200+ lines of code, fixed all syntax errors, and improved PWA functionality.' },
+    { version: '3.0.0', date: '2025-01-24', changes: '🎉 MAJOR UPDATE: Teams Collaboration Feature! Create and manage teams, share client data in real-time, role-based permissions (Owner/Admin/Member/Viewer), team dashboard with activity tracking, secure team invitations, enhanced cloud sync with Supabase authentication' },
+    { version: '2.9.0', date: '2025-01-24', changes: '🏗️ Architecture Improvements: Modular JavaScript structure with separate auth and sync modules, improved Google OAuth integration, robust error handling and timeout protection, enhanced database schema with teams support, comprehensive test utilities for debugging' },
+    { version: '2.6.2', date: '2025-01-24', changes: 'Enhanced segmented progress bar animations - animation now only triggers when Issued button is clicked, removed constant pulsating effects, added one-time pop-in effect with white flash overlay for better visual feedback' },
+    { version: '2.6.1', date: '2025-01-24', changes: 'Improved segmented progress bar styling - adjusted segment dimensions to 12px width and 20px height, added 3D visual effects with gradients and shadows, implemented smooth hover animations with shimmer effect' },
+    { version: '2.6.0', date: '2025-01-24', changes: 'Fixed cloud data persistence on page refresh - resolved state overwrite issues, improved sync timing and error handling, added timeout protection for Supabase queries, enhanced real-time sync to only update when data actually changes' },
+    { version: '2.5.2', date: '2025-01-23', changes: 'Fixed edit icon visibility for client names in notes mode - changed from absolute positioning to inline-block display, modified anchor link to inline-block with calculated width, edit pencil icon now appears correctly when hovering over client names while notes are open' },
+    { version: '2.5.1', date: '2025-01-23', changes: 'Added client name hyperlinks to Country Passport Navigator search - opens in new tab with name pre-populated, preserves all styling with only cursor change on hover' },
+    { version: '2.5.0', date: '2025-01-23', changes: 'Fixed critical context persistence bug (home/auto clients disappearing), fixed notes saving with debounced saves, added calendar integration (Google/Outlook/ICS), added Enter key support for note editing, renamed Filters to Settings, default follow-ups to 2 days out, increased quote font size to 18px' },
+    { version: '2.4.0', date: '2025-01-23', changes: 'Added context-specific monthly goals with segmented progress indicators, improved quotes editor with bullet points and better visual spacing, fixed aging threshold saving, added compact mode tooltips for all icons appearing below with high z-index, daily outreach now counts unique clients only, added titles-only density mode with underlined text labels' },
+    { version: '2.3.1', date: '2025-01-21', changes: 'Improved All Contexts view layout by removing spacing between context groups for a more compact design' },
+    { version: '2.3.0', date: '2025-01-21', changes: 'Enhanced scheduling with 30-minute calendar integration and direct Google Calendar support, improved status tracker with 1px borders and cleaner icon styling, distinctive Today\'s queue styling with blue theme, refined UI with shadow-based hover effects, fixed context switching and row selection, changed Commercial "Lead" to "Contact", default clients start with no status' },
+    { version: '2.2.0', date: '2025-01-19', changes: 'Add optional cloud sync with Supabase (local storage remains default), add left/right arrow keys for stage navigation' },
+    { version: '2.1.1', date: '2025-01-19', changes: 'Improve context selector styling to be more subtle (black/gray instead of orange), fix name preservation when forgetting to select context in All view' },
+    { version: '2.1.0', date: '2025-01-19', changes: 'Replace dropdown with pill-style context switcher, add last contact dates, improve All Contexts view with reorderable groups, enable adding clients in All view, change "Issued" to "Issued" across all contexts' },
+    { version: '2.0.0', date: '2025-01-18', changes: 'Add multi-context support for Life, Home & Auto, Commercial, Farm, and Networking with context-specific stages' },
+    { version: '1.10.9', date: '2025-01-18', changes: 'Fix drag-and-drop in incognito/production by defaulting to no-sort when no cookie exists' },
+    { version: '1.10.8', date: '2025-01-18', changes: 'Add Google Tag Manager integration (GTM-N5DXZ4MC) and standardize iconbtn sizes' },
+    { version: '1.10.7', date: '2025-01-18', changes: 'Standardize group icon sizes with 18px minimum and 2px increments (18/20/22/24/26px)' },
+    { version: '1.10.6', date: '2025-01-18', changes: 'Add extra small (XS) font size option while keeping client names and group icons readable' },
+    { version: '1.10.5', date: '2025-01-18', changes: 'Match hot icon sizing with stage icons across all font sizes and screen sizes' },
     { version: '1.10.4', date: '2025-01-18', changes: 'Fix drag-and-drop, improve header layout, and enhance daily outreach bar' },
     { version: '1.10.3', date: '2025-01-18', changes: 'Add responsive status icons for large screens (1680px+) with progressive scaling' },
     { version: '1.10.2', date: '2025-01-18', changes: 'Fix drag-and-drop initialization and improve drag visual to show only client name' },
@@ -2156,8 +3333,30 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   /* Load and save functions with localStorage */
   async function load() {
-    // Load from localStorage only
+    // If initial sync has already loaded cloud data, use the current state
+    if (initialSyncCompleted && currentUser && syncEnabled) {
+      console.log('Initial sync already completed, using current state');
+      return state;  // Return the state that was already loaded by handleInitialSync
+    }
 
+    // If user is signed in and sync is enabled, but initial sync hasn't run yet
+    // (This shouldn't normally happen, but it's a fallback)
+    if (currentUser && syncEnabled && !initialSyncCompleted) {
+      console.log('User is signed in but initial sync not completed, loading from cloud...');
+      try {
+        const cloudData = await loadFromCloud();
+        if (cloudData && Object.keys(cloudData).length > 0) {
+          console.log('Loaded data from cloud');
+          // Save to local storage for offline access
+          const dataStr = JSON.stringify(cloudData);
+          localStorage.setItem(STABLE_KEY, dataStr);
+          return coerceState(cloudData);
+        }
+      } catch(e) {
+        console.error('Failed to load from cloud:', e);
+        // Even if cloud fails, we should still try to use cloud on next save
+      }
+    }
 
     // Fall back to local storage
     return loadFromLocalStorage();
@@ -2180,8 +3379,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     data.lastModified = new Date().toISOString();
     var dataStr = JSON.stringify(data);
 
-    // Only save locally
-    saveLocally(dataStr);
+    // Save to cloud first if user is signed in
+    if (currentUser && syncEnabled) {
+      saveToCloud(data).then(function() {
+        console.log('Successfully saved to cloud');
+        // Also save locally for offline access
+        saveLocally(dataStr);
+      }).catch(function(e) {
+        console.error('Failed to save to cloud:', e);
+        // Still save locally on cloud failure
+        saveLocally(dataStr);
+      });
+    } else {
+      // Only save locally if not signed in
+      saveLocally(dataStr);
+    }
   }
 
   function saveLocally(dataStr) {
@@ -2195,7 +3407,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     // IndexedDB removed - using localStorage only
     return Promise.resolve();
   }).then(async function() {
-    // Authentication removed - localStorage only
+    // Initialize Supabase first if configured
+    if (SUPABASE_URL && SUPABASE_URL !== 'https://YOUR_PROJECT_ID.supabase.co' &&
+        SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== 'YOUR_ANON_KEY') {
+      await initSupabase();  // CRITICAL: Must await this!
+      // Give Supabase time to fully establish auth state
+      await new Promise(function(resolve) { setTimeout(resolve, 500); });
+      // Check for existing session after initialization
+      await checkAuthStatus();  // CRITICAL: Must await to ensure sync happens before load()
+    }
 
     var result = load();
     if (result && result.then) {
@@ -3623,21 +4843,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   /* Action icon group */
   function buildIconBar(c, notesWrap, ta){
     var bar=document.createElement('div'); bar.className='group--icons';
-    function icon(svgContent,key,tip){
-      var b=document.createElement('button');
-      b.className='iconbtn';
-      b.dataset.act=key;
-      b.innerHTML=svgContent;
-      setTip(b, tip);
-      return b;
-    }
-    // SVG rounded icons with thicker strokes (Variation 5)
-    var notesIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>';
-    var schedIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>';
-    var archIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>';
-    var delIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>';
-
-    var bNotes=icon(notesIcon,'notes','Notes'), bSched=icon(schedIcon,'schedule','Schedule'), bArch=icon(archIcon,'archive','Archive'), bDel=icon(delIcon,'delete','Delete');
+    function icon(label,key,tip){ var b=document.createElement('button'); b.className='iconbtn'; b.dataset.act=key; b.textContent=label; setTip(b, tip); return b; }
+    var bNotes=icon('📝','notes','Notes'), bSched=icon('📅','schedule','Schedule'), bArch=icon('📂','archive','Archive'), bDel=icon('🗑','delete','Delete');
     bar.appendChild(bNotes); bar.appendChild(bSched); bar.appendChild(bArch); bar.appendChild(bDel);
     bNotes.addEventListener('click', function(){
       notesWrap.classList.toggle('hidden');
@@ -5278,7 +6485,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       signInOption = '<div style="margin-top:20px; padding-top:20px; border-top:1px solid rgba(0,0,0,0.05);">' +
         '<div style="font-size:12px; color:var(--muted); margin-bottom:10px;">' +
         'Want to sync across devices? ' +
-        '<a href="#" onclick=" return false;" style="color:var(--green); text-decoration:underline;">Enable cloud sync</a> ' +
+        '<a href="#" onclick="showSignInDialog(); return false;" style="color:var(--green); text-decoration:underline;">Enable cloud sync</a> ' +
         '(optional)' +
         '</div>' +
         '</div>';
@@ -5491,14 +6698,180 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     window.location.href = 'mailto:' + email + '?subject=' + subject + '&body=' + body;
   }
   // Sign-in dialog function
+  function showSignInDialog() {
+    // Try to initialize Supabase first if not already done
+    if (!supabase && !window.supabaseClient) {
+      if (window.supabase && window.supabase.createClient) {
+        console.log('Initializing Supabase before showing sign-in dialog...');
+        initSupabase();
+        // Wait a moment for initialization to complete
+        setTimeout(function() {
+          showSignInDialog();
+        }, 500);
+        return;
+      }
+    }
+
+    // Use global client if local is not available
+    const client = supabase || window.supabaseClient;
+    if (!client) {
+      console.error('Supabase client not available');
+      alert('Unable to initialize authentication. Please refresh the page.');
+      return;
+    }
+    supabase = client; // Ensure local variable is set
+
+    var dialog = document.createElement('div');
+    dialog.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:10000; display:flex; align-items:center; justify-content:center;';
+
+    var content = document.createElement('div');
+    content.style.cssText = 'background:white; border-radius:12px; padding:30px; max-width:400px; width:90%; box-shadow:0 10px 40px rgba(0,0,0,0.2);';
+
+    // Check if Supabase is configured
+    if (!supabase) {
+      content.innerHTML =
+        '<h2 style="margin:0 0 10px; color:var(--ink);">Cloud Sync Not Configured</h2>' +
+        '<p style="color:var(--muted); font-size:14px; margin-bottom:20px;">The application owner needs to configure Supabase credentials in the code.</p>' +
+        '<div style="background:#fff3cd; padding:15px; border-radius:8px; margin-bottom:20px; font-size:13px; color:#856404;">' +
+        '<strong>For the site owner:</strong><br>' +
+        '1. Create a project at <a href="https://supabase.com" target="_blank" style="color:#1976d2;">supabase.com</a><br>' +
+        '2. Run <code>supabase_setup.sql</code> in the SQL Editor<br>' +
+        '3. Update SUPABASE_URL and SUPABASE_ANON_KEY in index.html<br>' +
+        '4. Deploy the updated code' +
+        '</div>' +
+        '<div style="display:flex; gap:10px; justify-content:flex-end;">' +
+        '<button id="cancelSignIn" style="padding:8px 16px; border:1px solid #e2e8f0; background:white; border-radius:6px; cursor:pointer;">Close</button>' +
+        '</div>';
+    } else {
+      content.innerHTML =
+        '<h2 style="margin:0 0 10px; color:var(--ink);">Sign In to Cloud Sync</h2>' +
+        '<p style="color:var(--muted); font-size:14px; margin-bottom:20px;">Sign in to sync your data across all your devices.</p>' +
+
+        // Google Sign-in button
+        '<button id="googleSignIn" style="width:100%; padding:12px; background:white; border:1px solid #dadce0; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; font-size:14px; font-weight:500; color:#3c4043; margin-bottom:20px; transition:all 0.2s;">' +
+        '<svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>' +
+        'Continue with Google' +
+        '</button>' +
+
+        '<div style="display:flex; align-items:center; margin:20px 0;">' +
+        '<div style="flex:1; height:1px; background:#e2e8f0;"></div>' +
+        '<span style="padding:0 12px; color:var(--muted); font-size:12px;">OR</span>' +
+        '<div style="flex:1; height:1px; background:#e2e8f0;"></div>' +
+        '</div>' +
+
+        '<div style="margin-bottom:15px;">' +
+        '<label style="display:block; margin-bottom:5px; font-size:12px; color:var(--muted);">Email Address</label>' +
+        '<input type="email" id="signInEmail" placeholder="your@email.com" style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:6px; font-size:14px;">' +
+        '</div>' +
+
+        '<button id="signInButton" style="width:100%; padding:10px 20px; background:var(--green); color:white; border:none; border-radius:6px; cursor:pointer; font-weight:600; margin-bottom:15px;">Send Magic Link 🪄</button>' +
+
+        '<div style="background:#f0f9ff; padding:10px; border-radius:6px; margin-bottom:15px; font-size:11px; color:#1e40af; border:1px solid #dbeafe;">' +
+        '💡 <strong>Tip:</strong> Google sign-in is faster and more reliable, especially with corporate email systems.' +
+        '</div>' +
+
+        '<div style="display:flex; gap:10px; justify-content:flex-end;">' +
+        '<button id="cancelSignIn" style="padding:8px 16px; border:1px solid #e2e8f0; background:white; border-radius:6px; cursor:pointer;">Cancel</button>' +
+        '</div>';
+    }
+
+    dialog.appendChild(content);
+    document.body.appendChild(dialog);
+
+    // Handle cancel button
+    document.getElementById('cancelSignIn').addEventListener('click', function() {
+      dialog.remove();
+    });
+
+    // Handle Google sign-in
+    var googleBtn = document.getElementById('googleSignIn');
+    if (googleBtn) {
+      // Add hover effect
+      googleBtn.addEventListener('mouseenter', function() {
+        this.style.background = '#f8f9fa';
+        this.style.boxShadow = '0 1px 3px rgba(0,0,0,0.12)';
+      });
+      googleBtn.addEventListener('mouseleave', function() {
+        this.style.background = 'white';
+        this.style.boxShadow = 'none';
+      });
+
+      googleBtn.addEventListener('click', async function() {
+        try {
+          this.disabled = true;
+          this.textContent = 'Redirecting to Google...';
+
+          // Use the current page URL to ensure proper redirect on both localhost and production
+          const redirectUrl = window.location.href.split('#')[0].split('?')[0];
+          console.log('OAuth redirect URL:', redirectUrl);
+
+          const { data, error } = await client.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+              redirectTo: redirectUrl
+            }
+          });
+
+          if (error) throw error;
+        } catch(error) {
+          console.error('Google sign-in error:', error);
+          alert('Google sign-in failed. Please try again or use email sign-in.');
+          this.disabled = false;
+          this.innerHTML = '<svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg> Continue with Google';
+        }
+      });
+    }
+
+    // Handle email sign-in
+    var signInBtn = document.getElementById('signInButton');
+    if (signInBtn) {
+      signInBtn.addEventListener('click', async function() {
+        var email = document.getElementById('signInEmail').value.trim();
+
+        // Validate inputs
+        if (!email) {
+          alert('Please enter your email address');
+          return;
+        }
+
+        // Send magic link
+        try {
+          this.disabled = true;
+          this.textContent = 'Sending...';
+          await signInWithEmail(email);
+          dialog.remove();
+        } catch(error) {
+          this.disabled = false;
+          this.textContent = 'Send Magic Link 🪄';
+        }
+      });
+    }
+
+    // Handle ESC key to close
+    function handleEscape(e) {
+      if (e.key === 'Escape') {
+        dialog.remove();
+        document.removeEventListener('keydown', handleEscape);
+      }
+    }
+    document.addEventListener('keydown', handleEscape);
+
+    // Focus email field if it exists
+    setTimeout(function() {
+      var emailField = document.getElementById('signInEmail');
+      if (emailField) {
+        emailField.focus();
+      }
+    }, 100);
+  }
 
   window.showShortcutsModal = showShortcutsModal;
   window.closeShortcutsModal = closeShortcutsModal;
   window.showChangelogModal = showChangelogModal;
   window.closeChangelogModal = closeChangelogModal;
   window.openSuggestEmail = openSuggestEmail;
-  
-  
+  window.showSignInDialog = showSignInDialog;
+  window.signOut = signOut;
 
   /* Flame animation when marking hot */
   function showFlameAnimation(event){
@@ -6429,6 +7802,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     // Validate and fix any clients missing context (data integrity check)
     validateAllContexts();
 
+    // Final auth state verification after page fully loads
+    setTimeout(async function() {
+      if (supabase && !currentUser) {
+        console.log('🔍 Final auth verification after page load...');
+        checkAuthStatus();
+      }
+    }, 2000);
 
     // Initialize ageDays dropdown with saved value
     if(els.ageDays) {
@@ -6638,6 +8018,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       }
     });
 
+    // Initialize Supabase if configured
+    initSupabase();
     render();
     setTimeout(enableDragAndDrop, 100);
   }).catch(function(e) {
@@ -6648,7 +8030,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     if (!ui) {
       ui = {};
     }
-
+    // Initialize Supabase even on storage failure
+    initSupabase();
     renderQuote(false);
     scheduleQuoteTimer();
     renderDailyOutreach();
@@ -6729,6 +8112,86 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </div>
 
 <script>
+// Track activity metrics for Teams feature
+async function trackActivity(activityType, value = 1) {
+  const client = supabase || window.supabaseClient;
+  if (!client || !currentUser) return;
+
+  try {
+    const today = new Date().toISOString().split('T')[0];
+
+    // Get or create today's metrics
+    const { data: existing } = await supabase
+      .from('activity_metrics')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .eq('date', today)
+      .single();
+
+    const updates = {};
+    if (existing) {
+      // Update existing metrics
+      updates[activityType] = (existing[activityType] || 0) + value;
+      updates.updated_at = new Date().toISOString();
+
+      await client
+        .from('activity_metrics')
+        .update(updates)
+        .eq('id', existing.id);
+    } else {
+      // Create new metrics record
+      updates[activityType] = value;
+      updates.user_id = currentUser.id;
+      updates.date = today;
+
+      await client
+        .from('activity_metrics')
+        .insert(updates);
+    }
+
+    // Update streaks
+    try {
+      await supabase.rpc('update_user_streak', {
+        p_user_id: currentUser.id,
+        p_streak_type: 'daily_activity'
+      });
+    } catch (e) {
+      console.log('Streak update skipped');
+    }
+
+    // Check for badges
+    try {
+      await supabase.rpc('check_and_award_badges', {
+        p_user_id: currentUser.id
+      });
+    } catch (e) {
+      console.log('Badge check skipped');
+    }
+
+    // Add to activity feed
+    const eventMessages = {
+      calls_made: 'Made a call',
+      quotes_sent: 'Sent a quote',
+      applications_sent: 'Sent an application',
+      policies_bound: 'Bound a policy',
+      follow_ups_completed: 'Completed a follow-up',
+      new_contacts_added: 'Added a new contact'
+    };
+
+    await client
+      .from('activity_feed')
+      .insert({
+        user_id: currentUser.id,
+        event_type: activityType,
+        event_data: { message: eventMessages[activityType] || 'Activity tracked' },
+        is_public: true
+      });
+
+  } catch (error) {
+    console.error('Error tracking activity:', error);
+  }
+}
+
 // Register service worker for PWA functionality
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
