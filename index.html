@@ -1598,19 +1598,17 @@ body[data-density="titles-only"] .stage.completed .stage-label {
 
 </style>
 
-<!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-N5DXZ4MC');</script>
-<!-- End Google Tag Manager -->
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LR45SLYLWB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-LR45SLYLWB');
+</script>
 </head>
 <body>
-<!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N5DXZ4MC"
-height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<!-- End Google Tag Manager (noscript) -->
 <div class="app" id="appRoot">
   <!-- ===== DRAG ZONES ===== -->
   <div class="sidebar-drag-zone left" id="leftDragZone"></div>
@@ -4166,7 +4164,34 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   function allRows(){ return $all('#todayList .row, #list .row, #scheduledList .row'); }
   var selectionIndex=0;
   function setSelectedRowById(id){ var rows=allRows(); var idx=rows.findIndex(function(r){return r.dataset.id===id;}); if(idx>=0){ selectionIndex=idx; restoreSelection(); } }
-  function restoreSelection(){ var rows=allRows(); rows.forEach(function(r){ r.classList.remove('selected'); }); if(!rows.length) return; if(selectionIndex<0) selectionIndex=0; if(selectionIndex>=rows.length) selectionIndex=0; rows[selectionIndex].classList.add('selected'); rows[selectionIndex].scrollIntoView({block:'nearest'}); }
+  function restoreSelection(){
+    var rows=allRows();
+    rows.forEach(function(r){ r.classList.remove('selected'); });
+    if(!rows.length) return;
+
+    // Track if we're wrapping from bottom to top
+    var wrappingToTop = selectionIndex >= rows.length;
+    // Track if we're wrapping from top to bottom
+    var wrappingToBottom = selectionIndex < 0;
+
+    if(selectionIndex<0) selectionIndex=rows.length-1;
+    if(selectionIndex>=rows.length) selectionIndex=0;
+
+    rows[selectionIndex].classList.add('selected');
+
+    // If we wrapped to the top, scroll to top of page
+    if(wrappingToTop && selectionIndex === 0) {
+      window.scrollTo({top: 0, behavior: 'smooth'});
+    }
+    // If we wrapped to bottom, scroll to show the row
+    else if(wrappingToBottom && selectionIndex === rows.length-1) {
+      rows[selectionIndex].scrollIntoView({block: 'center', behavior: 'smooth'});
+    }
+    // Normal scrolling
+    else {
+      rows[selectionIndex].scrollIntoView({block:'nearest'});
+    }
+  }
   function getSelectedClient(){ var rows=allRows(); if(!rows.length) return null; var id=rows[selectionIndex] && rows[selectionIndex].dataset.id; return (state && state.clients) ? state.clients.find(function(c){return c.id===id;}) : null; }
 
   /* Activity / chart / heatmap */
