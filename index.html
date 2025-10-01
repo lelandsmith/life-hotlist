@@ -5483,6 +5483,44 @@ body[data-density="titles-only"] .stage.completed .stage-label {
   /* Power Hour */
   var hopTimer=null, hopRemaining=60*60, hopRunning=false, hopCallCount=0, originalTitle = document.title;
 
+  function savePowerHourState(){
+    var state = {
+      remaining: hopRemaining,
+      running: hopRunning,
+      callCount: hopCallCount,
+      startTime: hopRunning ? Date.now() : null
+    };
+    localStorage.setItem('powerHourState', JSON.stringify(state));
+  }
+
+  function loadPowerHourState(){
+    try {
+      var saved = localStorage.getItem('powerHourState');
+      if(saved){
+        var state = JSON.parse(saved);
+        hopRemaining = state.remaining || 60*60;
+        hopCallCount = state.callCount || 0;
+
+        // If timer was running, calculate elapsed time since save
+        if(state.running && state.startTime){
+          var elapsed = Math.floor((Date.now() - state.startTime) / 1000);
+          hopRemaining = Math.max(0, hopRemaining - elapsed);
+
+          // If time hasn't run out, restart the timer
+          if(hopRemaining > 0){
+            hopRunning = true;
+            startPowerHourTimer();
+          }
+        }
+
+        updateHopCalls(hopCallCount);
+        renderHOP();
+      }
+    } catch(e){
+      console.error('Failed to load power hour state:', e);
+    }
+  }
+
   function renderHOP(){
     if(!els.hopClock) return;
     var h=Math.floor(hopRemaining/3600), m=Math.floor((hopRemaining%3600)/60), s=hopRemaining%60;
@@ -5504,27 +5542,37 @@ body[data-density="titles-only"] .stage.completed .stage-label {
     hopCallCount = count;
     if(els.hopCalls) els.hopCalls.textContent = count;
     if(hopRunning) renderHOP(); // Update tab title
+    savePowerHourState();
+  }
+
+  function startPowerHourTimer(){
+    if(hopTimer) clearInterval(hopTimer);
+    hopTimer=setInterval(function(){
+      hopRemaining=Math.max(0, hopRemaining-1);
+      renderHOP();
+      savePowerHourState();
+      if(hopRemaining===0){
+        clearInterval(hopTimer);
+        hopRunning=false;
+        document.title = originalTitle;
+        savePowerHourState();
+      }
+    },1000);
   }
 
   if(els.hopStart) els.hopStart.addEventListener('click', function(){
     if(hopRunning) return;
     hopRunning=true;
     requestNotificationPermission(); // Request permission when starting timer
-    hopTimer=setInterval(function(){
-      hopRemaining=Math.max(0, hopRemaining-1);
-      renderHOP();
-      if(hopRemaining===0){
-        clearInterval(hopTimer);
-        hopRunning=false;
-        document.title = originalTitle; // Reset title
-      }
-    },1000);
+    savePowerHourState();
+    startPowerHourTimer();
   });
 
   if(els.hopPause) els.hopPause.addEventListener('click', function(){
     hopRunning=false;
     clearInterval(hopTimer);
     document.title = originalTitle; // Reset title
+    savePowerHourState();
   });
 
   if(els.hopReset) els.hopReset.addEventListener('click', function(){
@@ -5535,6 +5583,7 @@ body[data-density="titles-only"] .stage.completed .stage-label {
     updateHopCalls(0);
     renderHOP();
     document.title = originalTitle; // Reset title
+    savePowerHourState();
   });
 
   /* Modal functions */
@@ -6810,6 +6859,7 @@ body[data-density="titles-only"] .stage.completed .stage-label {
     renderQuote(false);
     scheduleQuoteTimer();
     renderDailyOutreach();
+    loadPowerHourState(); // Restore power hour state from previous session
 
     // Calendar View Button handler
     if(els.calendarViewBtn){
