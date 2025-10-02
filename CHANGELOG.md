@@ -2,6 +2,15 @@
 
 All notable changes to Life Hotlist will be documented in this file.
 
+## [2.5.3] - 2025-01-23
+
+### Added
+- **Interaction History Display**: Shows last 5 interactions with timestamps when editing client notes
+  - Displays below notes textarea in a subtle, glanceable format
+  - Shows "today's time" for today, "Yesterday" for yesterday, or "MM/DD/YY" for older dates
+  - Only appears when client has interaction history
+  - Provides quick context on recent client activity
+
 ## [2.5.2] - 2025-01-23
 
 ### Fixed
