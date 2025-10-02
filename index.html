@@ -721,6 +721,12 @@ body[data-density="titles-only"] .stage-time-metric { display: none; }
   min-height:64px;resize:vertical;padding:10px;border-radius:12px;background:#fff;
   box-shadow:inset 0 1px 0 rgba(15,23,42,.04)
 }
+.interaction-history{margin-top:8px;padding:8px 10px;background:#f8fafc;border-radius:8px;font-size:11px;color:#64748b}
+.interaction-history-title{font-weight:600;margin-bottom:6px;color:#475569;font-size:10px;text-transform:uppercase;letter-spacing:0.5px}
+.interaction-item{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #e2e8f0}
+.interaction-item:last-child{border-bottom:none}
+.interaction-action{color:#334155}
+.interaction-time{color:#94a3b8;font-size:10px}
 .hidden{display:none}
 
 /* Aging & touched badges */
@@ -4003,7 +4009,58 @@ body[data-density="titles-only"] .stage.completed .stage-label {
         ta.blur();
       }
     });
-    notesWrap.appendChild(ta); mid.appendChild(notesWrap);
+    notesWrap.appendChild(ta);
+
+    // Add interaction history if there's any history
+    if(c.history && c.history.length > 0){
+      var historyDiv = document.createElement('div');
+      historyDiv.className = 'interaction-history';
+
+      var title = document.createElement('div');
+      title.className = 'interaction-history-title';
+      title.textContent = 'Recent interactions';
+      historyDiv.appendChild(title);
+
+      // Get last 5 interactions, sorted by most recent first
+      var recentHistory = c.history.slice().sort(function(a,b){
+        return new Date(b.ts) - new Date(a.ts);
+      }).slice(0, 5);
+
+      recentHistory.forEach(function(h){
+        var item = document.createElement('div');
+        item.className = 'interaction-item';
+
+        var action = document.createElement('span');
+        action.className = 'interaction-action';
+        var actionText = h.action === 'stage' ? h.to : h.to;
+        action.textContent = actionText;
+
+        var time = document.createElement('span');
+        time.className = 'interaction-time';
+        var date = new Date(h.ts);
+        var now = new Date();
+        var isToday = date.toDateString() === now.toDateString();
+        var yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        var isYesterday = date.toDateString() === yesterday.toDateString();
+
+        if(isToday){
+          time.textContent = date.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
+        } else if(isYesterday){
+          time.textContent = 'Yesterday';
+        } else {
+          time.textContent = (date.getMonth() + 1) + '/' + date.getDate() + '/' + date.getFullYear().toString().slice(-2);
+        }
+
+        item.appendChild(action);
+        item.appendChild(time);
+        historyDiv.appendChild(item);
+      });
+
+      notesWrap.appendChild(historyDiv);
+    }
+
+    mid.appendChild(notesWrap);
 
     if(false) { // Removed ultra-compact logic
       // Ultra-compact: actions-section | tags-section
