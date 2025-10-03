@@ -1622,6 +1622,8 @@ body[data-density="titles-only"] .stage.completed .stage-label {
 .ql-editor {
   font-size: 15px;
   line-height: 1.8;
+  min-height: 500px;
+  max-height: none;
 }
 
 /* Custom labels for Quill font size dropdown */
@@ -2196,7 +2198,7 @@ body[data-density="titles-only"] .stage.completed .stage-label {
   /* Storage helper functions */
 
   /* Stable state */
-  function coerceState(x){ var out={clients:[], quotes:{raw:'', list:[]}, quotesSettings:{interval:15, random:true, norepeat:true, recent:[]} }; if(!x) return out; if(Array.isArray(x)){ out.clients=x; return normalize(out); } if(typeof x==='object'){ if(Array.isArray(x.clients)) out.clients=x.clients; if(x.quotes) out.quotes=x.quotes; if(x.quotesSettings) out.quotesSettings=x.quotesSettings; return normalize(out);} return out; }
+  function coerceState(x){ var out={clients:[], quotes:{raw:'', list:[]}, quotesSettings:{interval:15, random:true, norepeat:true, recent:[]}, contextNotes:{} }; if(!x) return out; if(Array.isArray(x)){ out.clients=x; return normalize(out); } if(typeof x==='object'){ if(Array.isArray(x.clients)) out.clients=x.clients; if(x.quotes) out.quotes=x.quotes; if(x.quotesSettings) out.quotesSettings=x.quotesSettings; if(x.contextNotes) out.contextNotes=x.contextNotes; return normalize(out);} return out; }
   function normalize(state){
     state.clients=(state.clients||[]).map(function(c){
       return {
@@ -2265,7 +2267,7 @@ body[data-density="titles-only"] .stage.completed .stage-label {
     console.log('Data saved to localStorage');
   }
   /* Initialize storage and load state */
-  var state = {clients:[], quotes:{raw:'', list:[]}, quotesSettings:{interval:15, random:true, norepeat:true, recent:[]}}; // Default state to prevent null errors
+  var state = {clients:[], quotes:{raw:'', list:[]}, quotesSettings:{interval:15, random:true, norepeat:true, recent:[]}, contextNotes:{}}; // Default state to prevent null errors
   var storageReady = Promise.resolve().then(function() {
     // IndexedDB removed - using localStorage only
     return Promise.resolve();
@@ -5502,6 +5504,21 @@ body[data-density="titles-only"] .stage.completed .stage-label {
       // Store quill instance for access in other functions
       var container = document.getElementById('contextNotesModal');
       if(container) container.quillInstance = quill;
+
+      // Attach event handlers after Quill is initialized
+      var noteTitle = document.getElementById('noteTitle');
+      console.log('Attaching event handlers', {noteTitle: noteTitle, quill: quill});
+      if(noteTitle){
+        noteTitle.addEventListener('input', saveCurrentNote);
+        console.log('Title input handler attached');
+      }
+      if(quill){
+        quill.on('text-change', function(delta, oldDelta, source){
+          console.log('Quill text-change event fired', {source: source});
+          saveCurrentNote();
+        });
+        console.log('Quill text-change handler attached');
+      }
     }
 
     // Add to DOM first, then render
@@ -5514,10 +5531,16 @@ body[data-density="titles-only"] .stage.completed .stage-label {
       var noteTitle = document.getElementById('noteTitle');
       var container = document.getElementById('contextNotesModal');
       var quill = container ? container.quillInstance : null;
+      console.log('saveCurrentNote called', {noteTitle: noteTitle, container: container, quill: quill});
       if(noteTitle && quill){
+        var content = quill.root.innerHTML;
+        console.log('Saving content:', content);
         state.contextNotes[currentContext][currentTabIndex].title = noteTitle.value;
-        state.contextNotes[currentContext][currentTabIndex].content = quill.root.innerHTML;
+        state.contextNotes[currentContext][currentTabIndex].content = content;
         save(state);
+        console.log('Content saved to state:', state.contextNotes[currentContext][currentTabIndex]);
+      } else {
+        console.log('Save failed - missing noteTitle or quill');
       }
     }
 
@@ -5530,7 +5553,6 @@ body[data-density="titles-only"] .stage.completed .stage-label {
         saveCurrentNote();
         currentTabIndex = parseInt(target.closest('.context-note-tab').getAttribute('data-tab-index'));
         renderModal();
-        attachEventHandlers();
       }
 
       // Delete tab
@@ -5544,7 +5566,6 @@ body[data-density="titles-only"] .stage.completed .stage-label {
           }
           save(state);
           renderModal();
-          attachEventHandlers();
         }
       }
 
@@ -5560,9 +5581,13 @@ body[data-density="titles-only"] .stage.completed .stage-label {
           currentTabIndex = state.contextNotes[currentContext].length - 1;
           save(state);
           renderModal();
-          attachEventHandlers();
-          document.getElementById('noteTitle').focus();
-          document.getElementById('noteTitle').select();
+          setTimeout(function(){
+            var titleInput = document.getElementById('noteTitle');
+            if(titleInput){
+              titleInput.focus();
+              titleInput.select();
+            }
+          }, 0);
         }
       }
 
@@ -5586,23 +5611,6 @@ body[data-density="titles-only"] .stage.completed .stage-label {
         document.body.removeChild(modal);
       }
     });
-
-    function attachEventHandlers(){
-      var noteTitle = document.getElementById('noteTitle');
-      var container = document.getElementById('contextNotesModal');
-      var quill = container ? container.quillInstance : null;
-
-      if(noteTitle){
-        noteTitle.addEventListener('input', saveCurrentNote);
-      }
-      if(quill){
-        quill.on('text-change', function(){
-          saveCurrentNote();
-        });
-      }
-    }
-
-    attachEventHandlers();
 
     // Close on background click
     modal.addEventListener('click', function(e){
