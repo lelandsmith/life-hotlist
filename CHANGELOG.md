@@ -2,6 +2,29 @@
 
 All notable changes to Life Hotlist will be documented in this file.
 
+## [2.5.4] - 2025-01-23
+
+### Added
+- **Context Notes System**: Completely redesigned Essential Questions into flexible Context Notes
+  - Renamed from Essential Questions to Context Notes with new 📝 icon
+  - Tabbed interface supporting up to 10 notes per context
+  - Each tab has editable title and content area
+  - Add new tabs with green "+ Add Note" button
+  - Delete tabs with × button (minimum 1 tab required)
+  - Auto-save functionality - changes save as you type
+  - Larger modal width (85% default, expandable to 95%)
+  - Expand/Collapse button for width control
+  - Perfect for scripts, questions, templates, and reference material
+- **Context-Specific Defaults**: Life context now includes two default tabs
+  - "Life App Questions" tab with essential application questions
+  - "Script" tab for sales scripts and talking points
+  - Other contexts get single "Essential Questions" tab
+- **Data Migration**: Automatic migration from old Essential Questions format
+
+### Changed
+- Modal width increased from 700px to 1200px max width (85% viewport)
+- Text area height increased to 400px for better editing experience
+
 ## [2.5.3] - 2025-01-23
 
 ### Added

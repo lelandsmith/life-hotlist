@@ -1750,7 +1750,7 @@ body[data-density="titles-only"] .stage.completed .stage-label {
             <div id="sidebar-controls" style="display:flex; gap:2px;"></div>
             <button id="importBtn" class="btn-min gray" title="Import Clients" style="padding:4px 8px;">📥</button>
             <button id="exportBtn" class="btn-min gray" title="Export Clients" style="padding:4px 8px;">📤</button>
-            <button id="essentialQuestionsBtn" class="btn-min gray" title="Essential Questions" style="padding:4px 8px;">💡</button>
+            <button id="essentialQuestionsBtn" class="btn-min gray" title="Context Notes" style="padding:4px 8px;">📝</button>
           </div>
         </div>
       </div>
@@ -5291,13 +5291,54 @@ body[data-density="titles-only"] .stage.completed .stage-label {
     modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10001; display:flex; align-items:center; justify-content:center;';
 
     var content = document.createElement('div');
-    content.style.cssText = 'background:white; border-radius:12px; padding:24px; max-width:700px; width:90%; max-height:85vh; overflow-y:auto; box-shadow:0 10px 40px rgba(0,0,0,0.2);';
+    content.style.cssText = 'background:white; border-radius:12px; padding:24px; max-width:1200px; width:85%; max-height:85vh; overflow-y:auto; box-shadow:0 10px 40px rgba(0,0,0,0.2); position:relative;';
+    content.id = 'contextNotesModal';
 
-    // Load saved questions or use defaults
-    if(!state.essentialQuestions) state.essentialQuestions = {};
-    var currentQuestions = state.essentialQuestions[currentContext] || defaultEssentialQuestions[currentContext] || [];
+    // Initialize context notes structure
+    if(!state.contextNotes) state.contextNotes = {};
+    if(!state.contextNotes[currentContext]) state.contextNotes[currentContext] = [];
 
-    // Context titles
+    // Migrate old essentialQuestions to new format
+    if(state.essentialQuestions && state.essentialQuestions[currentContext] && state.contextNotes[currentContext].length === 0){
+      var oldQuestions = state.essentialQuestions[currentContext];
+      var content = oldQuestions.map(function(q){
+        return (q.icon ? q.icon + ' ' : '') + q.text;
+      }).join('\n');
+      state.contextNotes[currentContext].push({
+        id: 'note-' + Date.now(),
+        title: 'Essential Questions',
+        content: content
+      });
+      save(state);
+    }
+
+    // Ensure at least one note exists with context-specific defaults
+    if(state.contextNotes[currentContext].length === 0){
+      var defaultContent = '';
+      if(defaultEssentialQuestions[currentContext]){
+        defaultContent = defaultEssentialQuestions[currentContext].map(function(q){
+          return (q.icon ? q.icon + ' ' : '') + q.text;
+        }).join('\n');
+      }
+
+      // First tab - context-specific questions
+      var firstTabTitle = currentContext === 'life' ? 'Life App Questions' : 'Essential Questions';
+      state.contextNotes[currentContext].push({
+        id: 'note-' + Date.now(),
+        title: firstTabTitle,
+        content: defaultContent
+      });
+
+      // Second tab - Script (for life context only)
+      if(currentContext === 'life'){
+        state.contextNotes[currentContext].push({
+          id: 'note-' + Date.now() + 1,
+          title: 'Script',
+          content: ''
+        });
+      }
+    }
+
     var contextTitles = {
       life: 'Life Application',
       home_auto: 'Home & Auto',
@@ -5307,117 +5348,148 @@ body[data-density="titles-only"] .stage.completed .stage-label {
     };
 
     var title = contextTitles[currentContext] || 'Context';
+    var currentTabIndex = 0;
+    var isExpanded = false;
 
-    var html = '<h2 style="margin-top:0; color:#333; font-size:20px;">' + title + ' Essential Questions</h2>';
-    html += '<p style="color:#666; margin-bottom:20px; font-size:14px;">💡 Essential questions to remember for ' + title.toLowerCase() + ':</p>';
+    function renderModal(){
+      var notes = state.contextNotes[currentContext];
+      var html = '';
 
-    // Editable area
-    html += '<div id="questionsDisplay" style="line-height:1.8; margin-bottom:20px;">';
-    currentQuestions.forEach(function(q, index){
-      html += '<div style="margin-bottom:12px; display:flex; align-items:start; gap:10px;">';
-      html += '<span style="font-size:20px; flex-shrink:0;">' + (q.icon || '•') + '</span>';
-      html += '<span style="color:#444; flex:1; padding-top:2px;">' + q.text + '</span>';
+      // Header with expand buttons
+      html += '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">';
+      html += '<h2 style="margin:0; color:#333; font-size:20px;">' + title + ' Notes</h2>';
+      html += '<div style="display:flex; gap:8px; align-items:center;">';
+      html += '<button id="expandBtn" style="padding:4px 12px; background:#f3f4f6; color:#374151; border:1px solid #e5e7eb; border-radius:6px; cursor:pointer; font-size:12px;">↔ Expand</button>';
+      html += '<button id="closeContextNotes" style="padding:6px 16px; background:#3b82f6; color:white; border:none; border-radius:6px; cursor:pointer; font-size:14px;">Close</button>';
       html += '</div>';
-    });
-    html += '</div>';
+      html += '</div>';
 
-    // Edit mode (initially hidden)
-    html += '<div id="questionsEditor" style="display:none; margin-bottom:20px;">';
-    html += '<textarea id="questionsTextarea" style="width:100%; min-height:300px; padding:12px; border:2px solid #e5e7eb; border-radius:8px; font-size:13px; line-height:1.8; font-family:-apple-system, BlinkMacSystemFont, sans-serif;" placeholder="Enter one question per line\nOptionally start with an emoji followed by space">';
-    html += '</textarea>';
-    html += '<p style="color:#9ca3af; font-size:12px; margin-top:8px;">💡 Format: [emoji] Question text (one per line)</p>';
-    html += '</div>';
+      // Tabs
+      html += '<div style="display:flex; gap:4px; margin-bottom:16px; border-bottom:2px solid #e5e7eb; overflow-x:auto;">';
+      notes.forEach(function(note, index){
+        var isActive = index === currentTabIndex;
+        html += '<div style="display:flex; align-items:center; gap:6px; padding:8px 12px; cursor:pointer; background:' + (isActive ? '#3b82f6' : '#f3f4f6') + '; color:' + (isActive ? 'white' : '#374151') + '; border-radius:6px 6px 0 0; font-size:13px; white-space:nowrap; position:relative;" data-tab-index="' + index + '" class="context-note-tab">';
+        html += '<span class="tab-title-text">' + note.title + '</span>';
+        if(notes.length > 1){
+          html += '<span style="margin-left:4px; cursor:pointer; opacity:0.7; hover:opacity:1;" data-delete-tab="' + index + '">✕</span>';
+        }
+        html += '</div>';
+      });
 
-    // Buttons
-    html += '<div style="display:flex; gap:8px; justify-content:space-between;">';
-    html += '<div>';
-    html += '<button id="editQuestionsBtn" style="padding:8px 16px; background:#f3f4f6; color:#374151; border:1px solid #e5e7eb; border-radius:6px; cursor:pointer; font-size:13px;">Edit</button>';
-    html += '<button id="saveQuestionsBtn" style="display:none; padding:8px 16px; background:#f3f4f6; color:#059669; border:1px solid #d1fae5; border-radius:6px; cursor:pointer; font-size:13px; margin-left:8px;">Save</button>';
-    html += '<button id="cancelEditBtn" style="display:none; padding:8px 16px; background:#fff; color:#6b7280; border:1px solid #e5e7eb; border-radius:6px; cursor:pointer; font-size:13px; margin-left:8px;">Cancel</button>';
-    html += '</div>';
-    html += '<button id="closeEssentialQuestions" style="padding:8px 20px; background:#3b82f6; color:white; border:none; border-radius:6px; cursor:pointer; font-size:14px;">Close</button>';
-    html += '</div>';
+      if(notes.length < 10){
+        html += '<button id="addNoteTabBtn" style="padding:8px 12px; background:#10b981; color:white; border:none; border-radius:6px 6px 0 0; cursor:pointer; font-size:13px; font-weight:600;">+ Add Note</button>';
+      }
+      html += '</div>';
 
-    content.innerHTML = html;
+      // Current tab content
+      var currentNote = notes[currentTabIndex];
+      html += '<div style="margin-bottom:16px;">';
+      html += '<input type="text" id="noteTitle" value="' + (currentNote.title || '') + '" placeholder="Note title..." style="width:100%; padding:8px 12px; border:2px solid #e5e7eb; border-radius:6px; font-size:14px; font-weight:600; margin-bottom:12px;">';
+      html += '<textarea id="noteContent" style="width:100%; min-height:400px; padding:12px; border:2px solid #e5e7eb; border-radius:8px; font-size:13px; line-height:1.8; font-family:-apple-system, BlinkMacSystemFont, sans-serif; resize:vertical;" placeholder="Enter your notes, scripts, questions, or any content here...">' + (currentNote.content || '') + '</textarea>';
+      html += '</div>';
+
+      content.innerHTML = html;
+    }
+
+    renderModal();
     modal.appendChild(content);
     document.body.appendChild(modal);
 
-    // Load current questions into textarea
-    var textarea = document.getElementById('questionsTextarea');
-    if(textarea){
-      var textContent = currentQuestions.map(function(q){
-        return (q.icon ? q.icon + ' ' : '') + q.text;
-      }).join('\n');
-      textarea.value = textContent;
+    // Auto-save content changes
+    function saveCurrentNote(){
+      var noteTitle = document.getElementById('noteTitle');
+      var noteContent = document.getElementById('noteContent');
+      if(noteTitle && noteContent){
+        state.contextNotes[currentContext][currentTabIndex].title = noteTitle.value;
+        state.contextNotes[currentContext][currentTabIndex].content = noteContent.value;
+        save(state);
+      }
     }
 
-    // Edit button handler
-    document.getElementById('editQuestionsBtn').addEventListener('click', function(){
-      document.getElementById('questionsDisplay').style.display = 'none';
-      document.getElementById('questionsEditor').style.display = 'block';
-      document.getElementById('editQuestionsBtn').style.display = 'none';
-      document.getElementById('saveQuestionsBtn').style.display = 'inline-block';
-      document.getElementById('cancelEditBtn').style.display = 'inline-block';
-      textarea.focus();
-    });
+    // Event delegation for all interactive elements
+    content.addEventListener('click', function(e){
+      var target = e.target;
 
-    // Cancel edit handler
-    document.getElementById('cancelEditBtn').addEventListener('click', function(){
-      document.getElementById('questionsDisplay').style.display = 'block';
-      document.getElementById('questionsEditor').style.display = 'none';
-      document.getElementById('editQuestionsBtn').style.display = 'inline-block';
-      document.getElementById('saveQuestionsBtn').style.display = 'none';
-      document.getElementById('cancelEditBtn').style.display = 'none';
-    });
+      // Tab switching
+      if(target.closest('.context-note-tab') && !target.getAttribute('data-delete-tab')){
+        saveCurrentNote();
+        currentTabIndex = parseInt(target.closest('.context-note-tab').getAttribute('data-tab-index'));
+        renderModal();
+        attachEventHandlers();
+      }
 
-    // Save handler
-    document.getElementById('saveQuestionsBtn').addEventListener('click', function(){
-      var lines = textarea.value.split('\n').filter(function(line){
-        return line.trim().length > 0;
-      });
-
-      var newQuestions = lines.map(function(line){
-        var trimmed = line.trim();
-        // Check if line starts with an emoji
-        var emojiMatch = trimmed.match(/^(\p{Emoji})\s+(.+)$/u);
-        if(emojiMatch){
-          return {icon: emojiMatch[1], text: emojiMatch[2]};
+      // Delete tab
+      if(target.getAttribute('data-delete-tab')){
+        e.stopPropagation();
+        var deleteIndex = parseInt(target.getAttribute('data-delete-tab'));
+        if(state.contextNotes[currentContext].length > 1){
+          state.contextNotes[currentContext].splice(deleteIndex, 1);
+          if(currentTabIndex >= state.contextNotes[currentContext].length){
+            currentTabIndex = state.contextNotes[currentContext].length - 1;
+          }
+          save(state);
+          renderModal();
+          attachEventHandlers();
         }
-        // No emoji, just text
-        return {icon: '•', text: trimmed};
-      });
+      }
 
-      // Save to state
-      if(!state.essentialQuestions) state.essentialQuestions = {};
-      state.essentialQuestions[currentContext] = newQuestions;
-      save(state);
+      // Add note tab
+      if(target.id === 'addNoteTabBtn'){
+        if(state.contextNotes[currentContext].length < 10){
+          saveCurrentNote();
+          state.contextNotes[currentContext].push({
+            id: 'note-' + Date.now(),
+            title: 'New Note',
+            content: ''
+          });
+          currentTabIndex = state.contextNotes[currentContext].length - 1;
+          save(state);
+          renderModal();
+          attachEventHandlers();
+          document.getElementById('noteTitle').focus();
+          document.getElementById('noteTitle').select();
+        }
+      }
 
-      // Update display
-      var displayHtml = '';
-      newQuestions.forEach(function(q){
-        displayHtml += '<div style="margin-bottom:12px; display:flex; align-items:start; gap:10px;">';
-        displayHtml += '<span style="font-size:20px; flex-shrink:0;">' + (q.icon || '•') + '</span>';
-        displayHtml += '<span style="color:#444; flex:1; padding-top:2px;">' + q.text + '</span>';
-        displayHtml += '</div>';
-      });
-      document.getElementById('questionsDisplay').innerHTML = displayHtml;
+      // Expand button
+      if(target.id === 'expandBtn'){
+        isExpanded = !isExpanded;
+        if(isExpanded){
+          content.style.maxWidth = '95%';
+          content.style.width = '95%';
+          target.textContent = '↔ Collapse';
+        } else {
+          content.style.maxWidth = '1200px';
+          content.style.width = '85%';
+          target.textContent = '↔ Expand';
+        }
+      }
 
-      // Switch back to display mode
-      document.getElementById('questionsDisplay').style.display = 'block';
-      document.getElementById('questionsEditor').style.display = 'none';
-      document.getElementById('editQuestionsBtn').style.display = 'inline-block';
-      document.getElementById('saveQuestionsBtn').style.display = 'none';
-      document.getElementById('cancelEditBtn').style.display = 'none';
+      // Close button
+      if(target.id === 'closeContextNotes'){
+        saveCurrentNote();
+        document.body.removeChild(modal);
+      }
     });
 
-    // Close button handler
-    document.getElementById('closeEssentialQuestions').addEventListener('click', function(){
-      document.body.removeChild(modal);
-    });
+    function attachEventHandlers(){
+      var noteTitle = document.getElementById('noteTitle');
+      var noteContent = document.getElementById('noteContent');
+
+      if(noteTitle){
+        noteTitle.addEventListener('input', saveCurrentNote);
+      }
+      if(noteContent){
+        noteContent.addEventListener('input', saveCurrentNote);
+      }
+    }
+
+    attachEventHandlers();
 
     // Close on background click
     modal.addEventListener('click', function(e){
       if(e.target === modal){
+        saveCurrentNote();
         document.body.removeChild(modal);
       }
     });
