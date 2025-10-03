@@ -1622,8 +1622,19 @@ body[data-density="titles-only"] .stage.completed .stage-label {
 .ql-editor {
   font-size: 15px;
   line-height: 1.8;
-  min-height: 500px;
+  min-height: 100%;
   max-height: none;
+}
+
+/* Make Quill container fill available space */
+#quillEditor {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+#quillEditor .ql-container {
+  flex: 1;
+  overflow-y: auto;
 }
 
 /* Custom labels for Quill font size dropdown */
@@ -5352,7 +5363,7 @@ body[data-density="titles-only"] .stage.completed .stage-label {
     modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10001; display:flex; align-items:flex-start; justify-content:center; padding-top:5vh;';
 
     var modalContent = document.createElement('div');
-    modalContent.style.cssText = 'background:white; border-radius:12px; padding:24px; max-width:1200px; width:85%; max-height:85vh; overflow-y:auto; box-shadow:0 10px 40px rgba(0,0,0,0.2); position:relative;';
+    modalContent.style.cssText = 'background:white; border-radius:12px; padding:24px; max-width:1200px; width:85%; height:90vh; overflow-y:auto; box-shadow:0 10px 40px rgba(0,0,0,0.2); position:relative; display:flex; flex-direction:column;';
     modalContent.id = 'contextNotesModal';
 
     // Initialize context notes structure
@@ -5465,9 +5476,9 @@ body[data-density="titles-only"] .stage.completed .stage-label {
 
       // Current tab content
       var currentNote = notes[currentTabIndex];
-      html += '<div style="margin-bottom:16px;">';
+      html += '<div style="flex:1; display:flex; flex-direction:column;">';
       html += '<input type="text" id="noteTitle" value="' + (currentNote.title || '') + '" placeholder="Note title..." style="width:100%; padding:8px 12px; border:2px solid #e5e7eb; border-radius:6px; font-size:14px; font-weight:600; margin-bottom:12px;">';
-      html += '<div id="quillEditor" style="background:white; border-radius:8px;"></div>';
+      html += '<div id="quillEditor" style="background:white; border-radius:8px; flex:1;"></div>';
       html += '</div>';
 
       container.innerHTML = html;
