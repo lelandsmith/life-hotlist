@@ -1613,6 +1613,97 @@ body[data-density="titles-only"] .stage.completed .stage-label {
 
   gtag('config', 'G-LR45SLYLWB');
 </script>
+
+<!-- Quill Rich Text Editor -->
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<style>
+/* Increase Quill editor font size by 2px and line height */
+.ql-editor {
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+/* Custom labels for Quill font size dropdown */
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="10px"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="10px"]::before {
+  content: '10px';
+}
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="12px"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="12px"]::before {
+  content: '12px';
+}
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="14px"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="14px"]::before {
+  content: '14px';
+}
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="15px"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="15px"]::before {
+  content: '15px';
+}
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="16px"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="16px"]::before {
+  content: '16px';
+}
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="18px"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="18px"]::before {
+  content: '18px';
+}
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="20px"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="20px"]::before {
+  content: '20px';
+}
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="24px"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="24px"]::before {
+  content: '24px';
+}
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="28px"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="28px"]::before {
+  content: '28px';
+}
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="32px"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="32px"]::before {
+  content: '32px';
+}
+
+/* Custom labels for Quill line height dropdown */
+.ql-snow .ql-picker.ql-line-height .ql-picker-label[data-value="1"]::before,
+.ql-snow .ql-picker.ql-line-height .ql-picker-item[data-value="1"]::before {
+  content: '1.0';
+}
+.ql-snow .ql-picker.ql-line-height .ql-picker-label[data-value="1.2"]::before,
+.ql-snow .ql-picker.ql-line-height .ql-picker-item[data-value="1.2"]::before {
+  content: '1.2';
+}
+.ql-snow .ql-picker.ql-line-height .ql-picker-label[data-value="1.5"]::before,
+.ql-snow .ql-picker.ql-line-height .ql-picker-item[data-value="1.5"]::before {
+  content: '1.5';
+}
+.ql-snow .ql-picker.ql-line-height .ql-picker-label[data-value="1.8"]::before,
+.ql-snow .ql-picker.ql-line-height .ql-picker-item[data-value="1.8"]::before {
+  content: '1.8';
+}
+.ql-snow .ql-picker.ql-line-height .ql-picker-label[data-value="2"]::before,
+.ql-snow .ql-picker.ql-line-height .ql-picker-item[data-value="2"]::before {
+  content: '2.0';
+}
+.ql-snow .ql-picker.ql-line-height .ql-picker-label[data-value="2.5"]::before,
+.ql-snow .ql-picker.ql-line-height .ql-picker-item[data-value="2.5"]::before {
+  content: '2.5';
+}
+.ql-snow .ql-picker.ql-line-height .ql-picker-label[data-value="3"]::before,
+.ql-snow .ql-picker.ql-line-height .ql-picker-item[data-value="3"]::before {
+  content: '3.0';
+}
+
+/* Default labels when nothing is selected */
+.ql-snow .ql-picker.ql-size .ql-picker-label:not([data-value])::before {
+  content: 'Size';
+}
+.ql-snow .ql-picker.ql-line-height .ql-picker-label:not([data-value])::before {
+  content: 'Line Height';
+}
+</style>
 </head>
 <body>
 <div class="app" id="appRoot">
@@ -5290,35 +5381,54 @@ body[data-density="titles-only"] .stage.completed .stage-label {
     var modal = document.createElement('div');
     modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10001; display:flex; align-items:center; justify-content:center;';
 
-    var content = document.createElement('div');
-    content.style.cssText = 'background:white; border-radius:12px; padding:24px; max-width:1200px; width:85%; max-height:85vh; overflow-y:auto; box-shadow:0 10px 40px rgba(0,0,0,0.2); position:relative;';
-    content.id = 'contextNotesModal';
+    var modalContent = document.createElement('div');
+    modalContent.style.cssText = 'background:white; border-radius:12px; padding:24px; max-width:1200px; width:85%; max-height:85vh; overflow-y:auto; box-shadow:0 10px 40px rgba(0,0,0,0.2); position:relative;';
+    modalContent.id = 'contextNotesModal';
 
     // Initialize context notes structure
     if(!state.contextNotes) state.contextNotes = {};
     if(!state.contextNotes[currentContext]) state.contextNotes[currentContext] = [];
 
+    // Helper function to convert plain text to HTML
+    function textToHtml(text){
+      if(!text) return '';
+      // If it already contains HTML tags, return as-is
+      if(/<[^>]+>/.test(text)) return text;
+      // Convert plain text to HTML paragraphs
+      return '<p>' + text.split('\n').filter(function(line){
+        return line.trim();
+      }).join('</p><p>') + '</p>';
+    }
+
     // Migrate old essentialQuestions to new format
     if(state.essentialQuestions && state.essentialQuestions[currentContext] && state.contextNotes[currentContext].length === 0){
       var oldQuestions = state.essentialQuestions[currentContext];
-      var content = oldQuestions.map(function(q){
+      var plainText = oldQuestions.map(function(q){
         return (q.icon ? q.icon + ' ' : '') + q.text;
       }).join('\n');
       state.contextNotes[currentContext].push({
         id: 'note-' + Date.now(),
         title: 'Essential Questions',
-        content: content
+        content: textToHtml(plainText)
       });
       save(state);
     }
+
+    // Migrate plain text content to HTML in existing notes
+    state.contextNotes[currentContext].forEach(function(note){
+      if(note.content && !/<[^>]+>/.test(note.content)){
+        note.content = textToHtml(note.content);
+      }
+    });
 
     // Ensure at least one note exists with context-specific defaults
     if(state.contextNotes[currentContext].length === 0){
       var defaultContent = '';
       if(defaultEssentialQuestions[currentContext]){
-        defaultContent = defaultEssentialQuestions[currentContext].map(function(q){
+        var plainText = defaultEssentialQuestions[currentContext].map(function(q){
           return (q.icon ? q.icon + ' ' : '') + q.text;
         }).join('\n');
+        defaultContent = textToHtml(plainText);
       }
 
       // First tab - context-specific questions
@@ -5354,6 +5464,8 @@ body[data-density="titles-only"] .stage.completed .stage-label {
     function renderModal(){
       var notes = state.contextNotes[currentContext];
       var html = '';
+      var container = document.getElementById('contextNotesModal');
+      if(!container) return; // Safety check
 
       // Header with expand buttons
       html += '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">';
@@ -5385,29 +5497,75 @@ body[data-density="titles-only"] .stage.completed .stage-label {
       var currentNote = notes[currentTabIndex];
       html += '<div style="margin-bottom:16px;">';
       html += '<input type="text" id="noteTitle" value="' + (currentNote.title || '') + '" placeholder="Note title..." style="width:100%; padding:8px 12px; border:2px solid #e5e7eb; border-radius:6px; font-size:14px; font-weight:600; margin-bottom:12px;">';
-      html += '<textarea id="noteContent" style="width:100%; min-height:400px; padding:12px; border:2px solid #e5e7eb; border-radius:8px; font-size:13px; line-height:1.8; font-family:-apple-system, BlinkMacSystemFont, sans-serif; resize:vertical;" placeholder="Enter your notes, scripts, questions, or any content here...">' + (currentNote.content || '') + '</textarea>';
+      html += '<div id="quillEditor" style="background:white; border-radius:8px;"></div>';
       html += '</div>';
 
-      content.innerHTML = html;
+      container.innerHTML = html;
+
+      // Initialize Quill editor
+      var Size = Quill.import('attributors/style/size');
+      Size.whitelist = ['10px', '12px', '14px', '15px', '16px', '18px', '20px', '24px', '28px', '32px'];
+      Quill.register(Size, true);
+
+      var LineHeight = Quill.import('attributors/style/line-height');
+      if(!LineHeight){
+        var Parchment = Quill.import('parchment');
+        var LineHeightAttributor = new Parchment.Attributor.Style('line-height', 'line-height', {
+          scope: Parchment.Scope.INLINE,
+          whitelist: ['1', '1.2', '1.5', '1.8', '2', '2.5', '3']
+        });
+        Quill.register(LineHeightAttributor, true);
+      }
+
+      var quill = new Quill('#quillEditor', {
+        theme: 'snow',
+        modules: {
+          toolbar: {
+            container: [
+              [{ 'header': [1, 2, 3, false] }],
+              [{ 'size': [false, '10px', '12px', '14px', '15px', '16px', '18px', '20px', '24px', '28px', '32px'] }],
+              ['bold', 'italic', 'underline', 'strike'],
+              [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+              [{ 'color': [] }, { 'background': [] }],
+              [{ 'line-height': [false, '1', '1.2', '1.5', '1.8', '2', '2.5', '3'] }],
+              ['link', 'image'],
+              ['clean']
+            ],
+            handlers: {}
+          }
+        },
+        placeholder: 'Enter your notes, scripts, questions, or any content here...'
+      });
+
+      // Set initial content
+      if(currentNote.content){
+        quill.root.innerHTML = currentNote.content;
+      }
+
+      // Store quill instance for access in other functions
+      var container = document.getElementById('contextNotesModal');
+      if(container) container.quillInstance = quill;
     }
 
-    renderModal();
-    modal.appendChild(content);
+    // Add to DOM first, then render
+    modal.appendChild(modalContent);
     document.body.appendChild(modal);
+    renderModal();
 
     // Auto-save content changes
     function saveCurrentNote(){
       var noteTitle = document.getElementById('noteTitle');
-      var noteContent = document.getElementById('noteContent');
-      if(noteTitle && noteContent){
+      var container = document.getElementById('contextNotesModal');
+      var quill = container ? container.quillInstance : null;
+      if(noteTitle && quill){
         state.contextNotes[currentContext][currentTabIndex].title = noteTitle.value;
-        state.contextNotes[currentContext][currentTabIndex].content = noteContent.value;
+        state.contextNotes[currentContext][currentTabIndex].content = quill.root.innerHTML;
         save(state);
       }
     }
 
     // Event delegation for all interactive elements
-    content.addEventListener('click', function(e){
+    modalContent.addEventListener('click', function(e){
       var target = e.target;
 
       // Tab switching
@@ -5455,12 +5613,12 @@ body[data-density="titles-only"] .stage.completed .stage-label {
       if(target.id === 'expandBtn'){
         isExpanded = !isExpanded;
         if(isExpanded){
-          content.style.maxWidth = '95%';
-          content.style.width = '95%';
+          modalContent.style.maxWidth = '95%';
+          modalContent.style.width = '95%';
           target.textContent = '↔ Collapse';
         } else {
-          content.style.maxWidth = '1200px';
-          content.style.width = '85%';
+          modalContent.style.maxWidth = '1200px';
+          modalContent.style.width = '85%';
           target.textContent = '↔ Expand';
         }
       }
@@ -5474,13 +5632,16 @@ body[data-density="titles-only"] .stage.completed .stage-label {
 
     function attachEventHandlers(){
       var noteTitle = document.getElementById('noteTitle');
-      var noteContent = document.getElementById('noteContent');
+      var container = document.getElementById('contextNotesModal');
+      var quill = container ? container.quillInstance : null;
 
       if(noteTitle){
         noteTitle.addEventListener('input', saveCurrentNote);
       }
-      if(noteContent){
-        noteContent.addEventListener('input', saveCurrentNote);
+      if(quill){
+        quill.on('text-change', function(){
+          saveCurrentNote();
+        });
       }
     }
 
@@ -6312,6 +6473,9 @@ body[data-density="titles-only"] .stage.completed .stage-label {
   document.addEventListener('keydown', function(e){
     // Skip if dropdown is active (dropdown handler will process)
     if(activeDropdown) return;
+
+    // Skip if context notes modal is open
+    if(document.getElementById('contextNotesModal')) return;
 
     var tag=(document.activeElement && document.activeElement.tagName)||'';
 
