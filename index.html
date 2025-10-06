@@ -453,9 +453,15 @@ body[data-font-size="xlarge"] .row .sbtn.s-hot .ico { font-size: 24px; }
 .status-icons{display:flex;gap:6px;align-items:center;flex:0 0 auto}
 .status-icon{font-size:22px;line-height:1}
 .notes-preview{
-  font-size:12px;color:#6b7390;margin-top:2px;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  margin-left:11px;max-width:100%;
+  font-size:11px;
+  color:#94a3b8;
+  margin-top:6px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width:600px;
+  font-style:italic;
+  opacity:0.85;
 }
 
 /* Action groups */
@@ -590,6 +596,7 @@ body[data-font-size="xlarge"] .row .sbtn.s-hot .ico { font-size: 24px; }
   text-align: center;
   position: relative;
   z-index: 1;
+  opacity: 0.7;
 }
 
 .status-tracker .stage-icon {
@@ -607,10 +614,18 @@ body[data-font-size="xlarge"] .row .sbtn.s-hot .ico { font-size: 24px; }
   cursor: pointer;
 }
 
+.status-tracker .stage.completed {
+  opacity: 0.8;
+}
+
 .status-tracker .stage.completed .stage-icon {
   border-color: var(--line);
   background: #10b981;
   transform: scale(1.05);
+}
+
+.status-tracker .stage.active {
+  opacity: 1;
 }
 
 .status-tracker .stage.active .stage-icon {
@@ -877,6 +892,36 @@ body[data-density="titles-only"] .stage-time-metric { display: none; }
     inset 0 2px 2px rgba(255,255,255,0.3),
     inset 0 -2px 2px rgba(0,0,0,0.1);
   border: 1px solid rgba(5,150,105,0.5);
+}
+.segment.hot-potential {
+  background: linear-gradient(135deg,
+    #fdba74 0%,
+    #fb923c 30%,
+    #f97316 60%,
+    #ea580c 100%);
+  box-shadow:
+    0 0 16px rgba(251,146,60,0.5),
+    0 2px 4px rgba(251,146,60,0.3),
+    inset 0 2px 2px rgba(255,255,255,0.3),
+    inset 0 -2px 2px rgba(0,0,0,0.1);
+  border: 1px solid rgba(249,115,22,0.5);
+  animation: glowPulse 2s ease-in-out infinite;
+}
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow:
+      0 0 16px rgba(251,146,60,0.5),
+      0 2px 4px rgba(251,146,60,0.3),
+      inset 0 2px 2px rgba(255,255,255,0.3),
+      inset 0 -2px 2px rgba(0,0,0,0.1);
+  }
+  50% {
+    box-shadow:
+      0 0 24px rgba(251,146,60,0.7),
+      0 2px 6px rgba(251,146,60,0.4),
+      inset 0 2px 2px rgba(255,255,255,0.3),
+      inset 0 -2px 2px rgba(0,0,0,0.1);
+  }
 }
 .segment.just-filled {
   animation: segmentFill 0.4s ease-out;
@@ -1749,24 +1794,28 @@ body[data-density="titles-only"] .stage.completed .stage-label {
         <div id="errorBanner" class="error-banner"></div>
 
         <!-- Daily Outreach Progress Bar -->
-        <div class="progress-stats">
-          <div class="stat-group">
-            <strong>Daily Outreach:</strong>
-            <span id="dailyOutreachLabel">0 / 10</span>
-            <div class="inline-progress" id="dailyOutreachBar">
-              <div class="progress-fill" id="dailyOutreachFill"></div>
+        <div style="position:relative;">
+          <div id="weeklyTab" style="position:absolute; top:-8px; left:280px; background:#3b82f6; color:white; padding:2px 8px; border-radius:4px 4px 0 0; font-size:10px; font-weight:600; z-index:1; cursor:pointer;" title="Click to see who you reached this week">
+            Week: <span id="weeklyUnique">0</span>
+          </div>
+          <div class="progress-stats">
+            <div class="stat-group">
+              <strong>Daily Outreach:</strong>
+              <span id="dailyOutreachLabel">0 / 10</span>
+              <div class="inline-progress" id="dailyOutreachBar">
+                <div class="progress-fill" id="dailyOutreachFill"></div>
+              </div>
             </div>
-          </div>
-          <div class="stat-separator">|</div>
-          <div class="stat-group">
-            <strong>Calls:</strong>
-            <span id="dailyCalls">0</span>
-          </div>
-          <div class="stat-separator">|</div>
-          <div class="stat-group">
-            <strong>Messages:</strong>
-            <span id="dailyMessages">0</span>
-          </div>
+            <div class="stat-separator">|</div>
+            <div class="stat-group">
+              <strong>Calls:</strong>
+              <span id="dailyCalls">0</span>
+            </div>
+            <div class="stat-separator">|</div>
+            <div class="stat-group">
+              <strong>Messages:</strong>
+              <span id="dailyMessages">0</span>
+            </div>
           <div class="stat-separator">|</div>
           <div class="stat-group">
             <strong>Goal:</strong>
@@ -1783,6 +1832,7 @@ body[data-density="titles-only"] .stage.completed .stage-label {
             <span style="color:#0e7a5a; margin-left:4px;" id="contextGoalMax">5</span>
             <input type="number" class="goal-input" id="monthlyAppsGoal" value="5" min="1" max="20" style="width:35px; padding:2px 4px; font-size:12px; margin-left:8px;">
             <button class="btn-save" id="saveMonthlyGoal" style="padding:2px 6px; margin-left:4px; font-size:11px;">Set</button>
+          </div>
           </div>
         </div>
 
@@ -2126,6 +2176,7 @@ body[data-density="titles-only"] .stage.completed .stage-label {
     dailyOutreachGoal:$('#dailyOutreachGoal'), dailyOutreachBar:$('#dailyOutreachBar'),
     dailyOutreachFill:$('#dailyOutreachFill'), dailyOutreachLabel:$('#dailyOutreachLabel'),
     dailyCalls:$('#dailyCalls'), dailyMessages:$('#dailyMessages'), saveDailyGoal:$('#saveDailyGoal'),
+    weeklyUnique:$('#weeklyUnique'),
     monthlyPurchases:$('#monthlyPurchases'), monthlyAppsGoal:$('#monthlyAppsGoal'),
     saveMonthlyGoal:$('#saveMonthlyGoal'),
     celebration:$('#celebration'), confettiContainer:$('#confettiContainer'),
@@ -3236,6 +3287,12 @@ body[data-density="titles-only"] .stage.completed .stage-label {
     if(state && state.clients) state.clients.forEach(function(c){
       if(!c.id) return; // Skip clients without ID
 
+      // Filter by current context (skip if not in 'all' and doesn't match current context)
+      if(currentContext !== 'all'){
+        var clientContext = getClientContext(c);
+        if(clientContext !== currentContext) return;
+      }
+
       var clientContactedToday = false;
       var clientCalls = 0;
       var clientMessages = 0;
@@ -3271,6 +3328,163 @@ body[data-density="titles-only"] .stage.completed .stage-label {
 
     // Return unique client count as total for daily outreach
     return {calls: totalCalls, messages: totalMessages, total: uniqueOutreach};
+  }
+
+  function getWeeklyOutreachCounts(){
+    // Get start of week (Sunday)
+    var now = new Date();
+    var weekStart = new Date(now);
+    weekStart.setDate(now.getDate() - now.getDay()); // Sunday
+    weekStart.setHours(0,0,0,0);
+    var weekEnd = new Date();
+    weekEnd.setHours(23,59,59,999);
+
+    var totalCalls = 0, totalMessages = 0;
+    var uniqueClientsContacted = {}; // Track unique clients contacted this week with details
+
+    if(state && state.clients) state.clients.forEach(function(c){
+      if(!c.id) return; // Skip clients without ID
+
+      // Filter by current context (skip if not in 'all' and doesn't match current context)
+      if(currentContext !== 'all'){
+        var clientContext = getClientContext(c);
+        if(clientContext !== currentContext) return;
+      }
+
+      var clientContactedThisWeek = false;
+      var clientCalls = 0;
+      var clientMessages = 0;
+      var latestStage = null;
+      var latestStageTime = null;
+
+      if(c.history){
+        c.history.forEach(function(h){
+          if(!h.ts) return;
+          var hTime = new Date(h.ts);
+          // Check if the history entry is from this week (in local time)
+          if(hTime >= weekStart && hTime <= weekEnd){
+            if(h.to === 'Called' || h.action === 'call'){
+              clientCalls++;
+              clientContactedThisWeek = true;
+            } else if(h.to === 'Emailed' || h.action === 'message'){
+              clientMessages++;
+              clientContactedThisWeek = true;
+            }
+            // Track the most recent stage change during this week
+            if(h.action === 'stage' && h.stage !== undefined && (!latestStageTime || hTime > latestStageTime)){
+              latestStage = h.stage;
+              latestStageTime = hTime;
+            }
+          }
+        });
+      }
+
+      // Track unique client if contacted this week
+      if(clientContactedThisWeek && c.id){
+        // Use the latest stage from the week, or current stage if no changes this week
+        var stageIndex = latestStage !== null ? latestStage : c.stage;
+        var stageIcon = '';
+
+        if(stageIndex >= 0){
+          var clientContext = getClientContext(c);
+          var contextConfig = CONTEXTS[clientContext];
+          if(contextConfig && contextConfig.stageIcons && contextConfig.stageIcons[stageIndex]){
+            stageIcon = contextConfig.stageIcons[stageIndex];
+          }
+        }
+
+        uniqueClientsContacted[c.id] = {
+          name: c.name,
+          calls: clientCalls,
+          messages: clientMessages,
+          stageIcon: stageIcon
+        };
+      }
+
+      // Add to total calls/messages
+      totalCalls += clientCalls;
+      totalMessages += clientMessages;
+    });
+
+    var uniqueOutreach = Object.keys(uniqueClientsContacted).length;
+
+    // Return unique client count as total for weekly outreach
+    return {calls: totalCalls, messages: totalMessages, total: uniqueOutreach, clients: uniqueClientsContacted};
+  }
+
+  function showWeeklyOutreachModal(){
+    var weeklyCounts = getWeeklyOutreachCounts();
+    var clients = weeklyCounts.clients;
+
+    var modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10001; display:flex; align-items:center; justify-content:center;';
+    modal.id = 'weeklyOutreachModal';
+
+    var modalContent = document.createElement('div');
+    modalContent.style.cssText = 'background:white; border-radius:12px; padding:24px; max-width:600px; width:90%; max-height:80vh; overflow-y:auto; box-shadow:0 10px 40px rgba(0,0,0,0.2); position:relative;';
+
+    var html = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">';
+    html += '<h2 style="margin:0; color:#333; font-size:20px;">This Week\'s Outreach</h2>';
+    html += '<button id="closeWeeklyModal" style="padding:6px 16px; background:#3b82f6; color:white; border:none; border-radius:6px; cursor:pointer; font-size:14px;">Close</button>';
+    html += '</div>';
+
+    html += '<div style="margin-bottom:16px; padding:12px; background:#f8fafc; border-radius:8px;">';
+    html += '<strong>Total Unique People Reached:</strong> ' + weeklyCounts.total;
+    html += ' | <strong>Total Calls:</strong> ' + weeklyCounts.calls;
+    html += ' | <strong>Total Messages:</strong> ' + weeklyCounts.messages;
+    html += '</div>';
+
+    if(Object.keys(clients).length === 0){
+      html += '<p style="color:#64748b; text-align:center; padding:20px;">No outreach this week yet.</p>';
+    } else {
+      html += '<div style="display:flex; flex-direction:column; gap:8px;">';
+
+      // Sort clients alphabetically
+      var sortedClients = Object.keys(clients).map(function(id){
+        return {id: id, data: clients[id]};
+      }).sort(function(a, b){
+        return a.data.name.localeCompare(b.data.name);
+      });
+
+      sortedClients.forEach(function(client){
+        var c = client.data;
+        html += '<div style="padding:12px; background:#f8fafc; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">';
+        html += '<div style="font-weight:600; color:#334155;">' + c.name + '</div>';
+        html += '<div style="display:flex; gap:16px; font-size:12px; color:#64748b;">';
+        if(c.calls > 0){
+          html += '<span>📞 ' + c.calls + ' call' + (c.calls > 1 ? 's' : '') + '</span>';
+        }
+        if(c.messages > 0){
+          html += '<span>💬 ' + c.messages + ' msg' + (c.messages > 1 ? 's' : '') + '</span>';
+        }
+        if(c.stageIcon){
+          html += '<span>' + c.stageIcon + '</span>';
+        }
+        html += '</div>';
+        html += '</div>';
+      });
+
+      html += '</div>';
+    }
+
+    modalContent.innerHTML = html;
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+
+    // Close button handler
+    var closeBtn = document.getElementById('closeWeeklyModal');
+    if(closeBtn){
+      closeBtn.addEventListener('click', function(){
+        document.body.removeChild(modal);
+      });
+    }
+
+    // Click outside to close
+    modal.addEventListener('click', function(e){
+      if(e.target === modal){
+        document.body.removeChild(modal);
+      }
+    });
   }
   
   function getOutreachCountForDate(date){
@@ -3318,10 +3532,31 @@ body[data-density="titles-only"] .stage.completed .stage-label {
     return count;
   }
 
+  function getHotClientsCount(){
+    var count = 0;
+
+    if(state && state.clients) state.clients.forEach(function(c){
+      // Check if client is in current context
+      var clientContext = getClientContext(c);
+      if(clientContext !== currentContext) return;
+
+      // Check if client is hot and not yet purchased
+      var contextConfig = CONTEXTS[clientContext];
+      var finalStage = contextConfig.stages.length - 1;
+      var isPurchased = c.stage === finalStage || c.status === 'Issued';
+
+      if(c.hot && !isPurchased && !c.archived){
+        count++;
+      }
+    });
+    return count;
+  }
+
   function renderDailyOutreach(){
     if(!els.dailyOutreachGoal || !els.dailyOutreachBar) return;
     var goal = Number(ui.dailyOutreachGoal || 10);
     var counts = getDailyOutreachCounts();
+    var weeklyCounts = getWeeklyOutreachCounts();
     var progress = Math.min(100, (counts.total / goal) * 100);
     var goalAchieved = counts.total >= goal && goal > 0;
     var today = new Date().toDateString();
@@ -3330,9 +3565,11 @@ body[data-density="titles-only"] .stage.completed .stage-label {
     if(els.dailyOutreachLabel) els.dailyOutreachLabel.textContent = counts.total + ' / ' + goal;
     if(els.dailyCalls) els.dailyCalls.textContent = String(counts.calls);
     if(els.dailyMessages) els.dailyMessages.textContent = String(counts.messages);
+    if(els.weeklyUnique) els.weeklyUnique.textContent = String(weeklyCounts.total);
 
     // Update monthly purchases/goal based on current context
     var monthlyAchievements = getMonthlyPurchases();
+    var hotClientsCount = getHotClientsCount();
 
     // Get the goal for current context (stored per context)
     if(!ui.contextGoals) ui.contextGoals = {};
@@ -3374,6 +3611,10 @@ body[data-density="titles-only"] .stage.completed .stage-label {
           if(prevAchievements >= 0 && i === monthlyAchievements - 1 && monthlyAchievements > prevAchievements) {
             segment.classList.add('just-filled');
           }
+        }
+        // Add hot segments after filled segments
+        else if(i < monthlyAchievements + hotClientsCount) {
+          segment.classList.add('hot-potential');
         }
 
         contextGoalSegments.appendChild(segment);
@@ -3474,6 +3715,14 @@ body[data-density="titles-only"] .stage.completed .stage-label {
       ui.contextGoals[contextGoalKey] = newGoal;
       saveUI(ui);
       renderDailyOutreach();
+    });
+  }
+
+  // Weekly tab click handler
+  var weeklyTab = document.getElementById('weeklyTab');
+  if(weeklyTab){
+    weeklyTab.addEventListener('click', function(){
+      showWeeklyOutreachModal();
     });
   }
 
@@ -3924,7 +4173,7 @@ body[data-density="titles-only"] .stage.completed .stage-label {
       if(firstLine){
         preview=document.createElement('div');
         preview.className='notes-preview';
-        preview.textContent='"'+firstLine.slice(0,80)+'..."';
+        preview.textContent=firstLine.slice(0,60);
         preview.style.cursor='pointer';
         preview.addEventListener('click', function(){
           notesWrap.classList.remove('hidden');
@@ -4040,7 +4289,7 @@ body[data-density="titles-only"] .stage.completed .stage-label {
       mid.appendChild(head);
 
       var firstLine=(c.notes||'').split('\n')[0] ? (c.notes||'').split('\n')[0].trim() : '';
-      var preview=null; if(firstLine){ preview=document.createElement('div'); preview.className='notes-preview'; preview.textContent=firstLine.slice(0,120); preview.style.cursor='pointer'; preview.addEventListener('click', function(){ notesWrap.classList.remove('hidden'); row.classList.add('notes-open'); ta.focus(); }); mid.appendChild(preview); }
+      var preview=null; if(firstLine){ preview=document.createElement('div'); preview.className='notes-preview'; preview.textContent=firstLine.slice(0,80); preview.style.cursor='pointer'; preview.addEventListener('click', function(){ notesWrap.classList.remove('hidden'); row.classList.add('notes-open'); ta.focus(); }); mid.appendChild(preview); }
     }
     
     // Notes textarea (shared by both layouts)
@@ -4419,6 +4668,29 @@ body[data-density="titles-only"] .stage.completed .stage-label {
   function renderTomorrowList(){ if(!els.tomorrowList) return; var list = state.clients.filter(function(c){ return !c.archived && c.queueTomorrow; }); els.tomorrowList.innerHTML=''; if(!list.length){ els.tomorrowList.innerHTML='<div class="small muted">Nothing queued.</div>'; return; } sortClients(list).forEach(function(c){ var div=document.createElement('div'); div.className='nextitem'; div.innerHTML='<div>'+escapeHtml(c.name)+'</div><div class="small muted">last '+fmtDay(c.lastTouch)+'</div>'; els.tomorrowList.appendChild(div); }); }
   function isFutureFollowUp(c){ if(!c.followUp) return false; var t=new Date(c.followUp); return !isNaN(+t) && t>new Date(); }
 
+  function unarchiveScheduledClients(){
+    // Check for archived clients whose scheduled date has arrived
+    var now = new Date();
+    var unarchived = false;
+
+    if(state && state.clients){
+      state.clients.forEach(function(c){
+        if(c.archived && c.followUp){
+          var followUpDate = new Date(c.followUp);
+          // If the follow-up date has passed or is today, unarchive the client
+          if(!isNaN(+followUpDate) && followUpDate <= now){
+            c.archived = false;
+            unarchived = true;
+          }
+        }
+      });
+
+      if(unarchived){
+        save(state);
+      }
+    }
+  }
+
   /* Root render */
   function sortClients(arr){
     var key = getCookie('sortBy');
@@ -4639,6 +4911,9 @@ body[data-density="titles-only"] .stage.completed .stage-label {
 
   function render(){
     if(!state || !state.clients) return;
+
+    // Unarchive scheduled clients whose date has arrived
+    unarchiveScheduledClients();
 
     // Set body attribute for All Contexts view
     if(currentContext === 'all'){
@@ -5363,7 +5638,7 @@ body[data-density="titles-only"] .stage.completed .stage-label {
     modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10001; display:flex; align-items:flex-start; justify-content:center; padding-top:5vh;';
 
     var modalContent = document.createElement('div');
-    modalContent.style.cssText = 'background:white; border-radius:12px; padding:24px; max-width:1200px; width:85%; height:90vh; overflow-y:auto; box-shadow:0 10px 40px rgba(0,0,0,0.2); position:relative; display:flex; flex-direction:column;';
+    modalContent.style.cssText = 'background:white; border-radius:12px; padding:24px; max-width:1200px; width:85%; height:90vh; box-shadow:0 10px 40px rgba(0,0,0,0.2); position:relative; display:flex; flex-direction:column; overflow:hidden;';
     modalContent.id = 'contextNotesModal';
 
     // Initialize context notes structure
@@ -5446,10 +5721,10 @@ body[data-density="titles-only"] .stage.completed .stage-label {
       var notes = state.contextNotes[currentContext];
       var html = '';
       var container = document.getElementById('contextNotesModal');
-      if(!container) return; // Safety check
+      if(!container) return;
 
-      // Header with expand buttons
-      html += '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">';
+      // Header with expand buttons (flex-shrink:0 to prevent it from shrinking)
+      html += '<div style="flex-shrink:0; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">';
       html += '<h2 style="margin:0; color:#333; font-size:20px;">' + title + ' Notes</h2>';
       html += '<div style="display:flex; gap:8px; align-items:center;">';
       html += '<button id="expandBtn" style="padding:4px 12px; background:#f3f4f6; color:#374151; border:1px solid #e5e7eb; border-radius:6px; cursor:pointer; font-size:12px;">↔ Expand</button>';
@@ -5457,8 +5732,8 @@ body[data-density="titles-only"] .stage.completed .stage-label {
       html += '</div>';
       html += '</div>';
 
-      // Tabs
-      html += '<div style="display:flex; gap:4px; margin-bottom:16px; border-bottom:2px solid #e5e7eb; overflow-x:auto;">';
+      // Tabs (flex-shrink:0 to prevent it from shrinking)
+      html += '<div style="flex-shrink:0; display:flex; gap:4px; margin-bottom:16px; border-bottom:2px solid #e5e7eb; overflow-x:auto;">';
       notes.forEach(function(note, index){
         var isActive = index === currentTabIndex;
         html += '<div style="display:flex; align-items:center; gap:6px; padding:8px 12px; cursor:pointer; background:' + (isActive ? '#3b82f6' : '#f3f4f6') + '; color:' + (isActive ? 'white' : '#374151') + '; border-radius:6px 6px 0 0; font-size:13px; white-space:nowrap; position:relative;" data-tab-index="' + index + '" class="context-note-tab">';
@@ -5476,9 +5751,15 @@ body[data-density="titles-only"] .stage.completed .stage-label {
 
       // Current tab content
       var currentNote = notes[currentTabIndex];
-      html += '<div style="flex:1; display:flex; flex-direction:column;">';
-      html += '<input type="text" id="noteTitle" value="' + (currentNote.title || '') + '" placeholder="Note title..." style="width:100%; padding:8px 12px; border:2px solid #e5e7eb; border-radius:6px; font-size:14px; font-weight:600; margin-bottom:12px;">';
-      html += '<div id="quillEditor" style="background:white; border-radius:8px; flex:1;"></div>';
+
+      if(!currentNote){
+        currentTabIndex = 0;
+        currentNote = notes[0];
+      }
+
+      html += '<div style="flex:1; display:flex; flex-direction:column; min-height:0;">';
+      html += '<input type="text" id="noteTitle" value="' + (currentNote.title || '') + '" placeholder="Note title..." style="width:100%; padding:8px 12px; border:2px solid #e5e7eb; border-radius:6px; font-size:14px; font-weight:600; margin-bottom:12px; flex-shrink:0;">';
+      html += '<div id="quillEditor" style="background:white; border-radius:8px; flex:1; min-height:0;"></div>';
       html += '</div>';
 
       container.innerHTML = html;
@@ -5518,17 +5799,13 @@ body[data-density="titles-only"] .stage.completed .stage-label {
 
       // Attach event handlers after Quill is initialized
       var noteTitle = document.getElementById('noteTitle');
-      console.log('Attaching event handlers', {noteTitle: noteTitle, quill: quill});
       if(noteTitle){
         noteTitle.addEventListener('input', saveCurrentNote);
-        console.log('Title input handler attached');
       }
       if(quill){
         quill.on('text-change', function(delta, oldDelta, source){
-          console.log('Quill text-change event fired', {source: source});
           saveCurrentNote();
         });
-        console.log('Quill text-change handler attached');
       }
     }
 
@@ -5542,14 +5819,22 @@ body[data-density="titles-only"] .stage.completed .stage-label {
       var noteTitle = document.getElementById('noteTitle');
       var container = document.getElementById('contextNotesModal');
       var quill = container ? container.quillInstance : null;
-      console.log('saveCurrentNote called', {noteTitle: noteTitle, container: container, quill: quill});
+      console.log('saveCurrentNote called', {noteTitle: noteTitle, container: container, quill: quill, currentTabIndex: currentTabIndex});
+      console.log('State before save:', JSON.parse(JSON.stringify(state.contextNotes[currentContext])));
       if(noteTitle && quill){
         var content = quill.root.innerHTML;
-        console.log('Saving content:', content);
+        console.log('Saving content to index', currentTabIndex);
+
+        // Safety check
+        if(!state.contextNotes[currentContext][currentTabIndex]){
+          console.error('ERROR: No note at index', currentTabIndex, 'Total notes:', state.contextNotes[currentContext].length);
+          return;
+        }
+
         state.contextNotes[currentContext][currentTabIndex].title = noteTitle.value;
         state.contextNotes[currentContext][currentTabIndex].content = content;
         save(state);
-        console.log('Content saved to state:', state.contextNotes[currentContext][currentTabIndex]);
+        console.log('State after save:', JSON.parse(JSON.stringify(state.contextNotes[currentContext])));
       } else {
         console.log('Save failed - missing noteTitle or quill');
       }
@@ -5559,17 +5844,11 @@ body[data-density="titles-only"] .stage.completed .stage-label {
     modalContent.addEventListener('click', function(e){
       var target = e.target;
 
-      // Tab switching
-      if(target.closest('.context-note-tab') && !target.getAttribute('data-delete-tab')){
-        saveCurrentNote();
-        currentTabIndex = parseInt(target.closest('.context-note-tab').getAttribute('data-tab-index'));
-        renderModal();
-      }
-
-      // Delete tab
-      if(target.getAttribute('data-delete-tab')){
+      // Delete tab - check this first before tab switching
+      if(target.getAttribute('data-delete-tab') !== null){
         e.stopPropagation();
         var deleteIndex = parseInt(target.getAttribute('data-delete-tab'));
+        console.log('Delete tab clicked:', deleteIndex);
         if(state.contextNotes[currentContext].length > 1){
           state.contextNotes[currentContext].splice(deleteIndex, 1);
           if(currentTabIndex >= state.contextNotes[currentContext].length){
@@ -5578,6 +5857,17 @@ body[data-density="titles-only"] .stage.completed .stage-label {
           save(state);
           renderModal();
         }
+        return; // Exit early to prevent tab switching
+      }
+
+      // Tab switching
+      var tabElement = target.closest('.context-note-tab');
+      if(tabElement){
+        saveCurrentNote();
+        var newIndex = parseInt(tabElement.getAttribute('data-tab-index'));
+        console.log('Tab switching from', currentTabIndex, 'to', newIndex);
+        currentTabIndex = newIndex;
+        renderModal();
       }
 
       // Add note tab

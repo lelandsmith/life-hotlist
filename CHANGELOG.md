@@ -2,6 +2,29 @@
 
 All notable changes to Life Hotlist will be documented in this file.
 
+## [2.5.5] - 2025-01-23
+
+### Added
+- **Weekly Outreach Tab**: New "Week" tab above daily outreach showing unique people reached this week
+  - Click tab to see detailed breakdown of weekly outreach
+  - Modal shows all people contacted with call/message counts and current status
+  - Week starts on Sunday, tracks unique contacts
+- **Quill WYSIWYG Editor**: Rich text editing for Context Notes
+  - Full formatting toolbar with headers, font sizes, bold/italic/underline/strike
+  - Support for lists, colors, links, and images
+  - Default font size 15px with 1.8 line height
+  - HTML content storage for rich formatting
+- **Auto-unarchive Scheduled Clients**: Archived clients automatically return to active list when scheduled date arrives
+  - Scheduled clients appear in "Scheduled" section, not in main active list
+  - When follow-up date passes, archived clients are automatically unarchived
+  - Seamless workflow for scheduling future follow-ups
+
+### Fixed
+- **Context Notes Modal Layout**: Fixed tabs shifting out of view when switching between tabs
+  - Removed overflow from modal container, only editor scrolls
+  - Added flex-shrink:0 to header and tabs to prevent layout shifting
+  - Added min-height:0 to containers for proper flex layout
+
 ## [2.5.4] - 2025-01-23
 
 ### Added
