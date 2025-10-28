@@ -7389,23 +7389,27 @@ body[data-density="titles-only"] .stage.completed .stage-label {
 
     state.clients.forEach(function(c){
       var clientActions = [];
-      var statusChanges = [];
+      var stageChanges = [];
 
       (c.history || []).forEach(function(h){
         var ts = new Date(h.ts);
         if(ts >= startDate && ts < endDate){
-          if(h.action === 'status'){
-            statusChanges.push({ts: ts, status: h.to});
-          } else if(h.action === 'call' || h.to === 'Called'){
-            clientActions.push('Called');
-          } else if(h.action === 'message' || h.to === 'Emailed'){
-            clientActions.push('Emailed');
+          if(h.action === 'stage'){
+            // Track stage changes
+            stageChanges.push({ts: ts, stage: h.to});
+          } else if(h.action === 'status' && (h.to === 'Called' || h.to === 'Emailed')){
+            // Track call/email actions
+            if(h.to === 'Called'){
+              clientActions.push('Called');
+            } else if(h.to === 'Emailed'){
+              clientActions.push('Emailed');
+            }
           }
         }
       });
 
       // Build summary for this client
-      if(clientActions.length > 0 || statusChanges.length > 0){
+      if(clientActions.length > 0 || stageChanges.length > 0){
         var summary = c.name + ': ';
         var parts = [];
 
@@ -7415,20 +7419,24 @@ body[data-density="titles-only"] .stage.completed .stage-label {
         }
 
         // Add stage information
-        if(statusChanges.length > 0){
+        if(stageChanges.length > 0){
           // Sort by timestamp to show progression
-          statusChanges.sort(function(a, b){ return a.ts - b.ts; });
-          if(statusChanges.length > 1){
+          stageChanges.sort(function(a, b){ return a.ts - b.ts; });
+          if(stageChanges.length > 1){
             // Show progression if multiple stage changes
-            var progression = statusChanges.map(function(s){ return s.status; }).join(' > ');
+            var progression = stageChanges.map(function(s){ return s.stage; }).join(' > ');
             parts.push('[' + progression + ']');
           } else {
-            // Show single stage move or current stage
-            parts.push('[' + statusChanges[0].status + ']');
+            // Show single stage change
+            parts.push('[' + stageChanges[0].stage + ']');
           }
         } else {
-          // No stage changes during period, show current stage/status
-          var currentStage = c.status || 'No stage';
+          // No stage changes during period, show current stage
+          var clientContext = c.context || currentContext;
+          var contextConfig = CONTEXTS[clientContext] || CONTEXTS.life;
+          var currentStage = (typeof c.stage === 'number' && c.stage >= 0)
+            ? contextConfig.stages[c.stage]
+            : (c.status || 'No stage');
           parts.push('[' + currentStage + ']');
         }
 
