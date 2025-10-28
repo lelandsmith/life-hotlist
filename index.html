@@ -7286,23 +7286,26 @@ body[data-density="titles-only"] .stage.completed .stage-label {
       var kpis = getKPIData();
       var today = new Date().toLocaleDateString();
       var dailyStats = getDailyOutreachCounts();
+      var dailyGoal = Number(ui.dailyOutreachGoal || 10);
+      var goalAchieved = dailyStats.total >= dailyGoal;
 
       var subject = 'Life Hotlist - Today\'s Activity (' + today + ')';
       var body = 'Today\'s Activity Report\n\n';
+      body += '=== Daily Goal ===\n';
+      body += 'Target: ' + dailyGoal + ' contacts\n';
+      body += 'Actual: ' + dailyStats.total + ' contacts (' + dailyStats.calls + ' calls, ' + dailyStats.messages + ' messages)\n';
+      body += 'Status: ' + (goalAchieved ? '✓ GOAL ACHIEVED!' : '✗ Goal not met') + '\n\n';
       body += '=== KPIs ===\n';
       body += 'Issued: ' + kpis.purchased + '\n';
       body += 'Weekly Calls: ' + kpis.weeklyCalls + '\n';
       body += 'Streak: ' + kpis.streak + ' day(s)\n\n';
-      body += '=== Daily Activity ===\n';
-      body += 'Calls: ' + dailyStats.calls + '\n';
-      body += 'Messages: ' + dailyStats.messages + '\n\n';
 
       // Add today's activity details
-      var todayActivities = getTodayActivities();
+      var todayActivities = getActivitySummaryForEmail('today');
       if(todayActivities.length > 0){
         body += '=== Activity Details ===\n';
         todayActivities.forEach(function(a){
-          body += a.time + ' - ' + a.client + ': ' + a.action + '\n';
+          body += a + '\n';
         });
       }
 
@@ -7317,23 +7320,26 @@ body[data-density="titles-only"] .stage.completed .stage-label {
       yesterday.setDate(yesterday.getDate() - 1);
       var yesterdayStr = yesterday.toLocaleDateString();
       var yesterdayStats = getYesterdayOutreachCounts();
+      var dailyGoal = Number(ui.dailyOutreachGoal || 10);
+      var goalAchieved = yesterdayStats.total >= dailyGoal;
 
       var subject = 'Life Hotlist - Yesterday\'s Activity (' + yesterdayStr + ')';
       var body = 'Yesterday\'s Activity Report\n\n';
+      body += '=== Daily Goal ===\n';
+      body += 'Target: ' + dailyGoal + ' contacts\n';
+      body += 'Actual: ' + yesterdayStats.total + ' contacts (' + yesterdayStats.calls + ' calls, ' + yesterdayStats.messages + ' messages)\n';
+      body += 'Status: ' + (goalAchieved ? '✓ GOAL ACHIEVED!' : '✗ Goal not met') + '\n\n';
       body += '=== KPIs ===\n';
       body += 'Issued: ' + kpis.purchased + '\n';
       body += 'Weekly Calls: ' + kpis.weeklyCalls + '\n';
       body += 'Streak: ' + kpis.streak + ' day(s)\n\n';
-      body += '=== Daily Activity ===\n';
-      body += 'Calls: ' + yesterdayStats.calls + '\n';
-      body += 'Messages: ' + yesterdayStats.messages + '\n\n';
 
       // Add yesterday's activity details
-      var yesterdayActivities = getYesterdayActivities();
+      var yesterdayActivities = getActivitySummaryForEmail('yesterday');
       if(yesterdayActivities.length > 0){
         body += '=== Activity Details ===\n';
         yesterdayActivities.forEach(function(a){
-          body += a.time + ' - ' + a.client + ': ' + a.action + '\n';
+          body += a + '\n';
         });
       }
 
@@ -7363,6 +7369,70 @@ body[data-density="titles-only"] .stage.completed .stage-label {
 
       window.location.href = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
     });
+  }
+
+  // Helper function to get activity summary for email (grouped by client with stage progressions)
+  function getActivitySummaryForEmail(period){
+    var startDate, endDate;
+    var today = startOfDay(new Date());
+
+    if(period === 'today'){
+      startDate = today;
+      endDate = addDays(today, 1);
+    } else if(period === 'yesterday'){
+      startDate = addDays(today, -1);
+      endDate = today;
+    }
+
+    // Group activities by client
+    var clientActivities = {};
+
+    state.clients.forEach(function(c){
+      var clientActions = [];
+      var statusChanges = [];
+
+      (c.history || []).forEach(function(h){
+        var ts = new Date(h.ts);
+        if(ts >= startDate && ts < endDate){
+          if(h.action === 'status'){
+            statusChanges.push({ts: ts, status: h.to});
+          } else if(h.action === 'call' || h.to === 'Called'){
+            clientActions.push('Called');
+          } else if(h.action === 'message' || h.to === 'Emailed'){
+            clientActions.push('Emailed');
+          }
+        }
+      });
+
+      // Build summary for this client
+      if(clientActions.length > 0 || statusChanges.length > 0){
+        var summary = c.name + ': ';
+        var parts = [];
+
+        // Add actions (calls/messages)
+        if(clientActions.length > 0){
+          parts.push(clientActions.join(', '));
+        }
+
+        // Add stage progression if there are status changes
+        if(statusChanges.length > 0){
+          // Sort by timestamp to show progression
+          statusChanges.sort(function(a, b){ return a.ts - b.ts; });
+          var progression = statusChanges.map(function(s){ return s.status; }).join(' > ');
+          parts.push(progression);
+        }
+
+        clientActivities[c.name] = summary + parts.join(' | ');
+      }
+    });
+
+    // Convert to array and sort alphabetically
+    var summaryArray = [];
+    Object.keys(clientActivities).sort().forEach(function(clientName){
+      summaryArray.push(clientActivities[clientName]);
+    });
+
+    return summaryArray;
   }
 
   // Helper function to get today's activities
