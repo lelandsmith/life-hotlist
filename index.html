@@ -1525,6 +1525,31 @@ body[data-all-contexts="true"] .context-group > div:last-child {
 .tag-chip.scheduled:hover .unschedule-x{
   display:block;
 }
+.tag-chip.archived-chip{
+  background:#fef3c7;
+  color:#92400e;
+  border-color:#f59e0b;
+  padding-right:8px;
+}
+.tag-chip.archived-chip .unarchive-x{
+  display:none;
+  position:absolute;
+  right:2px;
+  top:-2px;
+  background:#dc2626;
+  color:white;
+  border-radius:50%;
+  width:14px;
+  height:14px;
+  line-height:14px;
+  text-align:center;
+  font-size:10px;
+  cursor:pointer;
+  font-weight:bold;
+}
+.tag-chip.archived-chip:hover .unarchive-x{
+  display:block;
+}
 
 /* Density switch */
 body[data-density="comfortable"] .row{padding:8px 12px}
@@ -1991,7 +2016,7 @@ body[data-density="titles-only"] .stage.completed .stage-label {
 
 
     <div class="widget" data-key="todayActivity" draggable="true">
-      <div class="widget-head"><h2 class="widget-title">Today's Activity</h2><div class="widget-actions"><button class="btn-min gray" id="emailTodayDetailBtn">Email Today</button><button class="btn-min gray collapse-btn" data-collapse title="Collapse"></button></div></div>
+      <div class="widget-head"><h2 class="widget-title">Today's Activity</h2><div class="widget-actions"><button class="btn-min gray" id="emailTodayDetailBtn">Email Today</button><button class="btn-min gray" id="emailYesterdayDetailBtn" style="font-size:11px; padding:4px 8px; opacity:0.7;" title="Email yesterday's activity">Yesterday</button><button class="btn-min gray collapse-btn" data-collapse title="Collapse"></button></div></div>
       <div class="widget-body"><div class="small muted" id="todayDate"></div><div class="activity" id="activity"></div></div>
     </div>
 
@@ -2162,7 +2187,7 @@ body[data-density="titles-only"] .stage.completed .stage-label {
     ageDays:$('#ageDays'), groupToggle:$('#groupToggle'),
     emailSummaryBtn:$('#emailSummaryBtn'),
     chart:$('#chart'), chartRangeSel:$('#chartRangeSel'), heatmap:$('#heatmap'),
-    todayDate:$('#todayDate'), activity:$('#activity'), emailTodayDetailBtn:$('#emailTodayDetailBtn'),
+    todayDate:$('#todayDate'), activity:$('#activity'), emailTodayDetailBtn:$('#emailTodayDetailBtn'), emailYesterdayDetailBtn:$('#emailYesterdayDetailBtn'),
     hopStart:$('#hopStart'), hopPause:$('#hopPause'), hopReset:$('#hopReset'), hopClock:$('#hopClock'), hopCalls:$('#hopCalls'),
     pipeline:$('#pipeline'), nextList:$('#nextList'), followList:$('#followList'),
     quoteView:$('#quoteView'), quoteMeta:$('#quoteMeta'), quotesEditBtn:$('#quotesEditBtn'),
@@ -4286,6 +4311,12 @@ body[data-density="titles-only"] .stage.completed .stage-label {
       }
       if(c.queueToday){ var chip1=document.createElement('span'); chip1.className='tag-chip'; chip1.textContent='Today'; head.appendChild(chip1); }
       if(c.queueTomorrow){ var chip2=document.createElement('span'); chip2.className='tag-chip'; chip2.textContent='Tomorrow'; head.appendChild(chip2); }
+      if(c.archived){
+        var archiveChip=document.createElement('span');
+        archiveChip.className='tag-chip archived-chip';
+        archiveChip.innerHTML = 'Archived<span class="unarchive-x" data-client-id="' + c.id + '">×</span>';
+        head.appendChild(archiveChip);
+      }
       mid.appendChild(head);
 
       var firstLine=(c.notes||'').split('\n')[0] ? (c.notes||'').split('\n')[0].trim() : '';
@@ -4588,8 +4619,8 @@ body[data-density="titles-only"] .stage.completed .stage-label {
     if(!state || !state.clients) return;
     var now = new Date();
     var items = state.clients.filter(function(c){
-      // Exclude archived and tomorrow-queued clients
-      return !c.archived && c.followUp && !c.queueTomorrow;
+      // Exclude tomorrow-queued clients (include archived now with label)
+      return c.followUp && !c.queueTomorrow;
     }).map(function(c){
       var when = new Date(c.followUp);
       var daysUntil = Math.ceil((when - now) / (1000 * 60 * 60 * 24));
@@ -4691,6 +4722,32 @@ body[data-density="titles-only"] .stage.completed .stage-label {
     }
   }
 
+  function moveScheduledToToday(){
+    // Check for clients whose scheduled follow-up date has arrived
+    var now = startOfDay(new Date());
+    var moved = false;
+
+    if(state && state.clients){
+      state.clients.forEach(function(c){
+        if(c.followUp && !c.queueToday){
+          var followUpDate = new Date(c.followUp);
+          var followUpDay = startOfDay(followUpDate);
+          // If the follow-up date is today or has passed, move to today queue
+          if(!isNaN(+followUpDate) && followUpDay <= now){
+            c.queueToday = true;
+            c.followUp = '';
+            c.queueTomorrow = false;
+            moved = true;
+          }
+        }
+      });
+
+      if(moved){
+        save(state);
+      }
+    }
+  }
+
   /* Root render */
   function sortClients(arr){
     var key = getCookie('sortBy');
@@ -4721,7 +4778,8 @@ body[data-density="titles-only"] .stage.completed .stage-label {
     var filtered = clients.filter(function(c){
       // Note: Context filtering already done in render() function
       // Don't double-filter here
-      if(els.showArchived && els.showArchived.checked ? !c.archived : c.archived) return false;
+      // When searching, show archived clients too (they'll get an archived label)
+      if(!q && (els.showArchived && els.showArchived.checked ? !c.archived : c.archived)) return false;
       if(els.statusFilter && els.statusFilter.value && c.status!==els.statusFilter.value) return false;
       if(q && !(c.name.toLowerCase().includes(q) || (c.notes||'').toLowerCase().includes(q) || (c.status||'').toLowerCase().includes(q))) return false;
       return true;
@@ -4753,7 +4811,8 @@ body[data-density="titles-only"] .stage.completed .stage-label {
       var groupClients = state.clients.filter(function(c){
         var clientContext = getClientContext(c);
         if(clientContext !== contextKey) return false;
-        if(els.showArchived && els.showArchived.checked ? !c.archived : c.archived) return false;
+        // When searching, show archived clients too (they'll get an archived label)
+        if(!q && (els.showArchived && els.showArchived.checked ? !c.archived : c.archived)) return false;
         if(els.statusFilter && els.statusFilter.value && c.status!==els.statusFilter.value) return false;
         if(q && !(c.name.toLowerCase().includes(q) || (c.notes||'').toLowerCase().includes(q) || (c.status||'').toLowerCase().includes(q))) return false;
         return true;
@@ -4915,6 +4974,9 @@ body[data-density="titles-only"] .stage.completed .stage-label {
     // Unarchive scheduled clients whose date has arrived
     unarchiveScheduledClients();
 
+    // Move scheduled follow-ups to today queue if their date has arrived
+    moveScheduledToToday();
+
     // Set body attribute for All Contexts view
     if(currentContext === 'all'){
       document.body.setAttribute('data-all-contexts', 'true');
@@ -4952,7 +5014,7 @@ body[data-density="titles-only"] .stage.completed .stage-label {
     // Handle "all" context separately
     if(currentContext === 'all'){
       var activeAll = state.clients.filter(function(c){return !c.archived;});
-      var scheduled = activeAll.filter(isFutureFollowUp);
+      var scheduled = state.clients.filter(isFutureFollowUp); // Include archived clients in scheduled
 
       renderKPIs(); renderPipeline(); renderTrendRibbons(); renderDailyOutreach(); updateDemoButtons();
 
@@ -4999,7 +5061,7 @@ body[data-density="titles-only"] .stage.completed .stage-label {
 
     var activeAll=contextClients.filter(function(c){return !c.archived;});
     var todayClients = activeAll.filter(function(c){ return c.queueToday; });
-    var scheduled = activeAll.filter(isFutureFollowUp);
+    var scheduled = contextClients.filter(isFutureFollowUp); // Include archived clients in scheduled
     var mainActive = activeAll.filter(function(c){ return !isFutureFollowUp(c) && !c.queueToday; });
     var archived=contextClients.filter(function(c){return c.archived;});
 
@@ -6631,6 +6693,16 @@ body[data-density="titles-only"] .stage.completed .stage-label {
         }
       }
     }
+
+    // Handle unarchive button
+    if(e.target.classList.contains('unarchive-x')){
+      e.stopPropagation();
+      var clientId = e.target.getAttribute('data-client-id');
+      var client = state.clients.find(function(c){ return c.id === clientId; });
+      if(client){
+        archiveClient(client, false);
+      }
+    }
   });
 
   /* Schedule Dropdown */
@@ -7213,7 +7285,7 @@ body[data-density="titles-only"] .stage.completed .stage-label {
     els.emailTodayDetailBtn.addEventListener('click', function(){
       var kpis = getKPIData();
       var today = new Date().toLocaleDateString();
-      var dailyStats = getDailyStats();
+      var dailyStats = getDailyOutreachCounts();
 
       var subject = 'Life Hotlist - Today\'s Activity (' + today + ')';
       var body = 'Today\'s Activity Report\n\n';
@@ -7230,6 +7302,37 @@ body[data-density="titles-only"] .stage.completed .stage-label {
       if(todayActivities.length > 0){
         body += '=== Activity Details ===\n';
         todayActivities.forEach(function(a){
+          body += a.time + ' - ' + a.client + ': ' + a.action + '\n';
+        });
+      }
+
+      window.location.href = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+    });
+  }
+
+  if(els.emailYesterdayDetailBtn){
+    els.emailYesterdayDetailBtn.addEventListener('click', function(){
+      var kpis = getKPIData();
+      var yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      var yesterdayStr = yesterday.toLocaleDateString();
+      var yesterdayStats = getYesterdayOutreachCounts();
+
+      var subject = 'Life Hotlist - Yesterday\'s Activity (' + yesterdayStr + ')';
+      var body = 'Yesterday\'s Activity Report\n\n';
+      body += '=== KPIs ===\n';
+      body += 'Issued: ' + kpis.purchased + '\n';
+      body += 'Weekly Calls: ' + kpis.weeklyCalls + '\n';
+      body += 'Streak: ' + kpis.streak + ' day(s)\n\n';
+      body += '=== Daily Activity ===\n';
+      body += 'Calls: ' + yesterdayStats.calls + '\n';
+      body += 'Messages: ' + yesterdayStats.messages + '\n\n';
+
+      // Add yesterday's activity details
+      var yesterdayActivities = getYesterdayActivities();
+      if(yesterdayActivities.length > 0){
+        body += '=== Activity Details ===\n';
+        yesterdayActivities.forEach(function(a){
           body += a.time + ' - ' + a.client + ': ' + a.action + '\n';
         });
       }
@@ -7282,6 +7385,66 @@ body[data-density="titles-only"] .stage.completed .stage-label {
     });
 
     return activities.sort(function(a, b){ return b.time.localeCompare(a.time); });
+  }
+
+  // Helper function to get yesterday's activities
+  function getYesterdayActivities(){
+    var activities = [];
+    var today = startOfDay(new Date());
+    var yesterday = addDays(today, -1);
+
+    state.clients.forEach(function(c){
+      (c.history || []).forEach(function(h){
+        var ts = new Date(h.ts);
+        if(ts >= yesterday && ts < today){
+          activities.push({
+            time: ts.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
+            client: c.name,
+            action: h.action === 'status' ? 'Status: ' + h.to : h.action
+          });
+        }
+      });
+    });
+
+    return activities.sort(function(a, b){ return b.time.localeCompare(a.time); });
+  }
+
+  // Helper function to get yesterday's outreach counts
+  function getYesterdayOutreachCounts(){
+    var today = new Date();
+    today.setHours(0,0,0,0);
+    var yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    var yesterdayEnd = new Date(today);
+    yesterdayEnd.setMilliseconds(-1);
+
+    var totalCalls = 0, totalMessages = 0;
+
+    if(state && state.clients) state.clients.forEach(function(c){
+      if(!c.id) return;
+
+      // Filter by current context (skip if not in 'all' and doesn't match current context)
+      if(currentContext !== 'all'){
+        var clientContext = getClientContext(c);
+        if(clientContext !== currentContext) return;
+      }
+
+      if(c.history){
+        c.history.forEach(function(h){
+          if(!h.ts) return;
+          var hTime = new Date(h.ts);
+          if(hTime >= yesterday && hTime <= yesterdayEnd){
+            if(h.to === 'Called' || h.action === 'call'){
+              totalCalls++;
+            } else if(h.to === 'Emailed' || h.action === 'message'){
+              totalMessages++;
+            }
+          }
+        });
+      }
+    });
+
+    return {calls: totalCalls, messages: totalMessages, total: totalCalls + totalMessages};
   }
 
   // Helper to get pipeline data
