@@ -7409,20 +7409,30 @@ body[data-density="titles-only"] .stage.completed .stage-label {
         var summary = c.name + ': ';
         var parts = [];
 
-        // Add actions (calls/messages)
+        // Add actions (calls/messages) first
         if(clientActions.length > 0){
           parts.push(clientActions.join(', '));
         }
 
-        // Add stage progression if there are status changes
+        // Add stage information
         if(statusChanges.length > 0){
           // Sort by timestamp to show progression
           statusChanges.sort(function(a, b){ return a.ts - b.ts; });
-          var progression = statusChanges.map(function(s){ return s.status; }).join(' > ');
-          parts.push(progression);
+          if(statusChanges.length > 1){
+            // Show progression if multiple stage changes
+            var progression = statusChanges.map(function(s){ return s.status; }).join(' > ');
+            parts.push('[' + progression + ']');
+          } else {
+            // Show single stage move or current stage
+            parts.push('[' + statusChanges[0].status + ']');
+          }
+        } else {
+          // No stage changes during period, show current stage/status
+          var currentStage = c.status || 'No stage';
+          parts.push('[' + currentStage + ']');
         }
 
-        clientActivities[c.name] = summary + parts.join(' | ');
+        clientActivities[c.name] = summary + parts.join(' - ');
       }
     });
 
